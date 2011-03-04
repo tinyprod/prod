@@ -6,8 +6,8 @@ The msp430.git repo is located at:
 git clone ssh://hinrg.cs.jhu.edu/home/cire/msp430.git  (r/w)
 git clone git://hinrg.cs.jhu.edu/git/cire/msp430.git   (read-only)
 
-The msp430.git repo on hinrg belongs to group cire-git.  Users that need to
-write access to this repo need to belong to the cire-git group.
+The msp430.git repo on hinrg belongs to group cire-git.  Users needing
+repo write access need to belong to the cire-git group.
 
 The msp430.git repo tracks the hinrg t2 git repo which in turn imports from the
 main svn T2 trunk.
@@ -33,32 +33,36 @@ svn t2 mainline ---|
 				 |
 				  --- mm-z1-pu
 
-master: is the main branch coming from the svn t2 mainline.   It gets updated manually.
+master: is the main branch coming from the svn t2 mainline.  Updated manually.
 
-master_vhsb: (vogon hyper-spatial bypass) This branch tracks master but has the superfluous
-	Z1 commit removed as it conflicts with the collapsed msp430 x2xxx work done in mm_core.
+master_vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
+	trunk.  This branch tracks master but has the superfluous Z1 commit
+	removed as it conflicts with the collapsed msp430 x2xxx work done in
+	mm_core.  This collapsage forms the majority of the work of merging
+	the trees and there isn't much sense in reinventing the wheel.
 
-mm-z1: main consolidation branch for the mm-z1 integration.   It is the currently released
-       version of the branch.
+mm-z1: main consolidation branch for the mm-z1 integration.   It represents the
+	current released version of the branch.
 
-mm-z1-next: As changes get accepted they get brought back into -next.    When all is good
-       next gets integrated into mm-z1.
+mm-z1-next: As changes get accepted they get brought back into -next.    When
+	all is good, next gets integrated into mm-z1.
 
-mm-z1-pu: proposed updates.   After new code has been worked on for a bit and is ready to
-       be integrated with other code in the mm-z1 area, mm-z1-pu is the place to put it.
-       Some code from pu will go into next.  When enough stuff is ready to go in next, it
-       is brought over to main (mm-z1).
+mm-z1-pu: proposed updates.   After new code has been worked on for a bit and
+	is ready to be integrated with other code in the mm-z1 area, mm-z1-pu
+	is the place to put it.  Some code from pu will go into next.  When
+	enough stuff is ready to go in next, it is brought over to main
+	(mm-z1).
 
 
-To pull a working branch based on the mm-z1-pu branch (a reasonable place to fork a working
-branch), do the following:
+To pull a working branch based on the mm-z1-pu branch (a reasonable place to
+fork a working branch), do the following:
 
     cd ~/mm							# make sure at top level, we call it mm
     git clone git://hinrg.cs.jhu.edu/git/cire/msp430.git	# grab from ro place
     cd msp430
     git config --add push.default matching	# make sure only existing branches get pushed.
 						# only effects rw repos
-    git checkout -t origin/mm-z1-pu		# start with proposed updates
+    git checkout -t origin/mm-z1-pu		# start with proposed updates, tracking branch
     git checkout -b work			# local working branch
 
 
