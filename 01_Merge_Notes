@@ -14,3 +14,5 @@
 * In apps/IPBaseStation/BaseStationP.nc, Z1 brought in #include CC2420.h that is inside
   an #ifndef SIM.   Why the ifndef?
 
+* want to check tos/platforms/z1/<stuff>  for duplicates vs. tos/chips/msp430 when done integrating
+  and collapsing.
