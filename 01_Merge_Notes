@@ -16,3 +16,5 @@
 
 * want to check tos/platforms/z1/<stuff>  for duplicates vs. tos/chips/msp430 when done integrating
   and collapsing.
+
+* might want to add Zolertia copyrights to adxl345 and tmp102.
