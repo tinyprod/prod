@@ -1,65 +1,50 @@
 /*
- * "Copyright (c) 2008 The Regents of the University  of California.
- * All rights reserved."
- *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose, without fee, and without written agreement is
- * hereby granted, provided that the above copyright notice, the following
- * two paragraphs and the author appear in all copies of this software.
- *
- * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY FOR
- * DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT
- * OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF
- * CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
- * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
- * ON AN "AS IS" BASIS, AND THE UNIVERSITY OF CALIFORNIA HAS NO OBLIGATION TO
- * PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS."
- *
- */
-/*                          
- * Copyright (c) 2005
- *	The President and Fellows of Harvard College.
+ * Copyright (c) 2008 The Regents of the University  of California.
+ * Copyright (c) 2005 The President and Fellows of Harvard College.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE UNIVERSITY AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE UNIVERSITY OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ *
+ * - Neither the name of the copyright holders nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 /* 
  * Writes printf like output to the UART.  
- * This works only on the AVR and MSP430 Microcontrollers!
+ * This works only on the AVR and MSP430 based Microcontrollers!
  * <p>
  * Note: For AVR we explicitly place the print statements in ROM; for
  * MSP430 this is done by default!  For AVR, if we don't place it
- * explicitely in ROM, the statements will go in RAM, which will
+ * explicitly in ROM, the statements will go in RAM, which will
  * quickly cause a descent size program to run out of RAM.  By default
  * it doesn't disable the interupts; disabling the interupts when
  * writing to the UART, slows down/makes the mote quite unresponsive,
  * and can lead to problems!  If you wish to disable all printfs to
- * the UART, then comment the flag: <code>PRINTFUART_ENABLED</code>.
+ * the UART, then comment out the flag: <code>PRINTFUART_ENABLED</code>.
 
  * <p> <pre>
  * How to use:
@@ -85,11 +70,14 @@
  *   printfUART("\nThe value of x=%u, and y=%u\n", x, y); 
  * </pre>
  * <pre>URL: http://www.eecs.harvard.edu/~konrad/projects/motetrack</pre>
+ *
  * @author Konrad Lorincz
  * @version 2.0, January 5, 2005
  */
+
 #ifndef PRINTFUART_H
 #define PRINTFUART_H
+
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -139,8 +127,7 @@ void printfUART_init_private()
         inp(UDR0);
         outp((1 << TXEN) ,UCSR0B);   // Enable uart reciever and transmitter
 
-    #else
-    #if defined(PLATFORM_MICA2DOT)  
+    #elif defined(PLATFORM_MICA2DOT)  
         // 19.2K baud
         outp(0,UBRR0H);            // Set baudrate to 19.2 KBps
         outp(12, UBRR0L);
@@ -149,8 +136,7 @@ void printfUART_init_private()
         inp(UDR0);
         outp((1 << TXEN) ,UCSR0B);
   
-    #else
-    #if defined(PLATFORM_IMOTE2)
+    #elif defined(PLATFORM_IMOTE2)
       //async command result_t UART.init() {
         
         /*** 
@@ -198,6 +184,13 @@ void printfUART_init_private()
         
         CKEN |= CKEN5_STUART; //enable the UART's clk    
 
+    #elif defined(PLATFORM_Z1)
+                P3SEL |= 0x30;				// P3.4,5 = USCI_A1 TXD/RXD
+                UCA0CTL1 |= UCSSEL_2;                   // CLK = ACLK
+                UCA0BR0 = 0x45;                         // 32kHz/9600 = 3.41
+                UCA0BR1 = 0x00;                         //
+                UCA0MCTL = UCBRS1 + UCBRS0;             // Modulation UCBRSx = 3
+                UCA0CTL1 &= ~UCSWRST;                   // **Initialize USCI state machine**
 
     #else  // assume TelosA, TelosB, etc.
         // Variabel baud 
@@ -253,8 +246,6 @@ void printfUART_init_private()
         IFG2 &= ~(UTXIFG1 | URXIFG1);
         IE2 &= ~(UTXIE1 | URXIE1);  // interrupt disabled
 
-   
-
         //async command void USARTControl.setClockSource(uint8_t source) {
         //    atomic {
                 l_ssel = source | 0x80;
@@ -286,17 +277,14 @@ void printfUART_init_private()
                 IE2 |= UTXIE1;
                 //}
                 //return SUCCESS;
-                //}     
-
-    #endif
-    #endif
+                //}
     #endif
 }
 
 #if defined(PLATFORM_MICAZ) || defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
-#else
-#if defined(PLATFORM_IMOTE2)
-#else // assume AVR architecture (e.g. TelosA, TelosB)
+#elif defined(PLATFORM_IMOTE2)
+#elif defined(PLATFORM_Z1)
+#else // assume AVR architecture (e.g. TelosA, TelosB, (this makes no sense, avr != telos))
     bool isTxIntrPending()
     {
         if (U1TCTL & TXEPT) {
@@ -305,7 +293,7 @@ void printfUART_init_private()
         return FALSE;
     }
 #endif
-#endif
+
 
 /**
  * Outputs a char to the UART.
@@ -320,15 +308,18 @@ void UARTPutChar(char c)
         loop_until_bit_is_set(UCSR0A, UDRE);
         outb(UDR0,c);
 
-    #else
-    #if defined(PLATFORM_IMOTE2)
+    #elif defined(PLATFORM_IMOTE2)
         STTHR = c;    
+
+    #elif defined(PLATFORM_Z1)
+        while (!(IFG2&UCA0TXIFG));
+                atomic UCA0TXBUF = c;
 
     #else // assume AVR architecture (e.g. TelosA, TelosB)
         U1TXBUF = c;  
         while( !isTxIntrPending() )  
             continue;
-    #endif
+
     #endif
 }
 
@@ -352,7 +343,19 @@ void writedebug()
 void __assertUART(const char* file, int line)
 {
     printfUART("ASSERT FAILED: file= %s, lineNbr= %i\n", file, line);
+#ifdef notdef
     // for some reason, CLR means on
+    // its because its low true logic as defined at the h/w.   namely when the
+    // controlling bit gets set to 0 (clr), the diode is forward biased and the
+    // led starts to emit.
+
+    TOSH_MAKE_RED_LED_OUTPUT();
+    TOSH_MAKE_YELLOW_LED_OUTPUT();
+    TOSH_MAKE_GREEN_LED_OUTPUT();
+    TOSH_CLR_RED_LED_PIN();
+    TOSH_CLR_YELLOW_LED_PIN();
+    TOSH_CLR_GREEN_LED_PIN();
+#endif
     for (;;);
 }
 // --------------------------------------------------------------
@@ -394,4 +397,3 @@ void printfUART_in6addr(struct in6_addr *a) {
 #endif
 
 #endif  // PRINTFUART_H
-

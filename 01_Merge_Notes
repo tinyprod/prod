@@ -1,0 +1,16 @@
+
+1) removed extra Z1 commit into the trunk.   Gets in the way of the collapse work already done.
+
+2) branched to master-vhsb (master with vogon hyper spatial bypass), ie trunk (master without
+   the extra Z1 code.
+
+3) brought in code from sourceforge z1-0.16 that changed things but didn't hit the main areas for
+   the Z1.  ie.  stuff outside of tos/chips/msp430.
+
+4) brought in z1 code that effects tos/chips/msp430.   But avoided the duplicates.  (z1-0.16 code
+   checked against the trunk Z1 code (removed above) to see if anything missing).
+
+
+* In apps/IPBaseStation/BaseStationP.nc, Z1 brought in #include CC2420.h that is inside
+  an #ifndef SIM.   Why the ifndef?
+

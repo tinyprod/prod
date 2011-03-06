@@ -1,6 +1,8 @@
 /*
  * Copyright (c) 2008 The Regents of the University  of California.
- * All rights reserved."
+ * Copyright (c) 2002-2005 Intel Corporation
+ * Copyright (c) 2000-2005 The Regents of the University  of California.  
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -8,10 +10,12 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
+ *
  * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -29,50 +33,11 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- */
-// $Id: BaseStationP.nc,v 1.8 2010-06-29 22:07:16 scipio Exp $
-
-/*									tab:4
- * Copyright (c) 2000-2005 The Regents of the University  of California.  
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * - Redistributions of source code must retain the above copyright
- *   notice, this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright
- *   notice, this list of conditions and the following disclaimer in the
- *   documentation and/or other materials provided with the
- *   distribution.
- * - Neither the name of the University of California nor the names of
- *   its contributors may be used to endorse or promote products derived
- *   from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * Copyright (c) 2002-2005 Intel Corporation
- * All rights reserved.
- *
  * This file is distributed under the terms in the attached INTEL-LICENSE     
  * file. If you do not find these files, copies can be found by writing to
  * Intel Research Berkeley, 2150 Shattuck Avenue, Suite 1300, Berkeley, CA, 
  * 94704.  Attention:  Intel License Inquiry.
- */
-
-/*
+ *
  * @author Phil Buonadonna
  * @author Gilman Tolle
  * @author David Gay
@@ -86,7 +51,9 @@
  * serial will be filtered by that same group id.
  */
 
+/* why is this include inside of #ifndef SIM? */
 #ifndef SIM
+#include "CC2420.h"
 #endif
 #include "AM.h"
 #include "Serial.h"
@@ -329,7 +296,7 @@ implementation
     bool reflectToken = FALSE;
     CHECK_NODE_ID msg;
     dbg("base", "uartreceive len %i of 0x%x\n", len, call SerialAMPacket.destination(msg));
-#if defined(BLIP_WATCHDOG) && (defined(PLATFORM_TELOS) || defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC))
+#if defined(BLIP_WATCHDOG) && (defined(PLATFORM_TELOS) || defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC) || defined(PLATFORM_Z1))
     WDTCTL = WDT_ARST_1000;
 #endif
     atomic
@@ -423,7 +390,7 @@ implementation
                                             uint8_t len) {
     config_cmd_t *cmd;
     uint8_t error = CONFIG_ERROR_OK;
-#if defined(BLIP_WATCHDOG) && (defined(PLATFORM_TELOS) || defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC))
+#if defined(BLIP_WATCHDOG) && (defined(PLATFORM_TELOS) || defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC) || defined(PLATFORM_Z1))
     WDTCTL = WDT_ARST_1000;
 #endif
 
@@ -465,8 +432,7 @@ implementation
 #if defined(PLATFORM_IRIS) || defined(PLATFORM_MULLE)
   event void RadioChannel.setChannelDone() { }
 #else
-  event void CC2420Config.syncDone(error_t error) {
-  }
+  event void CC2420Config.syncDone(error_t error) { }
 #endif
 
   event void ConfigureSend.sendDone(message_t *msg, error_t error) {

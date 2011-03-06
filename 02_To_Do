@@ -1,0 +1,4 @@
+
+* apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
+  fixed and mad part of the platform/cpu definition.
+

@@ -61,7 +61,7 @@ void resetMote()
   	while (1) { 
   		__asm__ __volatile__("nop" "\n\t" ::);
   	}
-#elif defined(PLATFORM_TELOS) || defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC) || defined(PLATFORM_SHIMMER) || defined(PLATFORM_SHIMMER2) || defined(PLATFORM_SPAN)
+#elif defined(PLATFORM_TELOS) || defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC) || defined(PLATFORM_SHIMMER) || defined(PLATFORM_SHIMMER2) || defined(PLATFORM_SPAN) || defined(PLATFORM_Z1)
         WDTCTL = 0;
 #elif defined(PLATFORM_MULLE)
             PRCR.BIT.PRC0 = 1; // Turn off protection on CM registers.
