@@ -98,4 +98,3 @@ implementation {
   Dma2.Interrupt -> HplMsp430DmaP;
 
 }
-

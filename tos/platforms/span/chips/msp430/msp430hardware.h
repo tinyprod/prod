@@ -295,5 +295,13 @@ inline float __nesc_hton_afloat(void *COUNT(sizeof(float)) target, float value) 
   return value;
 }
 
-#endif//_H_msp430hardware_h
+/* Support for chips with configurable resistors on digital inputs.  These
+ * are denoted with __MSP430_HAS_PORT1_R__ and similar defines. */
+enum {
+  MSP430_PORT_RESISTOR_INVALID,    /**< Hardware does not support resistor control, or pin is output */
+  MSP430_PORT_RESISTOR_OFF,        /**< Resistor disabled */
+  MSP430_PORT_RESISTOR_PULLDOWN,   /**< Pulldown resistor enabled */
+  MSP430_PORT_RESISTOR_PULLUP,     /**< Pullup resistor enabled */
+};
 
+#endif//_H_msp430hardware_h

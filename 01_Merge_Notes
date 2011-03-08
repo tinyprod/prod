@@ -1,13 +1,34 @@
 
-1) removed extra Z1 commit into the trunk.   Gets in the way of the collapse work already done.
+The phrase "trunk-Z1" refers to the Z1 commit into the main t2 svn trunk.  T2 SVN trunk commits
+5442-5446 (corresponding git SHAs: 95e34ad, 7c460e2, 33fcc13, 4496245, and e50ad32.
 
-2) branched to master-vhsb (master with vogon hyper spatial bypass), ie trunk (master without
-   the extra Z1 code.
+By direct comparison, the trunk Z1 commit is 98% z1-sf 0.16.  A few missing things, nothing important
+but the msp430 branch brought those things back in.   See the following commit for the missing parts:
+
+    270f0cc Z1 changes outside main z1 modifications (outside tos/{chips,platforms}
+
+
+1) created the branch master-vhsb (master with vogon hyper spatial bypass).  The hyper-spatial bypass
+   jumps over the trunk-Z1 code (deletes it).
+
+2) removed trunk-Z1 commit.   Gets in the way of the collapse work already done.  See the following:
+
+    c2e52bd Remove extra Z1 commit.   Reverse 5442 (95e34ad)
+    2724902 Remove extra Z1 commit.   Reverse 5444 (33fcc13) and 5443 (7c460e2)
+    978a1d9 Remove extra Z1 commit.   Reverse 5446 (e50ad32) and 5445 (4496245)
 
 3) brought in code from sourceforge z1-0.16 that changed things but didn't hit the main areas for
-   the Z1.  ie.  stuff outside of tos/chips/msp430.
+   the Z1.  ie.  stuff outside of tos/chips/msp430.   See:
 
-4) brought in z1 code that effects tos/chips/msp430.   But avoided the duplicates.  (z1-0.16 code
+    270f0cc Z1 changes outside main z1 modifications (outside tos/{chips,platforms}
+
+4) brought in Z1 code that is required (non-duplicate):
+
+    1e1249a bring adxl345 and tmp102 into tos/chips
+    4e89d73 move z1-0.16 tos/platforms/z1 into msp430 (mm-z1)
+
+
+5) brought in z1 code that effects tos/chips/msp430.   But avoided the duplicates.  (z1-0.16 code
    checked against the trunk Z1 code (removed above) to see if anything missing).
 
 
@@ -18,3 +39,9 @@
   and collapsing.
 
 * might want to add Zolertia copyrights to adxl345 and tmp102.
+
+* Z1 msp430hardware.h commented out the defines for I2CBUSY but the main msp430/msp430hardware.h
+  doesn't.   Where should the I2C stuff be defined?
+
+  For the time being, if this causes problems for Z1 then need to have per cpu family msp430hardware.h
+  files.  Or do it with an #ifdef (PLATFORM_Z1)

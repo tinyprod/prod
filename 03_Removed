@@ -7,3 +7,7 @@ are outdated and duplicates.
 
   The trunk version of IPDispatch.h is used in the msp430 (mm-z1) branch.
 
+* z1/tos/chips/msp430/adc12 removed.   No Z1 dependancies.  Moved forward on trunk.
+  removed DXNRG from interrupt handler (per Xavier).
+
+* z1/tos/chips/msp430/dma

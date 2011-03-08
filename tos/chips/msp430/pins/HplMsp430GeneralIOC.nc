@@ -1,5 +1,7 @@
-
-/* Copyright (c) 2000-2003 The Regents of the University of California.  
+/*
+ * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2009 DEXMA SENSORS SL
+ * Copyright (c) 2000-2003 The Regents of the University of California.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +37,9 @@
  * abstraction for general-purpose I/O.
  *
  * @author Joe Polastre
+ * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Peter A. Bigot <pab@peoplepowerco.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 configuration HplMsp430GeneralIOC
@@ -135,6 +139,7 @@ configuration HplMsp430GeneralIOC
 #endif
 
   // this section of HplMsp430GeneralIOC supports the F16x series
+  // In particular, msp430f1611
 #ifdef __msp430x16x
   provides interface HplMsp430GeneralIO as STE0;
   provides interface HplMsp430GeneralIO as SIMO0;
@@ -151,6 +156,61 @@ configuration HplMsp430GeneralIOC
   provides interface HplMsp430GeneralIO as UCLK1;
   provides interface HplMsp430GeneralIO as UTXD1;
   provides interface HplMsp430GeneralIO as URXD1;
+
+  provides interface HplMsp430GeneralIO as ADC0;
+  provides interface HplMsp430GeneralIO as ADC1;
+  provides interface HplMsp430GeneralIO as ADC2;
+  provides interface HplMsp430GeneralIO as ADC3;
+  provides interface HplMsp430GeneralIO as ADC4;
+  provides interface HplMsp430GeneralIO as ADC5;
+  provides interface HplMsp430GeneralIO as ADC6;
+  provides interface HplMsp430GeneralIO as ADC7;
+
+  provides interface HplMsp430GeneralIO as DAC0;
+  provides interface HplMsp430GeneralIO as DAC1;
+
+  provides interface HplMsp430GeneralIO as SVSIN;
+  provides interface HplMsp430GeneralIO as SVSOUT;
+#endif
+
+/*
+ * Support for the f261{6,7,8,9} processors
+ *
+ * Old headers: mspgccX (3.2.3) includes msp430x261x.h (-mmcu=msp430x2617)
+ * which defines __msp430x261x.
+ *
+ * New headers: mspgcc4 (4.4.5, uniarch, TI_HEADERS) defines __msp430x26x.  There
+ * doesn't look like there is any conflict with any other processor defines.
+ */
+#if defined(__msp430x261x) || defined(__msp430x26x)
+  provides interface HplMsp430GeneralIO as UCA0CLK;
+  provides interface HplMsp430GeneralIO as UCA0STE;
+  provides interface HplMsp430GeneralIO as UCA0TXD;
+  provides interface HplMsp430GeneralIO as UCA0RXD;
+  provides interface HplMsp430GeneralIO as UCA0SIMO;
+  provides interface HplMsp430GeneralIO as UCA0SOMI;
+
+  provides interface HplMsp430GeneralIO as UCB0CLK;  
+  provides interface HplMsp430GeneralIO as UCB0STE;
+  provides interface HplMsp430GeneralIO as UCB0SIMO;
+  provides interface HplMsp430GeneralIO as UCB0SOMI;
+  provides interface HplMsp430GeneralIO as UCB0SDA;
+  provides interface HplMsp430GeneralIO as UCB0SCL;
+
+
+  provides interface HplMsp430GeneralIO as UCA1CLK;
+  provides interface HplMsp430GeneralIO as UCA1STE;
+  provides interface HplMsp430GeneralIO as UCA1TXD;
+  provides interface HplMsp430GeneralIO as UCA1RXD;
+  provides interface HplMsp430GeneralIO as UCA1SIMO;
+  provides interface HplMsp430GeneralIO as UCA1SOMI;
+
+  provides interface HplMsp430GeneralIO as UCB1CLK;
+  provides interface HplMsp430GeneralIO as UCB1STE;
+  provides interface HplMsp430GeneralIO as UCB1SIMO;
+  provides interface HplMsp430GeneralIO as UCB1SOMI;
+  provides interface HplMsp430GeneralIO as UCB1SDA;
+  provides interface HplMsp430GeneralIO as UCB1SCL;
 
   provides interface HplMsp430GeneralIO as ADC0;
   provides interface HplMsp430GeneralIO as ADC1;
@@ -467,6 +527,51 @@ implementation
   SVSOUT = P57;
 #endif
 
+#if defined(__msp430x261x) || defined(__msp430x26x)
+  UCA0CLK = P30;
+  UCA0STE = P33;
+  UCA0TXD = P34;
+  UCA0RXD = P35;
+  UCA0SIMO = P34;
+  UCA0SOMI = P35;
+
+  UCB0CLK = P33;  
+  UCB0STE = P30;
+  UCB0SIMO = P31;
+  UCB0SOMI = P32;
+  UCB0SDA = P31;
+  UCB0SCL = P32;
+
+  UCA1CLK = P50;
+  UCA1STE = P53;
+  UCA1TXD = P36;
+  UCA1RXD = P37;
+  UCA1SIMO = P36;
+  UCA1SOMI = P37;
+
+  UCB1CLK = P53;
+  UCB1STE = P50;
+  UCB1SIMO = P51;
+  UCB1SOMI = P52;
+  UCB1SDA = P51;
+  UCB1SCL = P52;
+
+  ADC0 = P60;
+  ADC1 = P61;
+  ADC2 = P62;
+  ADC3 = P63;
+  ADC4 = P64;
+  ADC5 = P65;
+  ADC6 = P66;
+  ADC7 = P67;
+
+  DAC0 = P66;
+  DAC1 = P67;
+
+  SVSIN = P67;
+  SVSOUT = P57;
+#endif
+
 #if defined(__cc430x513x) || defined(__cc430x612x) || defined(__cc430x613x)
   /* Terminal functions mapped to port mapping mnemonics, per data
    * sheet table 3 */
@@ -520,5 +625,4 @@ implementation
 #endif /* cc430x613x */
 #endif /* cc430x513x || cc430x613x */
 #endif /* cc430x513x || cc430x612x || cc430x613x */
-
 }

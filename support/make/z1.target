@@ -8,7 +8,23 @@ MSP_MCU ?= msp430x261
 MSP_GCC ?= msp430-gcc
 MSP_NESC_TARGET ?= msp430
 PFLAGS += -mdisable-hwmul 
-PFLAGS += -mdata-64k
+
+#
+# Old Z1, mspgccX (3.2.3) tool chain accepts -mdata-64k and -mcode-64k
+# but new mspgcc4 (4.4.5) doesn't understand these yet and causes the
+# tinyos toolchain (nesc) to produce a really strange error:
+#   "nesc1: internal error: couldn't define builtin macros - exiting"
+#
+# One immediate thought is to simply leave this out for the old toolchain
+# but it is unclear what kind of code it will generate.   It should be
+# fine but how big are pointers?   The 261x parts (Z1 and friends) all
+# have miniscule amounts of ram (all < 64K).   But how smart is the
+# compiler?   Does it know to that it can always use 16 bit data pointers?
+# Can it tell the difference between a data pointer and a code pointer?
+#
+# Be careful out there.
+#
+#PFLAGS += -mdata-64k
 
 VOLUME_FILE = volumes-stm25p.xml
 VOLUME_ALLOCATOR ?= tos-storage-stm25p

@@ -13,4 +13,3 @@ implementation
   TOSH_SIGNAL(TIMERB0_VECTOR) { signal VectorTimerB0.fired(); }
   TOSH_SIGNAL(TIMERB1_VECTOR) { signal VectorTimerB1.fired(); }
 }
-

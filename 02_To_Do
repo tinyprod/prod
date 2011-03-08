@@ -1,4 +1,15 @@
 
-* apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
-  fixed and mad part of the platform/cpu definition.
+* fix copyrights
 
+* apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
+  fixed and made part of the platform/cpu definition.
+
+* What is the purpose of msp430regtypes.h?  Is there a easier way to deal with this?
+
+* There are multiple copies of msp430hardware.h.   Is that reasonable?
+
+* i2c for msp430 isn't done yet.  needs to be cleaned up and made less ugly.  Interface
+  needs to be finished.
+
+* CC2420 modules use LocalIeeeEui64C to obtain an ipv6 link-local address.  Z1 needs to
+  provide.

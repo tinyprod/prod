@@ -65,8 +65,20 @@
  * @author Ben Greenstein <ben@cs.ucla.edu>
  * @author Jonathan Hui <jhui@archrock.com>
  * @author Joe Polastre <info@moteiv.com>
- * @version $Revision: 1.8 $ $Date: 2010-06-29 22:07:45 $
+ * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
+
+/*
+ * 
+
+#if defined(DACDMA_VECTOR)
+#define __DMA_VECTOR DACDMA_VECTOR
+#elif defined(DMA_VECTOR)
+#define __DMA_VECTOR DMA_VECTOR
+#else
+#error "DMA VECTOR not defined for cpu selected"
+#endif
 
 module HplMsp430DmaP {
 
@@ -80,7 +92,7 @@ implementation {
   MSP430REG_NORACE( DMACTL0 );
   MSP430REG_NORACE( DMACTL1 );
 
-  TOSH_SIGNAL( DACDMA_VECTOR ) {
+  TOSH_SIGNAL(__DMA_VECTOR) {
     signal Interrupt.fired();
   }
 
@@ -121,6 +133,4 @@ implementation {
     DMACTL0 = 0;
     DMACTL1 = 0;
   }
-
 }
-

@@ -65,7 +65,32 @@
  * @author Ben Greenstein <ben@cs.ucla.edu>
  * @author Jonathan Hui <jhui@archrock.com>
  * @author Mark Hays
- * $Revision: 1.6 $ $Date: 2010-06-29 22:07:45 $
+ * @author Eric B. Decker <cire831@gmail.com>
+ */
+
+/*
+ * This approach is broken.
+ *
+ * This file is defining alot of h/w definitions which should come from the cpu
+ * definition file.  This file should define what is needed for the interface between
+ * tinyos and the h/w.
+ *
+ * Currently only works for 3 channel DMA and 4 bit TSEL fields.   ie. x1xxx and
+ * x2xxx processors.   This will need to be reworked for the 5438 with 5 bit
+ * TSEL fields.
+ *
+ * This file defines how many channels are available but this should come from
+ * the cpu definition file.
+ *
+ * This file defines what the Triggers (Transfer select) values are and how
+ * wide the field is.
+ *
+ * Needs to be rewritten.  Possible approach is to abstract the request which
+ * then maps it into the appropriate TSEL value.  Driver needs to compensate
+ * for the TSEL width and needs to know how to correctly build the control
+ * word for the h/w.
+ *
+ * Want to start moving this to a less cpu centric abstraction layer.
  */
 
 #ifndef MSP430DMA_H

@@ -17,6 +17,7 @@ push( @includes, qw(
 
   %T/chips/mm74hc595
 
+  %T/chips/msp430/x1xxx
   %T/chips/msp430
   %T/chips/msp430/adc12
   %T/chips/msp430/dma

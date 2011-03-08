@@ -117,4 +117,3 @@ interface HplMsp430GeneralIO
   async command uint8_t getResistor();
 
 }
-

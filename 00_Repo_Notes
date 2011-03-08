@@ -1,4 +1,13 @@
 
+* Toolchain:
+
+The focus is on getting the new toolchain verified.  As such this repo is
+intended to be tested using new toolchain (mspgcc 4.4.5, uniarch, ti headers).
+
+Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
+also been done for simple function (ie. does it compile).
+
+
 * Repo Structure
 
 The msp430.git repo is located at: 
@@ -35,7 +44,7 @@ svn t2 mainline ---|
 
 master: is the main branch coming from the svn t2 mainline.  Updated manually.
 
-master_vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
+master-vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
 	trunk.  This branch tracks master but has the superfluous Z1 commit
 	removed as it conflicts with the collapsed msp430 x2xxx work done in
 	mm_core.  This collapsage forms the majority of the work of merging
@@ -52,6 +61,10 @@ mm-z1-pu: proposed updates.   After new code has been worked on for a bit and
 	is the place to put it.  Some code from pu will go into next.  When
 	enough stuff is ready to go in next, it is brought over to main
 	(mm-z1).
+
+x5:	integrate x5xxx family into result of mm-z1.  Includes all three major
+x5-next families, x1, x2, and x5.  Uses seperate dirs for major differences.
+x5-pu
 
 
 To pull a working branch based on the mm-z1-pu branch (a reasonable place to
