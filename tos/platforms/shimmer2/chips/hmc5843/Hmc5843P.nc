@@ -182,20 +182,16 @@ implementation {
   command void Magnetometer.selfTest(){
     switch(testPhase++){
     case 0:
-      call testTimer.startPeriodic(5);
-      //      call Leds.led1On();
+      call testTimer.startPeriodic(8);
       writeRegValue(0, 0x11);
       break;
     case 1:
-      //      call Leds.led1Off();
       writeRegValue(2, 0x01);
       break;
     case 2:
-      //      call Leds.led1On();
       call Magnetometer.readData();
       break;
     case 3:
-      //      call Leds.led1Off();
       writeRegValue(0, 0x10);
       break;
     default:
@@ -275,7 +271,7 @@ implementation {
     return SUCCESS;
   }
   
-  uint16_t mag_to_heading(uint16_t x, uint16_t y, uint16_t z)
+  uint16_t mag_to_heading(int16_t x, int16_t y, int16_t z)
   {
     uint16_t heading;
 
@@ -286,10 +282,10 @@ implementation {
 	heading = 90;
     }
     else if(z < 0)
-      heading = (uint16_t)(180.0 - atanf((float)y/(float)-x));
+      heading = (uint16_t)(180.0 - atan2f((float)y, (float)-x) * 57.3);
 
     else
-      heading = (uint16_t)(180.0 - atanf((float)y/(float)x));
+      heading = (uint16_t)(180.0 - atan2f((float)y, (float)x) * 57.3);
     
     return heading;
   }
