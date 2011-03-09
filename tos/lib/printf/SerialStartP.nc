@@ -1,10 +1,10 @@
 /*
- * Copyright (c) 2007, Vanderbilt University
+ * Copyright (c) 2011 University of Utah. 
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
- * are met:
+ * are met:  
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
@@ -17,49 +17,34 @@
  *   from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+ * COPYRIGHT HOLDER OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * Author: Miklos Maroti
  */
 
-configuration CC2520TimeStampingLayerC
-{
-	provides
-	{
-		interface PacketTimeStamp<TMilli, uint32_t> as PacketTimeStampMilli;
-		interface PacketTimeStamp<TRadio, uint32_t> as PacketTimeStampRadio;
-		interface RadioPacket;
-	}
+/**
+ * @author Thomas Schmid
+ */
 
-	uses
-	{
-		interface LocalTime<TRadio> as LocalTimeRadio;
-		interface RadioPacket as SubPacket;
-	}
+module SerialStartP {
+  uses {
+    interface Boot;
+    interface SplitControl as SerialControl;
+  }
 }
+implementation {
+  event void Boot.booted() {
+    call SerialControl.start();
+  }
 
-implementation
-{
-	components new TimeStampingLayerP(), LocalTimeMilliC;
-
-	PacketTimeStampMilli = TimeStampingLayerP.PacketTimeStampMilli;
-	PacketTimeStampRadio = TimeStampingLayerP.PacketTimeStampRadio;
-	RadioPacket = TimeStampingLayerP.RadioPacket;
-	SubPacket = TimeStampingLayerP.SubPacket;
-
-	LocalTimeRadio = TimeStampingLayerP.LocalTimeRadio;
-	TimeStampingLayerP.LocalTimeMilli -> LocalTimeMilliC;
-
-	components new CC2520MetadataFlagC() as TimeStampFlagC;
-	TimeStampingLayerP.TimeStampFlag -> TimeStampFlagC;
+  event void SerialControl.startDone(error_t error) {}
+  event void SerialControl.stopDone(error_t error) {}
 }
