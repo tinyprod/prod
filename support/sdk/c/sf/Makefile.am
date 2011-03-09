@@ -6,9 +6,13 @@ SERIAL_H = $(TOS)/lib/serial/Serial.h
 
 BUILT_SOURCES = serialpacket.h serialprotocol.h
 
-bin_PROGRAMS=sf 
-noinst_PROGRAMS=prettylisten sflisten sfsend seriallisten serialsend
-noinst_LIBRARIES=libmote.a
+# set so libmote.a will get built and installed
+
+bin_PROGRAMS=sf seriallisten serialsend sflisten sfsend
+lib_LIBRARIES=libmote.a
+include_HEADERS=sfsource.h serialsource.h message.h
+noinst_PROGRAMS=prettylisten
+#noinst_LIBRARIES=libmote.a
 
 sf_SOURCES = sf.c
 sf_LDADD = libmote.a
