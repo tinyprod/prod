@@ -45,9 +45,6 @@
  * @date   October 26, 2005
  * @see  Please refer to TEP 112 for more information about this component and its
  *          intended use.
- *
- * Added modifications to support msp430X architecture and DXNRG
- * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
 module McuSleepC @safe() {

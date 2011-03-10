@@ -46,7 +46,7 @@ module Msp430Adc12ImplP @safe()
   uses {
     interface ArbiterInfo as ADCArbiterInfo;
     interface HplAdc12;
-    interface Msp430Timer as TimerA;;
+    interface Msp430Timer as TimerA;
     interface Msp430TimerControl as ControlA0;
     interface Msp430TimerControl as ControlA1;
     interface Msp430Compare as CompareA0;
