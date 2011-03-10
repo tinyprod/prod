@@ -10,7 +10,7 @@ also been done for simple function (ie. does it compile).
 
 * Repo Structure
 
-The msp430.git repo is located at: 
+The msp430.git repo is located at:
 
 git clone ssh://hinrg.cs.jhu.edu/home/cire/msp430.git  (r/w)
 git clone git://hinrg.cs.jhu.edu/git/cire/msp430.git   (read-only)
@@ -27,20 +27,25 @@ svn t2 mainline ---|
 		   |
 		   v         (git)
 ------------------ hinrg t2 -----------------------
+       	     | 	       	     | 	       	   |
+	     |		     |		   |
+           master ---------------------------------
+             |			|      	     |
+             |			|	     |
+              - master_vhsb -----------------------
+                      |		|      	     |
+                      |		|	     |
+	  	       ------ mm-z1 ------------------------------------
+		            |             |  |      |		  |
+			    |             |  |      |		  |
+		             --- z1-pu ---   |       --- x5-pu ---
+			    |		     |
+			    |		     |
+			     --- mm-pu ------
 
-           master
-             |
-             |
-              - master_vhsb
-                      |
-                      |
-	  	       ------ mm-z1
-		            |
-			    |
-		             --- mm-z1-next
-			         |
-				 |
-				  --- mm-z1-pu
+
+
+* Branches:
 
 master: is the main branch coming from the svn t2 mainline.  Updated manually.
 
@@ -51,31 +56,27 @@ master-vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
 	the trees and there isn't much sense in reinventing the wheel.
 
 mm-z1: main consolidation branch for the mm-z1 integration.   It represents the
-	current released version of the branch.
+	current released version of the branch.  Later will be renamed to mm-z1.
 
-mm-z1-next: As changes get accepted they get brought back into -next.    When
-	all is good, next gets integrated into mm-z1.
+z1-pu: working directory for Zolertia modifications.   From verification of mm-z1
+       combined tree.
 
-mm-z1-pu: proposed updates.   After new code has been worked on for a bit and
-	is ready to be integrated with other code in the mm-z1 area, mm-z1-pu
-	is the place to put it.  Some code from pu will go into next.  When
-	enough stuff is ready to go in next, it is brought over to main
-	(mm-z1).
+mm-pu: mammark (mm4) proposed updates.   Updated from the mm_core tree that should
+       be integrated into the msp430 integration branch.
 
-x5:	integrate x5xxx family into result of mm-z1.  Includes all three major
-x5-next families, x1, x2, and x5.  Uses seperate dirs for major differences.
-x5-pu
+x5-pu: integrate x5xxx family into result of mm-z1.  Built on mm-z1 so will include
+       all three major families (x1, x2, and x5).  Major cpu dependancies held in
+       tos/chips/msp430/{x1xxx,x2xxx,x5xxx}
 
 
-To pull a working branch based on the mm-z1-pu branch (a reasonable place to
-fork a working branch), do the following:
+To pull a working branch do the following:
 
     cd ~/mm							# make sure at top level, we call it mm
     git clone git://hinrg.cs.jhu.edu/git/cire/msp430.git	# grab from ro place
     cd msp430
     git config --add push.default matching	# make sure only existing branches get pushed.
 						# only effects rw repos
-    git checkout -t origin/mm-z1-pu		# start with proposed updates, tracking branch
+    git checkout -t origin/z1-pu		# tracking branch, will be on z1-pu when done
     git checkout -b work			# local working branch
 
 
@@ -84,3 +85,6 @@ To start with a read-write copy of the repo replace the clone with:
     git clone ssh://hinrg.cs.jhu.edu/home/cire/msp430.git	# grab from ro place
 
 You need to have a login on hinrg and belong to group cire-git.
+
+The other way to get your changes into the repo is to send a pointer to your git repo to
+me (cire831@gmail.com) and I'll pull the changes and then push them up to hinrg.
