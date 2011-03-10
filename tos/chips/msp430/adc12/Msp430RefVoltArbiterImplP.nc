@@ -26,11 +26,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * - Revision -------------------------------------------------------------
- * $Revision: 1.5 $
- * $Date: 2007-04-05 13:42:36 $
  * @author: Jan Hauer <hauer@tkn.tu-berlin.de>
- * ========================================================================
  */
 
 module Msp430RefVoltArbiterImplP
@@ -162,27 +158,18 @@ module Msp430RefVoltArbiterImplP
   {
   }
 
-  async command uint8_t ClientResource.isOwner[uint8_t client]()
-  {
+  async command bool ClientResource.isOwner[uint8_t client]() {
     return call AdcResource.isOwner[client]();
   }
 
   default event void ClientResource.granted[uint8_t client](){}
-  default async command error_t AdcResource.request[uint8_t client]()
-  {
-    return FAIL;
-  }
-  default async command error_t AdcResource.immediateRequest[uint8_t client]()
-  {
-    return FAIL;
-  }
+  default async command error_t AdcResource.request[uint8_t client]() { return FAIL; }
+  default async command error_t AdcResource.immediateRequest[uint8_t client]() { return FAIL; }
   default async command bool AdcResource.isOwner[uint8_t client]() { return FALSE; }
   default async command error_t AdcResource.release[uint8_t client](){return FAIL;}
   const msp430adc12_channel_config_t defaultConfig = {INPUT_CHANNEL_NONE,0,0,0,0,0,0,0}; 
   default async command const msp430adc12_channel_config_t*
-    Config.getConfiguration[uint8_t client]()
-  { 
+    Config.getConfiguration[uint8_t client]() { 
     return &defaultConfig;
   }
 }  
-
