@@ -1,0 +1,121 @@
+
+#
+# Define various gdb user commands that let you look at pieces of the CPU.
+#
+# msp430f2618
+#
+# author: Eric B. Decker <cire831@gmail.com>
+#
+
+#display dma
+define dma
+printf "dctl0: %04x  dctl1: %04x  iv: %04x\n", \
+    *((uint16_t *) 0x122), *((uint16_t *) 0x124), *((uint16_t *) 0x126)
+printf "d0ctl: %04x  d0sa: %04x%04x  d0da: %04x%04x  d0sz: %04x\n", \
+    *((uint16_t *) 0x1d0), *((uint16_t *) 0x1d4), *((uint16_t *) 0x1d2), \
+    *((uint16_t *) 0x1d8), *((uint16_t *) 0x1d6), *((uint16_t *) 0x1da)
+printf "d1ctl: %04x  d1sa: %04x%04x  d1da: %04x%04x  d1sz: %04x\n", \
+    *((uint16_t *) 0x1dc), *((uint16_t *) 0x1e0), *((uint16_t *) 0x1de), \
+    *((uint16_t *) 0x1e4), *((uint16_t *) 0x1e2), *((uint16_t *) 0x1e6)
+printf "d2ctl: %04x  d2sa: %04x%04x  d2da: %04x%04x  d2sz: %04x\n", \
+    *((uint16_t *) 0x1e8), *((uint16_t *) 0x1ec), *((uint16_t *) 0x1ea), \
+    *((uint16_t *) 0x1f0), *((uint16_t *) 0x1ee), *((uint16_t *) 0x1f2)
+end
+document dma
+Display msp430 dma hardware
+end
+
+#display timers
+define dt
+printf "TA: tar: %04x  ccr0: %04x  1: %04x  2: %04x\n",\
+    *((uint16_t *)170),*((uint16_t *)172),*((uint16_t *)174),*((uint16_t *)176)
+printf "    ctl: %04x cctl0: %04x  1: %04x  2: %04x\n\n",\
+    *((uint16_t *)160),*((uint16_t *)162),*((uint16_t *)164),*((uint16_t *)166)
+
+printf "TB: tbr: %04x  ccr0: %04x  1: %04x  2: %04x  ",\
+    *((uint16_t *)190),*((uint16_t *)192),*((uint16_t *)194),*((uint16_t *)196)
+printf "3: %04x  4: %04x  5: %04x  6: %04x\n",\
+    *((uint16_t *)198),*((uint16_t *)19a),*((uint16_t *)19c),*((uint16_t *)19e)
+
+printf "    ctl: %04x cctl0: %04x  1: %04x  2: %04x  ",\
+    *((uint16_t *)180),*((uint16_t *)182),*((uint16_t *)184),*((uint16_t *)186)
+printf "3: %04x  4: %04x  5: %04x  6: %04x\n\n",\
+    *((uint16_t *)188),*((uint16_t *)18a),*((uint16_t *)18c),*((uint16_t *)18e)
+end
+document dt
+Display msp430 timer hardware
+end
+
+#display usci
+define us
+printf "A0/B0:  IE: %02x   IFG: %02x\n", (*(uint8_t *)0x01), (*(uint8_t *)0x03)
+printf "UA0: ctl0: %02x  ctl1: %02x  br: %02x%02x  mctl: %02x  stat: %02x  rx: %02x  tx: %02x\n",\
+    (*(uint8_t *)0x60), (*(uint8_t *)0x61), (*(uint8_t *)0x63), (*(uint8_t *)0x62),\
+    (*(uint8_t *)0x64), (*(uint8_t *)0x65), (*(uint8_t *)0x66), (*(uint8_t *)0x67)
+printf "UB0: ctl0: %02x  ctl1: %02x  br: %02x%02x  mctl: %02x  stat: %02x  rx: %02x  tx: %02x\n\n",\
+    (*(uint8_t *)0x68), (*(uint8_t *)0x69), (*(uint8_t *)0x6b), (*(uint8_t *)0x6a),\
+    (*(uint8_t *)0x6c), (*(uint8_t *)0x6d), (*(uint8_t *)0x6e), (*(uint8_t *)0x6f)
+printf "A1/B1:  UC1IE: %02x   UC1IFG: %02x\n", (*(uint8_t *)0x06), (*(uint8_t *)0x07)
+printf "UA1: ctl0: %02x  ctl1: %02x  br: %02x%02x  mctl: %02x  stat: %02x  rx: %02x  tx: %02x\n",\
+    (*(uint8_t *)0xd0), (*(uint8_t *)0xd1), (*(uint8_t *)0xd3), (*(uint8_t *)0xd2),\
+    (*(uint8_t *)0xd4), (*(uint8_t *)0xd5), (*(uint8_t *)0xd6), (*(uint8_t *)0xd7)
+printf "UB1: ctl0: %02x  ctl1: %02x  br: %02x%02x  mctl: %02x  stat: %02x  rx: %02x  tx: %02x\n",\
+    (*(uint8_t *)0xd8), (*(uint8_t *)0xd9), (*(uint8_t *)0xdb), (*(uint8_t *)0xda),\
+    (*(uint8_t *)0xdc), (*(uint8_t *)0xdd), (*(uint8_t *)0xde), (*(uint8_t *)0xdf)
+end
+document us
+display msp430 usci hardware
+end
+
+define sfr
+printf "ie1: %02x  ie2: %02x  ifg1: %02x  ifg2: %02x  me1: %02x  me2: %02x\n",\
+    (*(uint8_t *)0x00), (*(uint8_t *)0x01), (*(uint8_t *)0x02), (*(uint8_t *)0x03),\
+    (*(uint8_t *)0x04), (*(uint8_t *)0x05)
+end
+document sfr
+display msp430 special function registers (interrupt enable, interrupt flags)
+end
+
+define dc
+printf "dcoctl:  %02x\n",(*(uint8_t *)0x56)
+printf "bcsctl1: %02x\n",(*(uint8_t *)0x57)
+printf "bcsctl2: %02x\n",(*(uint8_t *)0x58)
+printf "bcsctl3: %02x\n",(*(uint8_t *)0x53)
+end
+document dc
+display msp430 dco/clock system hardware
+end
+
+define dp2
+printf "p2 in: %02x, out: %02x, dir: %02x, ifg: %02x, ies: %02x, ie: %02x, sel: %02x, ren: %02x\n",\
+    (*(uint8_t *)0x28), (*(uint8_t *)0x29), (*(uint8_t *)0x2a), (*(uint8_t *)0x2b),\
+    (*(uint8_t *)0x2c), (*(uint8_t *)0x2d), (*(uint8_t *)0x2e), (*(uint8_t *)0x2f)
+end
+document dp2
+display port 2
+end
+
+define ports
+printf " in  p1: %02x %02x %02x  p4: %02x %02x %02x\n", \
+    (*(uint8_t *)0x20), (*(uint8_t *)0x28), (*(uint8_t *)0x18), \
+    (*(uint8_t *)0x1c), (*(uint8_t *)0x30), (*(uint8_t *)0x34)
+printf "out  p1: %02x %02x %02x  p4: %02x %02x %02x\n", \
+    (*(uint8_t *)0x21), (*(uint8_t *)0x29), (*(uint8_t *)0x19), \
+    (*(uint8_t *)0x1d), (*(uint8_t *)0x31), (*(uint8_t *)0x35)
+printf "ifg  p1: %02x %02x\n", \
+    (*(uint8_t *)0x23), (*(uint8_t *)0x2b)
+printf "ies  p1: %02x %02x\n\n", \
+    (*(uint8_t *)0x24), (*(uint8_t *)0x2c)
+printf "dir: p1: %02x %02x %02x  p4: %02x %02x %02x\n", \
+    (*(uint8_t *)0x22), (*(uint8_t *)0x2a), (*(uint8_t *)0x1a), \
+    (*(uint8_t *)0x1e), (*(uint8_t *)0x32), (*(uint8_t *)0x36)
+printf "sel: p1: %02x %02x %02x  p4: %02x %02x %02x\n", \
+    (*(uint8_t *)0x26), (*(uint8_t *)0x2e), (*(uint8_t *)0x1b), \
+    (*(uint8_t *)0x1f), (*(uint8_t *)0x33), (*(uint8_t *)0x37)
+printf "ren: p1: %02x %02x %02x  p4: %02x %02x %02x\n", \
+    (*(uint8_t *)0x27), (*(uint8_t *)0x2f), (*(uint8_t *)0x10), \
+    (*(uint8_t *)0x11), (*(uint8_t *)0x12), (*(uint8_t *)0x13)
+end
+document ports
+display h/w ports
+end
