@@ -13,3 +13,19 @@
 
 * CC2420 modules use LocalIeeeEui64C to obtain an ipv6 link-local address.  Z1 needs to
   provide.
+
+* Currently config structs get put into ram via the data copy into ram mechanism.  This
+  means that it takes up room in RAM and ROM.  Suboptimal.
+
+* Original mm_core port removed McuPowerOverride.  Why?
+
+* usart/msp430usart.h usci/msp430usci.h: define baud rates and configurations and h/w config
+  values are defined.  Originally for the msp430f1611.  How should this stuff get dealt with
+  for other chips and platforms.  Clocks and configuration values possible are quite variable
+  with new chips.  This should probably be a platform dependency.
+
+  This should be changed to get rid of the bit struct and replaced with something that uses
+  the stuff from the TI HEADERS.
+
+  Are the bit fields really used or can we nuke them.  Configuration uses a configuration struct
+  and functional stuff is code that uses the definitions in the TI HEADERS and other cpu headers.

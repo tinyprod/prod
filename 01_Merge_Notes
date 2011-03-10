@@ -45,3 +45,6 @@ but the msp430 branch brought those things back in.   See the following commit f
 
   For the time being, if this causes problems for Z1 then need to have per cpu family msp430hardware.h
   files.  Or do it with an #ifdef (PLATFORM_Z1)
+
+* TinyOS timing is based on powers of 2.  The Z1 used the calibration constants provided by TI but
+  these constants give timing that are base 10.   This has been changed in the merge.
