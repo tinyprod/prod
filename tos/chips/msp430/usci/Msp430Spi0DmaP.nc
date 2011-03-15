@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,24 +32,40 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @author Jonathan Hui <jhui@archedrock.com>
- * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
-configuration Msp430SpiNoDmaB0P {
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceConfigure[uint8_t id ];
-  provides interface SpiByte;
-  provides interface SpiPacket[ uint8_t id ];
+/**
+ * @author Jonathan Hui <jhui@archedrock.com>
+ * @author Mark Hays
+ * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
+ */
 
-  uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430SpiConfigure[ uint8_t id ];
-  uses interface HplMsp430UsciInterrupts as UsciInterrupts;
+#include "Msp430Dma.h"
+
+configuration Msp430Spi0DmaP {
+  provides {
+    interface Resource[uint8_t id];
+    interface ResourceConfigure[uint8_t id];
+    interface SpiByte;
+    interface SpiPacket[uint8_t id];
+  }
+  uses {
+    interface Resource as UsciResource[uint8_t id];
+    interface Msp430SpiConfigure[uint8_t id];
+    interface HplMsp430UsciInterrupts as UsciInterrupts;
+  }
 }
 
 implementation {
-  components new Msp430SpiNoDmaBP() as SpiP;
+  components new Msp430SpiDmaXP(IFG2_,
+			       UCB0TXBUF_,
+			       UCB0TXIFG,
+			       (uint16_t) DMA_TRIGGER_UCB0TXIFG,
+			       UCB0RXBUF_,
+			       UCB0RXIFG,
+			       (uint16_t) DMA_TRIGGER_UCB0RXIFG) as SpiP;
+
   Resource = SpiP.Resource;
   ResourceConfigure = SpiP.ResourceConfigure;
   Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
@@ -59,6 +76,10 @@ implementation {
 
   components HplMsp430UsciB0C as UsciC;
   SpiP.Usci -> UsciC;
+
+  components Msp430DmaC as DmaC;
+  SpiP.DmaChannel1 -> DmaC.Channel1;
+  SpiP.DmaChannel2 -> DmaC.Channel2;
 
   components LedsC as Leds;
   SpiP.Leds -> Leds;

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
@@ -41,17 +42,20 @@
 #include<Timer.h>
 
 generic module Msp430UartP() {
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceConfigure[ uint8_t id ];
-  provides interface UartStream[ uint8_t id ];
-  provides interface UartByte[ uint8_t id ];
-
-  uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430UartConfigure[ uint8_t id ];
-  uses interface HplMsp430UsciA as Usci;
-  uses interface HplMsp430UsciInterrupts as UsciInterrupts[ uint8_t id ];
-  uses interface Counter<T32khz,uint16_t>;
-  uses interface Leds;
+  provides {
+    interface Resource[ uint8_t id ];
+    interface ResourceConfigure[ uint8_t id ];
+    interface UartStream[ uint8_t id ];
+    interface UartByte[ uint8_t id ];
+  }
+  uses {
+    interface Resource as UsciResource[ uint8_t id ];
+    interface Msp430UartConfigure[ uint8_t id ];
+    interface HplMsp430UsciA as Usci;
+    interface HplMsp430UsciInterrupts as UsciInterrupts[ uint8_t id ];
+    interface Counter<T32khz,uint16_t>;
+    interface Leds;
+  }
 }
 
 implementation {
@@ -83,14 +87,15 @@ implementation {
 
   async command void ResourceConfigure.configure[ uint8_t id ]() {
     msp430_uart_union_config_t* config = call Msp430UartConfigure.getConfig[id]();
-    m_byte_time = config->uartConfig.ubr / 2; //pot donar problemes
+    m_byte_time = config->uartConfig.ubr / 2;
+    if (!m_byte_time)
+      m_byte_time = 1;
     call Usci.setModeUart(config);
     call Usci.enableIntr();
   }
 
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
-    call Usci.resetUsci(TRUE);
-    call Usci.disableIntr();
+    call Usci.resetUsci_n();		/* also turns off interrupt enables */
     call Usci.disableUart();
   }
 

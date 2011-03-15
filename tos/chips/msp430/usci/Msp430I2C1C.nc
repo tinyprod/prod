@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
@@ -36,32 +37,34 @@
 /*
  * @author Jonathan Hui <jhui@archrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include <I2C.h>
 #include "msp430usci.h"
 
 generic configuration Msp430I2C1C() {
-  provides interface Resource;
-  provides interface ResourceRequested;
-  provides interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
-
+  provides {
+    interface Resource;
+    interface ResourceRequested;
+    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
+  }
   uses interface Msp430I2CConfigure;
 }
 
 implementation {
   enum {
-    CLIENT_ID = unique( MSP430_I2C1_BUS ),
+    CLIENT_ID = unique(MSP430_I2C1_BUS),
   };
 
   components Msp430I2C1P as I2CP;
-  Resource = I2CP.Resource[ CLIENT_ID ];
+  Resource = I2CP.Resource[CLIENT_ID];
   I2CBasicAddr = I2CP.I2CBasicAddr;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure[ CLIENT_ID ];
+  Msp430I2CConfigure = I2CP.Msp430I2CConfigure[CLIENT_ID];
 
   components new Msp430UsciB1C() as UsciC;
   ResourceRequested = UsciC;
-  I2CP.ResourceConfigure[ CLIENT_ID ] <- UsciC.ResourceConfigure;
-  I2CP.UsciResource[ CLIENT_ID ] -> UsciC.Resource;
+  I2CP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  I2CP.UsciResource[CLIENT_ID] -> UsciC.Resource;
   I2CP.Interrupts -> UsciC.HplMsp430UsciInterrupts;
 }

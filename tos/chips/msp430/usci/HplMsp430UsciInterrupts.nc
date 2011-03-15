@@ -47,8 +47,8 @@
 
 interface HplMsp430UsciInterrupts {
   /*
-   * A byte of data is about to be transmitted, ie. the TXBuffer is
-   * empty and ready to accept next byte.
+   * The transmitter can accept another byte of data.  ie.  The
+   * previous byte has left the tx_buf.
    */
   async event void txDone();
 

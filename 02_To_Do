@@ -11,8 +11,10 @@
 * i2c for msp430 isn't done yet.  needs to be cleaned up and made less ugly.  Interface
   needs to be finished.
 
+  (done) Z1 currently overloads the SPI pins.   Switch to using I2C pins so it is clean.
+
 * CC2420 modules use LocalIeeeEui64C to obtain an ipv6 link-local address.  Z1 needs to
-  provide.
+  provide.  If the ds2401 (serializer chip) isn't supported how is this done?
 
 * Currently config structs get put into ram via the data copy into ram mechanism.  This
   means that it takes up room in RAM and ROM.  Suboptimal.
@@ -29,3 +31,16 @@
 
   Are the bit fields really used or can we nuke them.  Configuration uses a configuration struct
   and functional stuff is code that uses the definitions in the TI HEADERS and other cpu headers.
+
+* Do we want to put in TOSThreads support?  Best way if yes is to #ifdef needed code in
+  the interrupt handlers.  Old school mechanism clones the code.  Why did Kevin do that?
+
+* Z1 uses I2C but never defines SDA or SCL.  Rather it overlays the I2C pins on the SPI pins.
+  Works but isn't clean or straight forward.  Confusing for someone new picking up what is going
+  on.
+
+* Need better approach to assigning pins.  Should be a platform thing.  this makes it so drivers
+  don't wire directly but instead wire to the platform ports.
+
+* UcsiB add call Usci.setUmctl(0)?
+

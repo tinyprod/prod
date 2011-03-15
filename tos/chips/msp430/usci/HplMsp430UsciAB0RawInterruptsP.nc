@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * All rights reserved.
  *
@@ -36,7 +37,8 @@
  * An HPL abstraction for USCI A/B shared vector interrupt on the MSP430X.
  *
  * @author Xavier Orduna <xorduna@dexmatech.com>
- */ 
+ * @author Eric B. Decker <cire831@gmail.com>
+ */
 
 #include "msp430usci.h"
 
@@ -46,30 +48,77 @@ module HplMsp430UsciAB0RawInterruptsP @safe() {
 }
 
 implementation {
+
+  /*
+   * The funny do {} while (0) sets a common structure for processing one
+   * interrupt and then returning (let higher priority interrupts in and
+   * minimize worse case executon time for the higher priority interrupts).
+   *
+   * This also sets a structure for tosthreads code which needs to add
+   * a call to postAmble at the end of every interrupt handler.
+   */
+
   TOSH_SIGNAL(USCIAB0RX_VECTOR) {
     uint8_t temp;
-    if (IFG2 & UCA0RXIFG){
-      temp = UCA0RXBUF;
-      signal UsciA.rxDone(temp);
-    }
-    if (IFG2 & UCB0RXIFG){
-      temp = UCB0RXBUF;
-      signal UsciB.rxDone(temp);
-    }
+    uint8_t ints_pending;
+
+    do {
+      ints_pending = IFG2 & IE2;
+      if (ints_pending & UCA0RXIFG) {
+	/*
+	 * WARNING: by reading the rxbuf register, it clears out any
+	 * pending error flags/interrupts.  Not very robust and the
+	 * higher layers can't see the bits because they are gone.
+	 *
+	 * the osian x5xxx code has defined a reporting interface for
+	 * signalling errors detected.  This needs to get merged in at
+	 * some point.
+	 */
+	temp = UCA0RXBUF;
+	signal UsciA.rxDone(temp);
+	break;
+      }
+      if (ints_pending & UCB0RXIFG) {
+	temp = UCB0RXBUF;
+	signal UsciB.rxDone(temp);
+	break;
+      }
+    } while (0);
+    return;
   }
+
 
   TOSH_SIGNAL(USCIAB0TX_VECTOR) {
-    if ((IFG2 & UCA0TXIFG) | (IFG2 & UCA0RXIFG)){
-      signal UsciA.txDone();
-    }
-    if ((IFG2 & UCB0TXIFG) | (IFG2 & UCB0RXIFG)){
-      signal UsciB.txDone();
-    }
+    uint8_t ints_pending;
+
+    do {
+      ints_pending = IFG2 & IE2;
+      /*
+       * This strange stuff is because the way the interrupts works
+       * changes around depending on the mode.  Right now we just
+       * do the following.   Needs to be fixed.
+       */
+      if ((ints_pending & UCA0TXIFG) | (ints_pending & UCA0RXIFG)) {
+	signal UsciA.txDone();
+	break;
+      }
+      if ((ints_pending & UCB0TXIFG) | (ints_pending & UCB0RXIFG)) {
+	signal UsciB.txDone();
+	break;
+      }
+    } while (0);
+    return;
   }
 
-  /* default handlers */
-  default async event void UsciA.txDone()             { return; }
-  default async event void UsciA.rxDone(uint8_t temp) { return; }
-  default async event void UsciB.txDone()             { return; }
-  default async event void UsciB.rxDone(uint8_t temp) { return; }
+  /*
+   * default handlers
+   *
+   * These probably need to clear out possible interrupt sources.
+   * Thing is if we wire into the interrupt handler then it is
+   * assumed the interrupts are properly handled.
+   */
+  default async event void UsciA.txDone()		{ return; }
+  default async event void UsciA.rxDone(uint8_t temp)	{ return; }
+  default async event void UsciB.txDone()		{ return; }
+  default async event void UsciB.rxDone(uint8_t temp)	{ return; }
 }

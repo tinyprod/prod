@@ -40,7 +40,7 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430I2C1P {
+configuration Msp430I2C0P {
   provides {
     interface Resource[uint8_t id];
     interface ResourceConfigure[uint8_t id];
@@ -62,6 +62,6 @@ implementation {
   UsciResource = I2CP.UsciResource;
   Interrupts = I2CP.Interrupts;
 
-  components HplMsp430UsciB1C as UsciC;
+  components HplMsp430UsciB0C as UsciC;
   I2CP.UsciB -> UsciC;
 }

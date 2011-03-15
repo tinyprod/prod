@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,19 +36,23 @@
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Jan Hauer <hauer@tkn.tu-berlin.de> (bugfix in continueOp())
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
-generic module Msp430SpiNoDmaBP() {
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceConfigure[ uint8_t id ];
-  provides interface SpiByte;
-  provides interface SpiPacket[ uint8_t id ];
-
-  uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430SpiConfigure[ uint8_t id ];
-  uses interface HplMsp430UsciB as Usci;
-  uses interface HplMsp430UsciInterrupts as UsciInterrupts;
-  uses interface Leds;
+generic module Msp430SpiNoDmaP() {
+  provides {
+    interface Resource[ uint8_t id ];
+    interface ResourceConfigure[ uint8_t id ];
+    interface SpiByte;
+    interface SpiPacket[ uint8_t id ];
+  }
+  uses {
+    interface Resource as UsciResource[ uint8_t id ];
+    interface Msp430SpiConfigure[ uint8_t id ];
+    interface HplMsp430UsciB as Usci;
+    interface HplMsp430UsciInterrupts as UsciInterrupts;
+    interface Leds;
+  }
 }
 
 implementation {
@@ -85,9 +90,8 @@ implementation {
   }
 
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
-    call Usci.resetUsci(TRUE);
+    call Usci.resetUsci_n();
     call Usci.disableSpi();
-    call Usci.resetUsci(FALSE);
   }
 
   event void UsciResource.granted[ uint8_t id ]() {
@@ -111,7 +115,7 @@ implementation {
   default async command error_t UsciResource.immediateRequest[ uint8_t id ]() { return FAIL; }
   default async command error_t UsciResource.release[ uint8_t id ]() { return FAIL; }
   default async command msp430_spi_union_config_t* Msp430SpiConfigure.getConfig[uint8_t id]() {
-    return (msp430_spi_union_config_t*) &msp430_spi_default_config;
+    return (msp430_spi_union_config_t *) &msp430_spi_default_config;
   }
 
   default event void Resource.granted[ uint8_t id ]() {}
@@ -149,9 +153,8 @@ implementation {
     if ( len ) {
       call Usci.enableRxIntr();
       continueOp();
-    } else {
+    } else
       post signalDone_task();
-    }
     return SUCCESS;
   }
 

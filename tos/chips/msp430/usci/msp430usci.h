@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Eric B. Decker
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009-2010 DEXMA SENSORS SL
  * Copyright (c) 2004-2006, Technische Universitaet Berlin
  * All rights reserved.
@@ -39,8 +39,8 @@
  * @author Eric B. Decker <cire831@gmail.com>
  * @author Jordi Soucheiron <jsoucheiron@dexmatech.com>
  *
- * Fix to reflect the MSP430X as documented in Users guide
- * slau144e, msp430f2618.
+ * Fix to reflect the MSP430X as documented in the TI MSP430x2xx Users guide
+ * slau144f.
  */
 
 #ifndef _H_MSP430USCI_H
@@ -54,31 +54,49 @@
  * We set the resources up so multiple use of a given port
  * can be arbritrated.
  *
- * UART0 -> usciA0	SPI2 -> usciA0
- * UART1 -> usciA1	SPI3 -> usciA1
- * SPI0  -> usciB0	I2C0
- * SPI1  -> usciB1	I2C1
+ * UART0, SPI2 -> usciA0    dma
+ * UART1, SPI3 -> usciA1    dma
+ * SPI0,  I2C0 -> usciB0    dma
+ * SPI1,  I2C1 -> usciB1    no dma
  *
  * spi2,3 are mapped to usciA0,A1 because the typical
  * configuration is to use dual uarts and dual spis
- * so the less used configuration maps as 2 and 3.
+ * so the less used configuration maps the SPI on usciA0
+ * as 2 and 3.
  */
 
-//USCI A0, A1: UART, SPI
+// USCI A0: UART, SPI
 #define MSP430_HPLUSCIA0_RESOURCE "Msp430UsciA0.Resource"
-#define MSP430_HPLUSCIA1_RESOURCE "Msp430UsciA1.Resource"
-#define MSP430_UART0_BUS          MSP430_HPLUSCIA0_RESOURCE
-#define MSP430_UART1_BUS          MSP430_HPLUSCIA1_RESOURCE
-#define MSP430_SPI2_BUS           MSP430_HPLUSCIA0_RESOURCE
-#define MSP430_SPI3_BUS           MSP430_HPLUSCIA1_RESOURCE
+#define MSP430_UART0_BUS          "Msp430Uart0.Resource"
+#define MSP430_SPI2_BUS           "Msp430Spi2.Resource"
 
-//USCI B0, B1: SPI,  I2C
+//#define MSP430_UART0_BUS          MSP430_HPLUSCIA0_RESOURCE
+//#define MSP430_SPI2_BUS           MSP430_HPLUSCIA0_RESOURCE
+
+// USCI A1: UART, SPI
+#define MSP430_HPLUSCIA1_RESOURCE "Msp430UsciA1.Resource"
+#define MSP430_UART1_BUS          "Msp430Uart1.Resource"
+#define MSP430_SPI3_BUS           "Msp430Spi3.Resource"
+
+//#define MSP430_UART1_BUS          MSP430_HPLUSCIA1_RESOURCE
+//#define MSP430_SPI3_BUS           MSP430_HPLUSCIA1_RESOURCE
+
+// USCI B0: SPI,  I2C
 #define MSP430_HPLUSCIB0_RESOURCE "Msp430UsciB0.Resource"
+#define MSP430_SPI0_BUS           "Msp430Spi0.Resource"
+#define MSP430_I2C0_BUS           "Msp430I2C0.Resource"
+
+//#define MSP430_SPI0_BUS		  MSP430_HPLUSCIB0_RESOURCE
+//#define MSP430_I2C0_BUS		  MSP430_HPLUSCIB0_RESOURCE
+
+
+// USCI B1: SPI,  I2C
 #define MSP430_HPLUSCIB1_RESOURCE "Msp430UsciB1.Resource"
-#define MSP430_SPI0_BUS		  MSP430_HPLUSCIB0_RESOURCE
-#define MSP430_SPI1_BUS		  MSP430_HPLUSCIB1_RESOURCE
-#define MSP430_I2C0_BUS		  MSP430_HPLUSCIB0_RESOURCE
-#define MSP430_I2C1_BUS		  MSP430_HPLUSCIB1_RESOURCE
+#define MSP430_SPI1_BUS           "Msp430Spi1.Resource"
+#define MSP430_I2C1_BUS           "Msp430I2C1.Resource"
+
+//#define MSP430_SPI1_BUS		  MSP430_HPLUSCIB1_RESOURCE
+//#define MSP430_I2C1_BUS		  MSP430_HPLUSCIB1_RESOURCE
 
 typedef enum {
   USCI_NONE = 0,
@@ -101,11 +119,11 @@ typedef enum {
 typedef struct {
   unsigned int ucsync : 1;   // Synchronous mode enable (0=Asynchronous; 1:Synchronous)
   unsigned int ucmode : 2;   // USCI Mode (00=UART Mode; 01=Idle-Line; 10=Addres-Bit; 11=UART Mode, auto baud rate detection)
-  unsigned int ucspb  : 1;    // Stop bit select. Number of stop bits (0=One stop bit; 1=Two stop bits)
+  unsigned int ucspb  : 1;   // Stop bit select. Number of stop bits (0=One stop bit; 1=Two stop bits)
   unsigned int uc7bit : 1;   // Charactaer lenght, (0=8-bit data; 1=7-bit data)
-  unsigned int ucmsb  : 1;    // endian.  Direction of the rx and tx shift (0=LSB first, 1=MSB first)
-  unsigned int ucpar  : 1;    // Parity Select (0=odd parity; 1=Even parity)
-  unsigned int ucpen  : 1;    // Parity enable (0=Parity disable; 1=Parity enabled)
+  unsigned int ucmsb  : 1;   // endian.  Direction of the rx and tx shift (0=LSB first, 1=MSB first)
+  unsigned int ucpar  : 1;   // Parity Select (0=odd parity; 1=Even parity)
+  unsigned int ucpen  : 1;   // Parity enable (0=Parity disable; 1=Parity enabled)
 } __attribute__ ((packed)) msp430_uctl0_t ;
 
 
@@ -116,11 +134,11 @@ typedef struct {
 typedef struct {
   unsigned int ucswrst  : 1;  //Software reset enable (0=disabled; 1=enabled)
   unsigned int uctxbrk  : 1;  //Transmit break. (0 = no brk; 1 = tx break next frame
-  unsigned int uctxaddr : 1; //Transmit address. (0=next frame transmitted is data; 1=next frame transmitted is an address)
-  unsigned int ucdorm   : 1;   //Dormant.  (0 = not dormant; 1 = Dormant, only some chars will set UCAxRXIFG)
+  unsigned int uctxaddr : 1;  //Transmit address. (0=next frame transmitted is data; 1=next frame transmitted is an address)
+  unsigned int ucdorm   : 1;  //Dormant.  (0 = not dormant; 1 = Dormant, only some chars will set UCAxRXIFG)
   unsigned int ucbrkie  : 1;  //rx break interrupt -enable, 1 = enabled
   unsigned int ucrxeie  : 1;  //rx error interrupt-enable
-  unsigned int ucssel   : 2;   //USCI clock source select: (00=UCKL; 01=ACLK; 10=SMCLK; 11=SMCLK
+  unsigned int ucssel   : 2;  //USCI clock source select: (00=UCKL; 01=ACLK; 10=SMCLK; 11=SMCLK
 } __attribute__ ((packed)) msp430_uctl1_t ;
 
 
@@ -141,11 +159,13 @@ DEFINE_UNION_CAST(int2uctl1,msp430_uctl1_t,uint8_t)
  */
 
 typedef enum {
+  /* these names are preserved for backward compatibility */
   UBR_32KHZ_1200=0x001B,    UMCTL_32KHZ_1200=0x04,
   UBR_32KHZ_2400=0x000D,    UMCTL_32KHZ_2400=0x0c,
   UBR_32KHZ_4800=0x0006,    UMCTL_32KHZ_4800=0x0e,
   UBR_32KHZ_9600=0x0003,    UMCTL_32KHZ_9600=0x06,  
 
+  /* these names are preserved for backward compatibility */
   UBR_1048MHZ_9600=0x006D,   UMCTL_1048MHZ_9600=0x04,
   UBR_1048MHZ_19200=0x0036,  UMCTL_1048MHZ_19200=0x0a,
   UBR_1048MHZ_38400=0x001B,  UMCTL_1048MHZ_38400=0x04,
@@ -154,12 +174,14 @@ typedef enum {
   UBR_1048MHZ_128000=0x0008, UMCTL_1048MHZ_128000=0x02,
   UBR_1048MHZ_256000=0x0004, UMCTL_1048MHZ_230400=0x02,
 
-  /* 1MHz = 1000000 Hz, 4MHz 4000000, 8MHz 8000000
+  /*
+   * 1MHz = 1000000 Hz, 4MHz 4000000, 8MHz 8000000
    * 16MHz 16000000.   use UCOS16 for oversampling,
    * use both UCBRF and UCBRS.
    *
    * Settings for 1MHz, 8Mhz, and 16MHz are taken from
-   * a table on page 15-22 of slau144e.
+   * a table on page 15-22 of slau144f, MSP430x2xx family
+   * User's Guide.  These are powers of 10.
    */
   UBR_1MHZ_9600=0x6,       UMCTL_1MHZ_9600=0x81,
   UBR_1MHZ_19200=0x3,      UMCTL_1MHZ_19200=0x41,
@@ -222,7 +244,11 @@ typedef union {
 } msp430_uart_union_config_t;
 
 
-const msp430_uart_union_config_t msp430_uart_default_config = { {
+/*
+ * be sure to check Msp430DcoSpec.h for what speed we think
+ * the processor is actually running at.  We assume 8MHz.
+ */
+msp430_uart_union_config_t msp430_uart_default_config = { {
   ubr     :	UBR_8MHZ_115200,
   umctl   :	UMCTL_8MHZ_115200,
   ucmode  :	0,			// uart
@@ -255,7 +281,6 @@ typedef struct {
   unsigned int ucckpl : 1;	// 0 inactive low, 1 inactive high
   unsigned int ucckph : 1;	// 0 tx rising uclk, captured falling
 				// 1 captured rising, sent falling edge.
-
   /* ctl1 */
   unsigned int        : 1;	// ucswrst, forced to 1 on init
   unsigned int        : 5;	// unused.
@@ -275,7 +300,7 @@ typedef union {
 } msp430_spi_union_config_t;
 
 
-const msp430_spi_union_config_t msp430_spi_default_config = { {
+msp430_spi_union_config_t msp430_spi_default_config = { {
   ubr		: 2,			/* smclk/2   */
   ucmode	: 0,			/* 3 pin, no ste */
   ucmst		: 1,			/* master */
@@ -359,7 +384,7 @@ typedef union {
 } msp430_i2c_union_config_t;
 
 
-const msp430_i2c_union_config_t msp430_i2c_default_config = { {
+msp430_i2c_union_config_t msp430_i2c_default_config = { {
     ubr     : 2,			/* smclk/2 */
     ucmode  : 3,			/* i2c mode */
     ucmst   : 1,			/* master */

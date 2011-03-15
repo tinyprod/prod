@@ -40,28 +40,31 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430I2C1P {
+#include <I2C.h>
+#include "msp430usci.h"
+
+generic configuration Msp430I2C0C() {
   provides {
-    interface Resource[uint8_t id];
-    interface ResourceConfigure[uint8_t id];
+    interface Resource;
+    interface ResourceRequested;
     interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
   }
-  uses {
-    interface Resource as UsciResource[uint8_t id];
-    interface Msp430I2CConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as Interrupts;
-  }
+  uses interface Msp430I2CConfigure;
 }
 
 implementation {
-  components new Msp430I2CP() as I2CP;
-  Resource = I2CP.Resource;
-  ResourceConfigure = I2CP.ResourceConfigure;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure;
-  I2CBasicAddr = I2CP.I2CBasicAddr;
-  UsciResource = I2CP.UsciResource;
-  Interrupts = I2CP.Interrupts;
+  enum {
+    CLIENT_ID = unique(MSP430_I2C0_BUS),
+  };
 
-  components HplMsp430UsciB1C as UsciC;
-  I2CP.UsciB -> UsciC;
+  components Msp430I2C0P as I2CP;
+  Resource = I2CP.Resource[CLIENT_ID];
+  I2CBasicAddr = I2CP.I2CBasicAddr;
+  Msp430I2CConfigure = I2CP.Msp430I2CConfigure[CLIENT_ID];
+
+  components new Msp430UsciB0C() as UsciC;
+  ResourceRequested = UsciC;
+  I2CP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  I2CP.UsciResource[CLIENT_ID] -> UsciC.Resource;
+  I2CP.Interrupts -> UsciC.HplMsp430UsciInterrupts;
 }

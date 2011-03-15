@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,49 +34,60 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
+/*
+ * SPI1: SPI/USCI_B1.  Defaults to no DMA.
+ *
+ * On the x2xxx processors, USCI_B1 does not have any DMA triggers available
+ * on the DMA engine so SPI1 does not support DMA.  Note....  This only
+ * applies for the x2xxx processors.  x5xxx processors have more triggers so
+ * can support DMA.  How to handle.
+ *
+ * This argues for this being a platform thing.  The platform indicates
+ * what cpu is being used so also denotes what ports are available.
+ *
+ * Another way to handle this is with cpu functional ifdefs.  Ugly but
+ * would work.  I think we really want the platform to provide SPI ports
+ * which then determine what wires to what physical port.
+ *
+ * See msp430usci.h for port mappings.
+ *
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Mark Hays
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430SpiDmaB0P {
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceConfigure[ uint8_t id ];
-  provides interface SpiByte;
-  provides interface SpiPacket[ uint8_t id ];
+#include "msp430usci.h"
 
-  uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430SpiConfigure[ uint8_t id ];
-  uses interface HplMsp430UsciInterrupts as UsciInterrupts;
+generic configuration Msp430Spi1C() {
+  provides {
+    interface Resource;
+    interface ResourceRequested;
+    interface SpiByte;
+    interface SpiPacket;
+  }
+  uses interface Msp430SpiConfigure;
 }
 
 implementation {
 
-#include "Msp430Dma.h"
+  enum {
+    CLIENT_ID = unique(MSP430_SPI1_BUS),
+  };
 
-  components new Msp430SpiDmaBP(IFG2_,
-			       UCB0TXBUF_,
-			       UCB0TXIFG,
-			       (uint16_t) DMA_TRIGGER_UCB0TXIFG,
-			       UCB0RXBUF_,
-			       UCB0RXIFG,
-			       (uint16_t) DMA_TRIGGER_UCB0RXIFG) as SpiP;
-  Resource = SpiP.Resource;
-  ResourceConfigure = SpiP.ResourceConfigure;
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+#ifdef ENABLE_SPI1_DMA
+#error "DMA is not available for SPI1 (usci B1)"
+#endif
+
+  components Msp430Spi1NoDmaP as SpiP;
+  Resource = SpiP.Resource[CLIENT_ID];
   SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket;
-  UsciResource = SpiP.UsciResource;
-  UsciInterrupts = SpiP.UsciInterrupts;
+  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components HplMsp430UsciB0C as UsciC;
-  SpiP.Usci -> UsciC;
-
-  components Msp430DmaC as DmaC;
-  SpiP.DmaChannel1 -> DmaC.Channel1;
-  SpiP.DmaChannel2 -> DmaC.Channel2;
-
-  components LedsC as Leds;
-  SpiP.Leds -> Leds;
+  components new Msp430UsciB1C() as UsciC;
+  ResourceRequested = UsciC;
+  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
+  SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
 }

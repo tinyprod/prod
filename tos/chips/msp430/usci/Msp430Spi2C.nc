@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,48 +34,51 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * An implementation of the SPI on USCIB0 for the MSP430. The current
- * implementation defaults not using the DMA and performing the SPI
- * transfers in software. To utilize the DMA, use Msp430SpiDma0P in
- * place of Msp430SpiNoDma0P.
+/*
+ * SPI2: SPI/USCI_A0.  Defaults to no DMA, sw SPI implementation.
+ * To utilize the DMA, via Msp430Spi2DMAP define ENABLE_SPI2_DMA.
+ *
+ * See msp430usci.h for port mappings.
  *
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Mark Hays
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include "msp430usci.h"
 
-generic configuration Msp430SpiB0C() {
-  provides interface Resource;
-  provides interface ResourceRequested;
-  provides interface SpiByte;
-  provides interface SpiPacket;
-
+generic configuration Msp430Spi2C() {
+  provides {
+    interface Resource;
+    interface ResourceRequested;
+    interface SpiByte;
+    interface SpiPacket;
+  }
   uses interface Msp430SpiConfigure;
 }
 
 implementation {
+
   enum {
-    CLIENT_ID = unique( MSP430_SPI0_BUS ),
+    CLIENT_ID = unique(MSP430_SPI2_BUS),
   };
 
-#ifdef ENABLE_SPIB0_DMA
-#warning "Enabling SPI DMA on USCIB0"
-  components Msp430SpiDmaB0P as SpiP;
+#ifdef ENABLE_SPI2_DMA
+#warning "Enabling DMA for SPI2 (usciA0)"
+  components Msp430Spi2DmaP as SpiP;
 #else
-  components Msp430SpiNoDmaB0P as SpiP;
+  components Msp430Spi2NoDmaP as SpiP;
 #endif
 
-  Resource = SpiP.Resource[ CLIENT_ID ];
+  Resource = SpiP.Resource[CLIENT_ID];
   SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket[ CLIENT_ID ];
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[ CLIENT_ID ];
+  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components new Msp430UsciB0C() as UsciC;
+  components new Msp430UsciA0C() as UsciC;
   ResourceRequested = UsciC;
-  SpiP.ResourceConfigure[ CLIENT_ID ] <- UsciC.ResourceConfigure;
-  SpiP.UsciResource[ CLIENT_ID ] -> UsciC.Resource;
+  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
   SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
 }

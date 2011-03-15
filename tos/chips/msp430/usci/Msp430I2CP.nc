@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009-2010 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
@@ -44,14 +44,17 @@
 #include <I2C.h>
 
 generic module Msp430I2CP() {
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceConfigure[ uint8_t id ];
-  provides interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
-
-  uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430I2CConfigure[ uint8_t id ];
-  uses interface HplMsp430UsciB as UsciB;
-  uses interface HplMsp430UsciInterrupts as Interrupts;
+  provides {
+    interface Resource[ uint8_t id ];
+    interface ResourceConfigure[ uint8_t id ];
+    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
+  }
+  uses {
+    interface Resource as UsciResource[ uint8_t id ];
+    interface Msp430I2CConfigure[ uint8_t id ];
+    interface HplMsp430UsciB as UsciB;
+    interface HplMsp430UsciInterrupts as Interrupts;
+  }
 }
 
 implementation {
@@ -144,18 +147,18 @@ implementation {
     }
 
     call UsciB.setTransmitMode();
-    call UsciB.setSlaveAddress( addr );
+    call UsciB.setSlaveAddress(addr);
     call UsciB.enableTxIntr(); 
 
-    if ( flags & I2C_START ) {
-      while(call UsciB.getStopBit()) {
-	if(i>=TIMEOUT)
+    if (flags & I2C_START) {
+      while (call UsciB.getStopBit()) {
+	if (i >= TIMEOUT)
 	  return EBUSY;
 	i++;
       }
       i=0;
       while((call UsciB.getUstat()) & UCBBUSY) {
-	if(i>=TIMEOUT)
+	if (i >= TIMEOUT)
 	  return FAIL;
 	i++;
       }
@@ -169,24 +172,22 @@ implementation {
     uint16_t i=0;
 
     /* this needs to be fixed.  software delay not so great */
-
-    for(i=0xffff;i!=0;i--);	//software delay (aprox 25msec on z1)
-
+    for(i = 0xffff; i != 0;i--);	//software delay (aprox 25msec on z1)
     if ( m_pos == m_len ) {
       if ( m_flags & I2C_STOP ) {
 	call UsciB.setTXStop();
-	while(!call UsciB.getStopBit()) {
-	  if(i >= TIMEOUT) { 
-	    signalDone( EBUSY );
+	while (!call UsciB.getStopBit()) {
+	  if (i >= TIMEOUT) { 		/* eh.  this looks broken */
+	    signalDone(EBUSY);
 	    return;
 	  }
 	  i++;
 	}
-	signalDone( SUCCESS );
+	signalDone(SUCCESS);
       } else
-	signalDone( SUCCESS );
+	signalDone(SUCCESS);
     } else {
-      m_buf[ m_pos++ ] = call UsciB.rx();
+      m_buf[m_pos++] = call UsciB.rx();
     }
   }
 
@@ -194,30 +195,29 @@ implementation {
     uint16_t i = 0;
 
     /* this needs to get fixed. */
-    for(i=0xffff;i!=0;i--);	//software delay (aprox 25msec on z1)
-
-    if ( ( m_pos == m_len) && ( m_flags & I2C_STOP ) ) {
+    for (i = 0xffff; i != 0; i--);	//software delay (aprox 25msec on z1)
+    if ((m_pos == m_len) && (m_flags & I2C_STOP)) {
       call UsciB.setTXStop();
-      while(call UsciB.getStopBit()) {
-	if(i>=TIMEOUT) {
-	  signalDone( EBUSY );
+      while (call UsciB.getStopBit()) {
+	if(i >= TIMEOUT) {
+	  signalDone(EBUSY);
 	  return;
 	}
 	i++;
       }
-      signalDone( SUCCESS );
+      signalDone(SUCCESS);
     } else { 
-      if((call UsciB.getUstat()) == ( UCBBUSY | UCNACKIFG | UCSCLLOW)) {
-	signal I2CBasicAddr.writeDone( FAIL, call UsciB.getSlaveAddress(), m_len, m_buf );
+      if ((call UsciB.getUstat()) == (UCBBUSY | UCNACKIFG | UCSCLLOW)) {
+	signal I2CBasicAddr.writeDone(FAIL, call UsciB.getSlaveAddress(), m_len, m_buf );
 	return;
       }
-      call UsciB.tx( m_buf[ m_pos++ ] );
+      call UsciB.tx(m_buf[m_pos++]);
     }
   }
 
   async event void Interrupts.txDone() {
     call UsciB.clrTxIntr();
-    if ( call UsciB.getTransmitReceiveMode() )
+    if (call UsciB.getTransmitReceiveMode())
       nextWrite();
     else
       nextRead();
@@ -225,20 +225,20 @@ implementation {
 
   async event void Interrupts.rxDone(uint8_t data) {
     call UsciB.clrRxIntr();
-    if ( call UsciB.getTransmitReceiveMode() )
+    if (call UsciB.getTransmitReceiveMode())
       nextWrite();
     else
       nextRead();
   }
 
-  void signalDone( error_t error ) {
+  void signalDone(error_t error) {
     call UsciB.clrIntr();
     call UsciB.disableIntr();
-    if ( call UsciB.getTransmitReceiveMode() )
-      signal I2CBasicAddr.writeDone( error, call UsciB.getSlaveAddress(), m_len, m_buf );
+    if (call UsciB.getTransmitReceiveMode())
+      signal I2CBasicAddr.writeDone(error, call UsciB.getSlaveAddress(), m_len, m_buf);
     else
-      signal I2CBasicAddr.readDone( error, call UsciB.getSlaveAddress(), m_len, m_buf );
+      signal I2CBasicAddr.readDone(error, call UsciB.getSlaveAddress(), m_len, m_buf);
   }
 
-  default async command bool UsciResource.isOwner[ uint8_t id ]() { return FALSE; }
+  default async command bool UsciResource.isOwner[uint8_t id]() { return FALSE; }
 }

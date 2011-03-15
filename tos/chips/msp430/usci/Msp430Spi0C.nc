@@ -35,33 +35,50 @@
  */
 
 /*
- * @author Jonathan Hui <jhui@archrock.com>
+ * SPI0: SPI/USCI_B0.  Defaults to no DMA, sw SPI implementation.
+ * To utilize the DMA, via Msp430Spi0DmaP define ENABLE_SPI0_DMA.
+ *
+ * See msp430usci.h for port mappings.
+ *
+ * @author Jonathan Hui <jhui@archedrock.com>
+ * @author Mark Hays
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430I2C1P {
+#include "msp430usci.h"
+
+generic configuration Msp430Spi0C() {
   provides {
-    interface Resource[uint8_t id];
-    interface ResourceConfigure[uint8_t id];
-    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
+    interface Resource;
+    interface ResourceRequested;
+    interface SpiByte;
+    interface SpiPacket;
   }
-  uses {
-    interface Resource as UsciResource[uint8_t id];
-    interface Msp430I2CConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as Interrupts;
-  }
+  uses interface Msp430SpiConfigure;
 }
 
 implementation {
-  components new Msp430I2CP() as I2CP;
-  Resource = I2CP.Resource;
-  ResourceConfigure = I2CP.ResourceConfigure;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure;
-  I2CBasicAddr = I2CP.I2CBasicAddr;
-  UsciResource = I2CP.UsciResource;
-  Interrupts = I2CP.Interrupts;
 
-  components HplMsp430UsciB1C as UsciC;
-  I2CP.UsciB -> UsciC;
+  enum {
+    CLIENT_ID = unique(MSP430_SPI0_BUS),
+  };
+
+#ifdef ENABLE_SPI0_DMA
+#warning "Enabling DMA for SPI0 (usciB0)"
+  components Msp430Spi0DmaP as SpiP;
+#else
+  components Msp430Spi0NoDmaP as SpiP;
+#endif
+
+  Resource = SpiP.Resource[CLIENT_ID];
+  SpiByte = SpiP.SpiByte;
+  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
+
+  components new Msp430UsciB0C() as UsciC;
+  ResourceRequested = UsciC;
+  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
+  SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
 }

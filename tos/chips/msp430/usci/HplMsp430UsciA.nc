@@ -61,7 +61,16 @@ interface HplMsp430UsciA {
   async command void setUctl1(msp430_uctl1_t control);
   async command msp430_uctl1_t getUctl1();
 
-  /* UCxxBR1 UCxxBR0 */
+  /* UCxxBR1 UCxxBR0
+   *
+   * set will install a new BR divisor.  If the device is reset it
+   * is left reset.  If running, the device is first reset, the new
+   * BR installed, and then taken out of reset.  This causes the new
+   * BR to take effect.
+   *
+   * Interrupts are disabled because the BR registers are 8 bits x 2 and
+   * have to be referenced via the byte I/O space.
+   */
   async command void setUbr(uint16_t ubr);
   async command uint16_t getUbr();
 
@@ -86,28 +95,19 @@ interface HplMsp430UsciA {
   async command void resetUsci(bool reset);
 
   /*
+   * resetUsci_n()
+   * unresetUsci_n()
+   *
+   * reset usci, no parameter. generates better code
+   */
+  async command void resetUsci_n();
+  async command void unresetUsci_n();
+
+  /*
    * return enum indicating what mode the usci port in in.
    */
   async command msp430_uscimode_t getMode();
 
-  /*
-   * configure or deconfigure gpio pins for SPI mode
-   *
-   * switches io pins between port and module function.
-   */
-  async command void enableSpi();
-  async command void disableSpi();
-
-  /*
-   * Returns TRUE if the Usci is in SPI mode
-   */
-  async command bool isSpi();
-
-  /*
-   * configure usci as spi using config.
-   * leaves interrupts disabled.
-   */
-  async command void setModeSpi(msp430_spi_union_config_t* config);
 
   /* Interrupt control */
   async command void disableRxIntr();
@@ -123,7 +123,19 @@ interface HplMsp430UsciA {
   async command void clrRxIntr();
   async command void clrIntr();
 
-  async command bool isTxEmpty();
+  /*
+   * TI h/w provides a busy bit.  return tx or rx is doing something
+   *
+   * This isn't really that useful.  This used to be called txEmpty but that
+   * isn't true.  Rather it indicates that tx, rx, or both are active.  These
+   * paths are double buffered.
+   *
+   * For TX state machines (packet based etc), we want to know that all the bytes
+   * went out, typically when switching resources.  For RX, we will have received
+   * all the bytes we are interested in, so don't really care that the RX buffers in
+   * the h/w are empty.
+   */
+  async command bool isBusy();
 
   /**
    * Transmit a byte of data. When the transmission is completed,
@@ -138,6 +150,13 @@ interface HplMsp430UsciA {
    * return:	byte received.
    */
   async command uint8_t rx();
+
+
+  /***********************************************************************
+   *
+   * UART Mode interface
+   *
+   ***********************************************************************/
 
   /*
    * Returns TRUE if the Usci is in Uart mode
@@ -157,4 +176,30 @@ interface HplMsp430UsciA {
    * leaves interrupts disabled.
    */
   async command void setModeUart(msp430_uart_union_config_t* config);
+
+
+  /***********************************************************************
+   *
+   * SPI Mode interface
+   *
+   ***********************************************************************/
+
+  /*
+   * configure or deconfigure gpio pins for SPI mode
+   *
+   * switches io pins between port and module function.
+   */
+  async command void enableSpi();
+  async command void disableSpi();
+
+  /*
+   * Returns TRUE if the Usci is in SPI mode
+   */
+  async command bool isSpi();
+
+  /*
+   * configure usci as spi using config.
+   * leaves interrupts disabled.
+   */
+  async command void setModeSpi(msp430_spi_union_config_t* config);
 }

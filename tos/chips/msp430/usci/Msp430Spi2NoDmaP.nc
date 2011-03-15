@@ -16,7 +16,7 @@
  *   documentation and/or other materials provided with the
  *   distribution.
  *
- * - Neither the name of the copyright holders nor the names of
+ * - Neither the name of the copyright holder nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -34,34 +34,39 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * @author Jonathan Hui <jhui@archrock.com>
+/**
+ * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430I2C1P {
+configuration Msp430Spi2NoDmaP {
   provides {
     interface Resource[uint8_t id];
     interface ResourceConfigure[uint8_t id];
-    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
+    interface SpiByte;
+    interface SpiPacket[uint8_t id];
   }
   uses {
     interface Resource as UsciResource[uint8_t id];
-    interface Msp430I2CConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as Interrupts;
+    interface Msp430SpiConfigure[uint8_t id];
+    interface HplMsp430UsciInterrupts as UsciInterrupts;
   }
 }
 
 implementation {
-  components new Msp430I2CP() as I2CP;
-  Resource = I2CP.Resource;
-  ResourceConfigure = I2CP.ResourceConfigure;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure;
-  I2CBasicAddr = I2CP.I2CBasicAddr;
-  UsciResource = I2CP.UsciResource;
-  Interrupts = I2CP.Interrupts;
+  components new Msp430SpiNoDmaP() as SpiP;
+  Resource = SpiP.Resource;
+  ResourceConfigure = SpiP.ResourceConfigure;
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+  SpiByte = SpiP.SpiByte;
+  SpiPacket = SpiP.SpiPacket;
+  UsciResource = SpiP.UsciResource;
+  UsciInterrupts = SpiP.UsciInterrupts;
 
-  components HplMsp430UsciB1C as UsciC;
-  I2CP.UsciB -> UsciC;
+  components HplMsp430UsciA0C as UsciC;
+  SpiP.Usci -> UsciC;
+
+  components LedsC as Leds;
+  SpiP.Leds -> Leds;
 }

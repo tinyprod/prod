@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * Copyright (c) 2000-2005 The Regents of the University  of California.
@@ -40,13 +41,16 @@
  * @author Jonathan Hui <jhui@archrock.com>
  * @author Joe Polastre
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include "msp430usci.h"
 
 configuration HplMsp430UsciB1C {
-  provides interface HplMsp430UsciB;
-  provides interface HplMsp430UsciInterrupts;
+  provides {
+    interface HplMsp430UsciB;
+    interface HplMsp430UsciInterrupts;
+  }
 }
 
 implementation {

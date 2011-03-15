@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,11 +43,12 @@
 #include "msp430usci.h"
 
 generic configuration Msp430Uart1C() {
-  provides interface Resource;
-  provides interface ResourceRequested;
-  provides interface UartStream;
-  provides interface UartByte;
-
+  provides {
+    interface Resource;
+    interface ResourceRequested;
+    interface UartStream;
+    interface UartByte;
+  }
   uses interface Msp430UartConfigure;
 }
 

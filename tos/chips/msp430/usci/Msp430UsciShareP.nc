@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
@@ -34,12 +35,15 @@
  *
  * @author Jonathan Hui <jhui@archrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 generic module Msp430UsciShareP() @safe() {
   provides interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
-  uses interface HplMsp430UsciInterrupts as RawInterrupts;
-  uses interface ArbiterInfo;
+  uses {
+    interface HplMsp430UsciInterrupts as RawInterrupts;
+    interface ArbiterInfo;
+  }
 }
 
 implementation {

@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,9 +39,10 @@
  * @author Mark Hays
  * @author Roman Lim
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
-generic module Msp430SpiDmaBP( uint16_t IFG_addr,
+generic module Msp430SpiDmaP( uint16_t IFG_addr,
 			      uint16_t TXBUF_addr,
 			      uint8_t  TXIFG,
 			      uint16_t TXTRIG,
@@ -48,18 +50,21 @@ generic module Msp430SpiDmaBP( uint16_t IFG_addr,
 			      uint8_t  RXIFG,
 			      uint16_t RXTRIG ) {
 
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceConfigure[ uint8_t id ];
-  provides interface SpiByte;
-  provides interface SpiPacket[ uint8_t id ];
-
-  uses interface Msp430DmaChannel as DmaChannel1;
-  uses interface Msp430DmaChannel as DmaChannel2;
-  uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430SpiConfigure[uint8_t id ];
-  uses interface HplMsp430UsciB as Usci;
-  uses interface HplMsp430UsciInterrupts as UsciInterrupts;
-  uses interface Leds;
+  provides {
+    interface Resource[ uint8_t id ];
+    interface ResourceConfigure[ uint8_t id ];
+    interface SpiByte;
+    interface SpiPacket[ uint8_t id ];
+  }
+  uses {
+    interface Msp430DmaChannel as DmaChannel1;
+    interface Msp430DmaChannel as DmaChannel2;
+    interface Resource as UsciResource[ uint8_t id ];
+    interface Msp430SpiConfigure[uint8_t id ];
+    interface HplMsp430UsciB as Usci;
+    interface HplMsp430UsciInterrupts as UsciInterrupts;
+    interface Leds;
+  }
 }
 
 implementation {
@@ -92,9 +97,8 @@ implementation {
   }
 
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
-    call Usci.resetUsci(TRUE);
+    call Usci.resetUsci_n();
     call Usci.disableSpi();
-    call Usci.resetUsci(FALSE);
   }
 
   event void UsciResource.granted[ uint8_t id ]() {

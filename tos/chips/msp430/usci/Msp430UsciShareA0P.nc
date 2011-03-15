@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,14 +35,17 @@
  *
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 configuration Msp430UsciShareA0P {
-  provides interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
-  provides interface Resource[ uint8_t id ];
-  provides interface ResourceRequested[ uint8_t id ];
-  provides interface ArbiterInfo;
-
+  provides {
+    interface Resource[ uint8_t id ];
+    interface ResourceRequested[ uint8_t id ];
+    interface ResourceDefaultOwner;
+    interface ArbiterInfo;
+    interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
+  }
   uses interface ResourceConfigure[ uint8_t id ];
 }
 
@@ -50,11 +54,12 @@ implementation {
   Interrupts = UsciShareP;
 
   components new FcfsArbiterC( MSP430_HPLUSCIA0_RESOURCE ) as ArbiterC;
-  Resource = ArbiterC;
-  ResourceRequested = ArbiterC;
-  ResourceConfigure = ArbiterC;
-  ArbiterInfo = ArbiterC;
-  UsciShareP.ArbiterInfo -> ArbiterC;
+  Resource                 = ArbiterC;
+  ResourceRequested        = ArbiterC;
+  ResourceDefaultOwner     = ArbiterC;
+  ResourceConfigure        = ArbiterC;
+  ArbiterInfo              = ArbiterC;
+  UsciShareP.ArbiterInfo  -> ArbiterC;
 
   components HplMsp430UsciA0C as HplUsciC;
   UsciShareP.RawInterrupts -> HplUsciC;

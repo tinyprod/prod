@@ -1,6 +1,7 @@
 /*
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arched Rock Corporation
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,20 +33,22 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Provides an interface for USART0 on the MSP430.
+ * Provides an interface for usci A0 on the MSP430.
  *
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 generic configuration Msp430UsciA0C() {
-  provides interface Resource;
-  provides interface ResourceRequested;
-  provides interface ArbiterInfo;
-  provides interface HplMsp430UsciA;
-  provides interface HplMsp430UsciInterrupts;
-
-  uses interface ResourceConfigure;
+  provides {
+    interface Resource;			/* parameterized */
+    interface ResourceRequested;	/* parameterized */
+    interface ArbiterInfo;
+    interface HplMsp430UsciA;
+    interface HplMsp430UsciInterrupts;	/* parameterized */
+  }
+  uses interface ResourceConfigure;	/* parameterized */
 }
 
 implementation {
