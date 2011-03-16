@@ -56,15 +56,18 @@
  */
 
 module HplMsp430UsciA0P @safe() {
-  provides interface HplMsp430UsciA as Usci;
-  provides interface HplMsp430UsciInterrupts as Interrupts;
-
-  uses interface HplMsp430GeneralIO as SIMO;
-  uses interface HplMsp430GeneralIO as SOMI;
-  uses interface HplMsp430GeneralIO as UCLK;
-  uses interface HplMsp430GeneralIO as URXD;
-  uses interface HplMsp430GeneralIO as UTXD;  
-  uses interface HplMsp430UsciRawInterrupts as UsciRawInterrupts;
+  provides {
+    interface HplMsp430UsciA as Usci;
+    interface HplMsp430UsciInterrupts as Interrupts;
+  }
+  uses {
+    interface HplMsp430GeneralIO as SIMO;
+    interface HplMsp430GeneralIO as SOMI;
+    interface HplMsp430GeneralIO as UCLK;
+    interface HplMsp430GeneralIO as URXD;
+    interface HplMsp430GeneralIO as UTXD;
+    interface HplMsp430UsciRawInterrupts as UsciRawInterrupts;
+  }
 }
 
 implementation {
@@ -87,7 +90,7 @@ implementation {
 
   /* Control registers */
   async command void Usci.setUctl0(msp430_uctl0_t control) {
-    UCA0CTL0=uctl02int(control);
+    UCA0CTL0 = uctl02int(control);
   }
 
   async command msp430_uctl0_t Usci.getUctl0() {
@@ -95,7 +98,7 @@ implementation {
   }
 
   async command void Usci.setUctl1(msp430_uctl1_t control) {
-    UCA0CTL1=uctl12int(control);
+    UCA0CTL1 = uctl12int(control);
   }
 
   async command msp430_uctl1_t Usci.getUctl1() {
@@ -190,6 +193,10 @@ implementation {
     return (tmp.ucsync && tmp.ucmode != 3);
   }
 
+  async command bool Usci.isSpi() {
+    return isSpi();
+  }
+
   bool isI2C() {
     msp430_uctl0_t tmp;
 
@@ -204,10 +211,6 @@ implementation {
     return (tmp.ucsync == 0);
   }
 
-  async command bool Usci.isSpi() {
-    return isSpi();
-  }
-
   async command msp430_uscimode_t Usci.getMode() {
     if (isSpi())
       return USCI_SPI;
@@ -220,7 +223,7 @@ implementation {
 
   async command void Usci.enableSpi() {
     atomic {
-      call SIMO.selectModuleFunc(); 
+      call SIMO.selectModuleFunc();
       call SOMI.selectModuleFunc();
       call UCLK.selectModuleFunc();
     }
@@ -259,19 +262,15 @@ implementation {
       configSpi(config);
       call Usci.unresetUsci_n();
       call Usci.clrIntr();
-    }    
+    }
   }
 
-  async command bool Usci.isTxIntrPending(){
-    if (IFG2 & UCA0TXIFG)
-      return TRUE;
-    return FALSE;
+  async command bool Usci.isTxIntrPending() {
+    return (IFG2 & UCA0TXIFG);
   }
 
-  async command bool Usci.isRxIntrPending(){
-    if (IFG2 & UCA0RXIFG)
-      return TRUE;
-    return FALSE;
+  async command bool Usci.isRxIntrPending() {
+    return (IFG2 & UCA0RXIFG);
   }
 
   async command void Usci.clrTxIntr(){
@@ -317,21 +316,8 @@ implementation {
     IE2 &= ~(UCA0TXIE | UCA0RXIE);
   }
 
-  /*
-   * enableRxIntr: allow rx interrupts
-   *
-   * Will clean out any pending rx interrupt and then enables.
-   * This assumes that any left over byte is stale and should be
-   * thrown away.   Note that most likely there will be overrun and
-   * framing errors too.   Starting pristine is the way to go.
-   */
   async command void Usci.enableRxIntr() {
-    uint8_t temp;
-
-    atomic {
-      temp = call Usci.rx();		/* clean everything out */
-      IE2  |=  UCA0RXIE;		/* and enable */
-    }
+    IE2  |=  UCA0RXIE;
   }
 
   /*
@@ -362,16 +348,13 @@ implementation {
    * Doesn't make sense to do this.   RX and TX side get dealt with independently
    * so why would this ever get called?    Deprecate.
    *
-   * First clear out any pending rx or tx interrupt flags
-   * then set interrupt enables.
+   * First clear out any pending tx interrupt flags then set interrupt enables.
+   * If there is a rx byte available then enabling the rx interrupt will kick.
    */
   async command void Usci.enableIntr() {
-    uint8_t temp;
-    
     atomic {
-      temp = call Usci.rx();		/* clean out rx side */
       IFG2 &= ~UCA0TXIFG;		/* and tx side */
-      IE2  |= (UCA0TXIE  | UCA0RXIE);	/* enable both tx and rx */
+      IE2  |= (UCA0TXIE | UCA0RXIE);	/* enable both tx and rx */
     }
   }
 
@@ -383,6 +366,10 @@ implementation {
     UCA0TXBUF = data;
   }
 
+  /*
+   * grab current Rx buf from the h/w.
+   * This will also clear any pending error status bits.
+   */
   async command uint8_t Usci.rx() {
     return UCA0RXBUF;
   }

@@ -118,17 +118,26 @@ implementation {
    * behaviour of setModeUart or setModeSpi which would be
    * used if setUbr wasn't available.  Following the
    * config modification any interrupts are cleared out.
+   *
+   * The BR registers are 2 bytes and accessed as two byte references.
+   * We want it to be atomic.   On the x2xxx part can UBR be referenced
+   * as a single atomic word?  (This is how it is done on the x5xxx).
+   * For now we do it atomically and using two byte references (because
+   * of the address space and according to TI documentation).
+   *
+   * WARNING: TXIFG is forced clear after a baud rate change
+   * similar to what setMode causes.
    */
 
   async command void Usci.setUbr(uint16_t control) {
     atomic {
-      if (UCB1CTL1 & UCSWRST) {
+      if (UCB1CTL1 & UCSWRST) {		/* if already reset, set and bail */
 	UCB1BR0 = control & 0x00FF;
 	UCB1BR1 = (control >> 8) & 0x00FF;
 	return;
       }
-      call Usci.resetUsci_n();
-      UCB1BR0 = control & 0x00FF;
+      call Usci.resetUsci_n();		/* not reset, 1st reset */
+      UCB1BR0 = control & 0x00FF;	/* then set. */
       UCB1BR1 = (control >> 8) & 0x00FF;
       call Usci.unresetUsci_n();
       call Usci.clrIntr();
@@ -180,6 +189,10 @@ implementation {
     return (tmp.ucsync && tmp.ucmode != 3);
   }
 
+  async command bool Usci.isSpi() {
+    return isSpi();
+  }
+
   bool isI2C() {
     msp430_uctl0_t tmp;
 
@@ -197,7 +210,7 @@ implementation {
 
   async command void Usci.enableSpi() {
     atomic {
-      call SIMO.selectModuleFunc(); 
+      call SIMO.selectModuleFunc();
       call SOMI.selectModuleFunc();
       call UCLK.selectModuleFunc();
     }
@@ -209,10 +222,6 @@ implementation {
       call SOMI.selectIOFunc();
       call UCLK.selectIOFunc();
     }
-  }
-
-  async command bool Usci.isSpi() {
-    return isSpi();
   }
 
   void configSpi(msp430_spi_union_config_t* config) {
@@ -243,16 +252,12 @@ implementation {
     }
   }
 
-  async command bool Usci.isTxIntrPending(){
-    if (UC1IFG & UCB1TXIFG)
-      return TRUE;
-    return FALSE;
+  async command bool Usci.isTxIntrPending() {
+    return (UC1IFG & UCB1TXIFG);
   }
 
   async command bool Usci.isRxIntrPending() {
-    if (UC1IFG & UCB1RXIFG)
-      return TRUE;
-    return FALSE;
+    return (UC1IFG & UCB1RXIFG);
   }
 
   async command void Usci.clrTxIntr(){
@@ -298,21 +303,8 @@ implementation {
     UC1IE &= ~(UCB1TXIE | UCB1RXIE);
   }
 
-  /*
-   * enableRxIntr: allow rx interrupts
-   *
-   * Will clean out any pending rx interrupt and then enables.
-   * This assumes that any left over byte is stale and should be
-   * thrown away.   Note that most likely there will be overrun and
-   * framing errors too.   Starting pristine is the way to go.
-   */
   async command void Usci.enableRxIntr() {
-    uint8_t temp;
-
-    atomic {
-      temp = call Usci.rx();		/* clean everything out */
-      UC1IE  |=  UCB1RXIE;		/* and enable */
-    }
+    UC1IE  |=  UCB1RXIE;
   }
 
   /*
@@ -343,16 +335,13 @@ implementation {
    * Doesn't make sense to do this.   RX and TX side get dealt with independently
    * so why would this ever get called?    Deprecate.
    *
-   * First clear out any pending rx or tx interrupt flags
-   * then set interrupt enables.
+   * First clear out any pending tx interrupt flags then set interrupt enables.
+   * If there is a rx byte available then enabling the rx interrupt will kick.
    */
   async command void Usci.enableIntr() {
-    uint8_t temp;
-    
     atomic {
-      temp = call Usci.rx();		/* clean out rx side */
       UC1IFG &= ~UCB1TXIFG;		/* and tx side */
-      UC1IE  |=  (UCB1TXIE | UCB1RXIE);	/* enable both tx and rx */
+      UC1IE  |= (UCB1TXIE | UCB1RXIE);	/* enable both tx and rx */
     }
   }
 
@@ -364,6 +353,10 @@ implementation {
     UCB1TXBUF = data;
   }
 
+  /*
+   * grab current Rx buf from the h/w.
+   * This will also clear any pending error status bits.
+   */
   async command uint8_t Usci.rx() {
     return UCB1RXBUF;
   }
@@ -377,16 +370,16 @@ implementation {
 
   async command void Usci.enableI2C() {
     atomic {
-      call USDA.selectModuleFunc(); 
+      call USDA.selectModuleFunc();
       call USCL.selectModuleFunc();
-    }  
+    }
   }
 
   async command void Usci.disableI2C() {
     atomic {
       call USDA.selectIOFunc();
       call USCL.selectIOFunc();
-    }  
+    }
   }
 
   void configI2C(msp430_i2c_union_config_t* config) {
