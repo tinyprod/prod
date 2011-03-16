@@ -308,8 +308,8 @@ implementation
         call Usart.disableUart();
       }
       call Usart.resetUsart(FALSE);
-      call Usart.clrIntr();
       call Usart.disableIntr();
+      call Usart.clrIntr();		/* clear after taking out of reset */
     }
     
     return;
