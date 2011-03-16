@@ -68,11 +68,13 @@ module HplMsp430UsciA0P @safe() {
 }
 
 implementation {
+#ifdef notdef
   MSP430REG_NORACE(IE2);
   MSP430REG_NORACE(IFG2);
   MSP430REG_NORACE(UCA0CTL0);
   MSP430REG_NORACE(UCA0CTL1);
   MSP430REG_NORACE(UCA0STAT);
+#endif
   MSP430REG_NORACE(UCA0TXBUF);
 
   async event void UsciRawInterrupts.rxDone(uint8_t temp) {
@@ -213,7 +215,6 @@ implementation {
       return USCI_I2C;
     if (isUart())
       return USCI_UART;
-
     return USCI_NONE;
   }
 
@@ -237,7 +238,8 @@ implementation {
     UCA0CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCA0CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
-    call Usci.setUmctl(0);		/* MCTL <- 0 if spi */
+    /* MCTL (modulation register) is zero'd on module reset
+     * per TI MSP430x2xx User's Guide SLAUF, pg 15-27. */
   }
 
   /*

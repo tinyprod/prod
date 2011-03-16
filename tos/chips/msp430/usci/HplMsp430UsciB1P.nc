@@ -72,15 +72,17 @@ module HplMsp430UsciB1P @safe() {
 }
 
 implementation {
+#ifdef notdef
   MSP430REG_NORACE(UC1IE);
   MSP430REG_NORACE(UC1IFG);
   MSP430REG_NORACE(UCB1CTL0);
   MSP430REG_NORACE(UCB1CTL1);
   MSP430REG_NORACE(UCB1STAT);
   MSP430REG_NORACE(UCB1RXBUF);
-  MSP430REG_NORACE(UCB1TXBUF);
   MSP430REG_NORACE(UCB1I2COA);
   MSP430REG_NORACE(UCB1I2CIE);
+#endif
+  MSP430REG_NORACE(UCB1TXBUF);
 
   async event void UsciRawInterrupts.rxDone(uint8_t temp) {
     signal Interrupts.rxDone(temp);
@@ -217,7 +219,8 @@ implementation {
     UCB1CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCB1CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
-    /* MCTL is zero'd by reset?   Check it out */
+    /* MCTL (modulation register) is zero'd on module reset
+     * per TI MSP430x2xx User's Guide SLAUF, pg 16-16. */
   }
 
   /*

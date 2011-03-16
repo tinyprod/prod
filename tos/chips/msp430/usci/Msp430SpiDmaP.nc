@@ -99,6 +99,7 @@ implementation {
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
     call Usci.resetUsci_n();
     call Usci.disableSpi();
+    /* leave in reset */
   }
 
   event void UsciResource.granted[ uint8_t id ]() {

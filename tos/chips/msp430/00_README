@@ -12,8 +12,8 @@ file 01_Dependencies for what CPUs are supported and the cpu dependencies.
 Where reasonable, conflicting areas are kept in a flat file and differences are
 #ifdef'd.   When this becomes too cumbersome, different interface definitions and
 implementations are placed into cpu family directories and the interface to
-the reset of the tinyos os is shadowed.   The correct directory needs to be
-specified in the .platform file.
+the rest of tinyos is shadowed.   The correct directory needs to be specified in
+the .platform file.
 
 Most of the cpu definitions are obtained automatically via the toolchain, ie. the -mmcu
 specification automatically included the appropriate cpu header file.  ie. -mmcu=msp430x2618

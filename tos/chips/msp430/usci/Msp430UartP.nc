@@ -62,7 +62,7 @@ implementation {
   norace uint16_t m_tx_len, m_rx_len;
   norace uint8_t * COUNT_NOK(m_tx_len) m_tx_buf, * COUNT_NOK(m_rx_len) m_rx_buf;
   norace uint16_t m_tx_pos, m_rx_pos;
-  norace uint8_t m_byte_time;
+  norace uint8_t m_byte_time;		/* kludge doesn't work */
   norace uint8_t current_owner;
 
   async command error_t Resource.immediateRequest[ uint8_t id ]() {
@@ -85,6 +85,9 @@ implementation {
     return call UsciResource.release[ id ]();
   }
 
+  /*
+   * this m_byte_time kludge is broken
+   */
   async command void ResourceConfigure.configure[ uint8_t id ]() {
     msp430_uart_union_config_t* config = call Msp430UartConfigure.getConfig[id]();
     m_byte_time = config->uartConfig.ubr / 2;
@@ -97,6 +100,7 @@ implementation {
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
     call Usci.resetUsci_n();		/* also turns off interrupt enables */
     call Usci.disableUart();
+    /* leave in reset */
   }
 
   event void UsciResource.granted[ uint8_t id ]() {

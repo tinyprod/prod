@@ -68,11 +68,13 @@ module HplMsp430UsciA1P @safe() {
 }
 
 implementation {
+#ifdef notdef
   MSP430REG_NORACE(UC1IE);
   MSP430REG_NORACE(UC1IFG);
   MSP430REG_NORACE(UCA1CTL0);
   MSP430REG_NORACE(UCA1CTL1);
   MSP430REG_NORACE(UCA1STAT);
+#endif
   MSP430REG_NORACE(UCA1TXBUF);
 
   async event void UsciRawInterrupts.rxDone(uint8_t temp) {
@@ -157,7 +159,15 @@ implementation {
     return UCA1STAT;
   }
 
-  /* Operations */
+  /*
+   * Reset/unReset
+   *
+   * resetUsci(bool): (deprecated) TRUE puts device into reset, FALSE takes it out.  But this
+   *   requires pushing the parameter on the stack and all those extra instructions.
+   *
+   * {un,}resetUsci_n(): reset and unreset the device but result in single instruction that
+   *   sets or clears the appropriate bit in the h/w.
+   */
   async command void Usci.resetUsci(bool reset) {
     if (reset)
       SET_FLAG(UCA1CTL1, UCSWRST);
@@ -205,7 +215,6 @@ implementation {
       return USCI_I2C;
     if (isUart())
       return USCI_UART;
-
     return USCI_NONE;
   }
 
@@ -229,7 +238,8 @@ implementation {
     UCA1CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCA1CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
-    call Usci.setUmctl(0);		/* MCTL <- 0 if spi */
+    /* MCTL (modulation register) is zero'd on module reset
+     * per TI MSP430x2xx User's Guide SLAUF, pg 15-27. */
   }
 
   /*

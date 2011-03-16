@@ -92,6 +92,7 @@ implementation {
   }
 
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
+    call UsciB.resetUsci_n();
     call UsciB.disableI2C();
   }
 

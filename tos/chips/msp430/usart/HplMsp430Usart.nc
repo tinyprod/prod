@@ -216,17 +216,13 @@ interface HplMsp430Usart {
    * Transmit a byte of data. When the transmission is completed,
    * <code>txDone</done> is generated. Only then a new byte may be
    * transmitted, otherwise the previous byte will be overwritten.
-   * The mode of transmission (Uart or Spi) depends on the current
-   * state of the USART, which must be managed by a higher layer.
-   *
-   * @return SUCCESS always.
    */
   async command void tx(uint8_t data);
   
   /**
    * Get current value from RX-buffer.
    *
-   * @return SUCCESS always.
+   * @return byte received
    */
   async command uint8_t rx();
 

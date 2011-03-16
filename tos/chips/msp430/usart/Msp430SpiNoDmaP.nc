@@ -124,7 +124,7 @@ implementation {
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
     call Usart.resetUsart(TRUE);
     call Usart.disableSpi();
-    call Usart.resetUsart(FALSE);
+    /* leave in reset */
   }
 
   event void UsartResource.granted[ uint8_t id ]() {
