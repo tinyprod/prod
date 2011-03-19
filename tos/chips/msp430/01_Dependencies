@@ -2,7 +2,7 @@
 CPU families:
 
 We currently define 3 cpu families that group similar TI msp430 chips together.   Two chips
-can be grouped together if for that module or interface the behaviour is the same.
+can be grouped together if for that module or interface the behaviour is the similar enough.
 
 The main family is simply "msp430" and whenever possible we endevour to put everything we can into the
 generic msp430 directory.  This is the top level.   However when it becomes too cumbersome to make
@@ -11,14 +11,14 @@ directories.  These are subdirectories off msp430, ie.  msp430/x1xxx and are sel
 file for a platform.
 
 Currently what differentiates the different family directories is interrupt behaviour, peripheral
-register mapping, low power behaviour.
+register mapping, clocking, and low power behaviour.
 
 
 CPUs supported:
 
     x1xxx: msp430f149, msp430f1611
     x2xxx: msp430f261{6,7,8,9}
-    x5xxx: cc430f513{7,8,8a}
+    x5xxx: cc430f513{7,8,8a}, msp430f5438{,a}
 
 
 Interrupt Vectors:
@@ -73,8 +73,8 @@ x5xxx vectors: (msp430f543{5,6,7,8}{,a}, cc430f5137)
 0xFFFE	63	RESET_VECTOR					63      RESET_VECTOR                            
 
 
-1) Vectors move to various addresses dependent on what cpu you are using.  (This is taken care of by
-   proper usage of the cpu header files.
+1) Vectors move to various addresses dependent on what cpu you are using.  (handled using the
+   proper cpu header file).
 
 2) Depending on family, vectors are shared across function.  This complicates things and is ugly.
 
@@ -82,8 +82,8 @@ x5xxx vectors: (msp430f543{5,6,7,8}{,a}, cc430f5137)
    has its own vector and no DAC vector (no DAC).
 
    Worse yet is the sharing of vectors for the USCI on the x2xxx parts.   A vector is provided for
-   USCIAB0TX_VECTOR which is shared across both the A side and B side of the USCI which typically
-   can be operated in very different modes.  This has been cleaned up in the x5xxx series parts.
+   USCIAB0TX_VECTOR which is shared across both the A side and B side of the USCI which can be
+   operated in different modes.  This has been cleaned up in the x5xxx series parts.
 
 
 Addressing:
@@ -123,6 +123,9 @@ DMA:
    use to initiate a transfer cycle.  These fields maybe 4 or 5 bits wide and the driver needs
    to know how to construct an appropriate control word when interacting with the h/w.
 
+   x1xxx and x2xxx support 4 bit triggers.   x5xxx cpus support 5 bit triggers.  Number of triggers
+   can be determined by looking at what TSEL bits are defined in the cpu header files.
+
    
 3) Interrupt vector:
 
@@ -130,3 +133,29 @@ DMA:
 
    The driver uses either DACDMA_VECTOR or DMA_VECTOR if defined.  Otherwise complains about lack of
    support.
+
+4) Clocks.
+
+   The x1xxx family has the original basic clock system (BCS) and has a 3 bit range select field.
+   The x2xxx family has revision 2 of this system (BC2) with a 4 bit range field but is essentially
+   mostly compatable with the x1xxx clock.
+
+   The x5xxx family has the Unified Clock System which is different (__MSP430_HAS_UCS__).
+
+5) I0 Port naming.
+
+   TI defines 8 bit numbered ports (P1 ... P<n>).  In later families 16 bit lettered ports PORTA, etc.
+   are also defined.   Layout of these ports varies by family.  In later parts, lettered ports are
+   a 16 bit overlay of two 8 bit numbered ports.  ie. PortA is the 16 bit version of Port1 and Port2.
+   But this varies by family.
+
+   x1xxx parts define __MSP430_HAS_PORT1__ to _PORT6__ no letter ports defined.
+
+   x2xxx parts define __MSP430_HAS_PORT1__ to _PORT8__.   PORTA overlays Port7/8.
+
+   x5xxx parts define __MSP430_HAS_PORT1__ to _PORT8__.   PORTA overlays Port1/2.
+   PORTB overlays Port3/4, etc.   Number of ports defined depends on the cpu and how
+   many i/o pins are brought off the silicon.
+
+   Note: the cc430f5137 has port1/2 (A), port 3/4 (B), port 5 (C).  C is 16 bits but
+   only port5 is defined and overlays portC (low half).

@@ -1,5 +1,6 @@
 
-* fix copyrights
+* fix copyrights (this should happen before the mm-z1-x5 merge is brought back into the
+  SVN t2 mainline).
 
 * apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
   fixed and made part of the platform/cpu definition.
@@ -35,12 +36,24 @@
 * Do we want to put in TOSThreads support?  Best way if yes is to #ifdef needed code in
   the interrupt handlers.  Old school mechanism clones the code.  Why did Kevin do that?
 
-* Z1 uses I2C but never defines SDA or SCL.  Rather it overlays the I2C pins on the SPI pins.
+-- (done) Z1 uses I2C but never defines SDA or SCL.  Rather it overlays the I2C pins on the SPI pins.
   Works but isn't clean or straight forward.  Confusing for someone new picking up what is going
   on.
 
 * Need better approach to assigning pins.  Should be a platform thing.  this makes it so drivers
-  don't wire directly but instead wire to the platform ports.
+  don't wire directly but instead wire to the platform ports.  Or conversely the platform provides
+  the wiring...   How to do this?
 
-* UcsiB add call Usci.setUmctl(0)?
+-- should UcsiB add call for Usci.setUmctl(0)?   No.   not defined (it exists though) but is reset to 0.
 
+* clean up msp430_have_* checks.   old old toolchain.
+
+* tos/lib/tosboot/msp430 has various h/w dependencies.    Add support for other msp430 processors.
+
+  One way is to simply extend what is in tos/lib/tosboot.   That is keep the h/w dependancies in
+  tos/lib/tosboot/msp430.
+
+  A better way would be to figure out how to make tos/lib/tosboot processor independent and
+  move processor dependancies into tos/chips/msp430.    To start simply make the msp430 code
+  become processor independent and the pieces in tos/lib/tosboot/msp430 reference the
+  appropriate processor dependent code in tos/chips (pick via platform file).
