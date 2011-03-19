@@ -1,0 +1,2 @@
+COMPONENT=IntAccelAppC
+include $(MAKERULES)

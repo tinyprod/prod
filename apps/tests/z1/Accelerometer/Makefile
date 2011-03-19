@@ -1,0 +1,3 @@
+COMPONENT=AccelerometerAppC
+CFLAGS += -DPRINTFUART_ENABLED
+include $(MAKERULES)
