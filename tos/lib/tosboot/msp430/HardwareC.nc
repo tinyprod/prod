@@ -1,8 +1,5 @@
-// $Id: HardwareC.nc,v 1.3 2010-06-29 22:07:50 scipio Exp $
-
 /*
- *
- *
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University  of California.  
  * All rights reserved.
  *
@@ -12,10 +9,12 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
+ *
  * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -33,11 +32,24 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * @author Jonathan Hui <jwhui@cs.berkeley.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * This module provides basic h/w support for tosboot (network boot
+ * loading) for the MSP430 processors.
+ *
+ * Currently only supports x1 processors (msp430f149 and msp430f1611).
+ * Implements basic clock support for BASIC_CLOCK.   Can easily be
+ * extended to use Basic Clock 2 (__MSP430_HAS_BC2__).
  */
 
-/**
- * @author Jonathan Hui <jwhui@cs.berkeley.edu>
- */
+#if !defined(__MSP430_HAS_BASIC_CLOCK__)
+#error "tosboot/msp430: processor not supported: needs BASIC_CLOCK"
+#endif
+
+#if !defined(__MSP430_HAS_WDT__)
+#error "tosboot/msp430: processor not supported: needs WDT"
+#endif
 
 module HardwareC {
   provides {
@@ -55,5 +67,4 @@ implementation {
   command void Hardware.reboot() {
     WDTCTL = 0;
   }
-
 }

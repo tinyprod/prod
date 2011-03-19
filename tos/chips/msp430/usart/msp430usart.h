@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2004-2006, Technische Universitaet Berlin
  * All rights reserved.
  *
@@ -25,9 +26,7 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
+ *
  * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
  * @author Philipp Huppertz <huppertz@tkn.tu-berlin.de>
  * @author Eric B. Decker <cire831@gmail.com>
@@ -35,6 +34,10 @@
 
 #ifndef _H_Msp430Usart_h
 #define _H_Msp430Usart_h
+
+#if !defined(__MSP430_HAS_UART0__)
+#error "msp430usart.h: USART0/UART0 not supported on this processor"
+#endif
 
 #define MSP430_HPLUSART0_RESOURCE "Msp430Usart0.Resource"
 #define MSP430_SPIO_BUS "Msp430Spi0.Resource"

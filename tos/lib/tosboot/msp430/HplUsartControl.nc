@@ -1,8 +1,5 @@
-// $Id: HplUsartControl.nc,v 1.2 2010-06-29 22:07:50 scipio Exp $
-
 /*
- *
- *
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University  of California.  
  * All rights reserved.
  *
@@ -33,10 +30,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- */
-
-/**
  * @author Jonathan Hui <jwhui@cs.berkeley.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * This module provides basic h/w support for tosboot (network boot
+ * loading) for the MSP430 processors.
+ *
+ * Currently only supports x1 processors (msp430f149 and msp430f1611).
+ * needs USART0 support, __MSP430_HAS_UART0__ which really is USART0.
  */
  
 #include <msp430usart.h>
@@ -52,6 +53,4 @@ interface HplUsartControl {
   command error_t isRxIntrPending();
   command void tx(uint8_t data);
   command uint8_t rx();
-
 }
-

@@ -1,8 +1,5 @@
-// $Id: HplUsart0C.nc,v 1.2 2010-06-29 22:07:50 scipio Exp $
-
 /*
- *
- *
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University  of California.  
  * All rights reserved.
  *
@@ -33,11 +30,16 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * @author Jonathan Hui <jwhui@cs.berkeley.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * Currently only supports x1 processors (msp430f149 and msp430f1611).
+ * needs USART0 support, __MSP430_HAS_UART0__ which really is USART0.
  */
 
-/**
- * @author Jonathan Hui <jwhui@cs.berkeley.edu>
- */
+#if !defined(__MSP430_HAS_UART0__)
+#error "processor not supported: tosboot/msp430 only supports USART0/UART0"
+#endif
 
 module HplUsart0C {
   provides interface HplUsartControl;

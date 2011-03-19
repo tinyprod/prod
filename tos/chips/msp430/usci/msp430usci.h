@@ -39,12 +39,30 @@
  * @author Eric B. Decker <cire831@gmail.com>
  * @author Jordi Soucheiron <jsoucheiron@dexmatech.com>
  *
- * Fix to reflect the MSP430X as documented in the TI MSP430x2xx Users guide
- * slau144f.
+ * Support the x2 version of the USCI for the TI MSPx2xx (see TI MSP430x2xx
+ * Users guide slau144f).
+ *
+ * The x2 USCI interface is seriously screwy.   USCI port registers are spread
+ * out over various places and the interrupts have different modules on the same
+ * vector.  This gets cleaned up in the x5 processors but that makes sharing
+ * the same code complicated.   The following functional defines tell the story:
+ *
+ * x2:	__MSP430_HAS_USCI__
+ *	__MSP430_HAS_USCI_AB0__	indicates interrupts messy.
+ *	__MSP430_HAS_USCI_AB1__
+ *
+ * x5:	__MSP430_HAS_USCI_A0__	indicates vectors are module specific.
+ *	__MSP430_HAS_USCI_B0__
+ *	__MSP430_HAS_USCI_A1__
+ *	__MSP430_HAS_USCI_B1__	etc.
  */
 
 #ifndef _H_MSP430USCI_H
 #define _H_MSP430USCI_H
+
+#if !defined(__MSP430_HAS_USCI__)
+#error "msp430usci: processor not supported, currently only supports x2xxx (HAS_USCI)"
+#endif
 
 /*
  * The MSP430X architecture at least the msp430f2618 family
