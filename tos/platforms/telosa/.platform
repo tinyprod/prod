@@ -27,6 +27,7 @@ push( @includes, qw(
   %T/chips/at45db
   %T/chips/msp430/x1xxx
   %T/chips/msp430
+  %T/chips/msp430/clock_bcs
   %T/chips/msp430/adc12
   %T/chips/msp430/pins
   %T/chips/msp430/timer

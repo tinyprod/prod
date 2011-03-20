@@ -1,0 +1,3 @@
+This directory support the msp430 basic clock (__MSP430_HAS_BASIC_CLOCK) and basic clock plus
+(__MSP430_HAS_BC2_).  These are clock modules support by 1st gen x1xxx processors and 2nd gen
+x2xxx processors (ie. msp430f2618 etc).

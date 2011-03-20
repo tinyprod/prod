@@ -57,3 +57,15 @@
   move processor dependancies into tos/chips/msp430.    To start simply make the msp430 code
   become processor independent and the pieces in tos/lib/tosboot/msp430 reference the
   appropriate processor dependent code in tos/chips (pick via platform file).
+
+* dco_calib: needs to be evaluated for BC2 (RSEL 4 bits vs. 3 bits).  RSEL_MASK should take care
+  of it but needs to be checked.
+
+* dco_calib: currently busy wait runs two full ACLK_CALIB_PERIOD cycles.  This can be shortened to one ACLK
+  edge and then an ACLK_CALIB_PERIOD.  This may not be worth it because what we really want is an integrated
+  recalibration mechanism that runs off interrupts.   One pass with ACLK_CALIB_PERIOD is 8 * 1/32768 = 244uS.
+  But it is a binary search and the entire process takes about 9ms.   So we probably want to do this off
+  interrupts.  But what about things like interrupt latency etc.
+
+* dco_calib: termination condition checks for dco 7 because mod bits no longer take effect.  Verify for BC2
+  and BASIC_CLOCK.
