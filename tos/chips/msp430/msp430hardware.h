@@ -452,19 +452,34 @@ void __nesc_enable_interrupt(void) @safe()
   eint();
 }
 
-typedef bool __nesc_atomic_t;
-__nesc_atomic_t __nesc_atomic_start(void);
+/*
+ * __nesc_atomic_t is used to return whether interrupts are enabled
+ * or not.  Previously, a bool (still a uint16_t) was used.  However,
+ * using the uint16_t (native width of the msp430) fits in with how interrupts
+ * are checked below, see definition of __nesc_atomic_start.
+ */
+typedef uint16_t __nesc_atomic_t;
+__nesc_atomic_t  __nesc_atomic_start(void);
 void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts);
 
 #ifndef NESC_BUILD_BINARY
-/* @spontaneous() functions should not be included when NESC_BUILD_BINARY
-   is #defined, to avoid duplicate functions definitions when binary
-   components are used. Such functions do need a prototype in all cases,
-   though. */
-__nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe()
-{
-  __nesc_atomic_t result = ((READ_SR & SR_GIE) != 0);
-  __nesc_disable_interrupt();
+/*
+ * @spontaneous() functions should not be included when NESC_BUILD_BINARY
+ * is #defined, to avoid duplicate functions definitions when binary
+ * components are used. Such functions do need a prototype in all cases,
+ * though.
+ *
+ * If we explicitly check for != 0 this generates a fair number of instructions.
+ * Simply leaving the GIE bit where it lives and using 0 or not 0 to determine
+ * whether to reenable interrupts generates much tighter code.
+ *
+ * Given how often atomic is used, this is a good thing.
+ */
+
+__nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe() {
+  __nesc_atomic_t result = (READ_SR & SR_GIE);
+  dint();
+  nop();
   asm volatile("" : : : "memory"); /* ensure atomic section effect visibility */
   return result;
 }
@@ -473,7 +488,7 @@ void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts) @spontaneous() @safe
 {
   asm volatile("" : : : "memory"); /* ensure atomic section effect visibility */
   if( reenable_interrupts )
-    __nesc_enable_interrupt();
+    eint();
 }
 #endif
 
