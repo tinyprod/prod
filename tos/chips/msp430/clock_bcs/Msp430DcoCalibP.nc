@@ -1,5 +1,6 @@
-
-/* Copyright (c) 2000-2003 The Regents of the University of California.
+/*
+ * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2000-2003 The Regents of the University of California.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,10 +9,12 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
+ *
  * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -28,27 +31,27 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/**
+ *
  * @author Cory Sharp <cssharp@eecs.berkeley.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #error "Msp430DcoCalibP is broken and will incorrectly adjust TimerA because it does not take into account MCU sleep."
 
-module Msp430DcoCalibP
-{
+module Msp430DcoCalibP {
   uses interface Msp430Timer as TimerMicro;
   uses interface Msp430Timer as Timer32khz;
 }
-implementation
-{
+implementation {
   uint16_t m_prev;
 
-  enum
-  {
-    TARGET_DELTA = 2048, // number of 32khz ticks during 65536 ticks at 1mhz
-    MAX_DEVIATION = 7, // about 0.35% error
+  enum {
+    /* 
+     * 65536 tics of 1 MiHz clock = .0625 secs.  Each 32768 Hz tic is 30.5uS
+     * which gives us 2048 tics.
+     */
+    TARGET_DELTA = 2048,	// number of 32khz ticks during 65536 ticks at 1mihz
+    MAX_DEVIATION = 7,		// about 0.35% error
   };
 
   // this gets executed 32 times a second
@@ -73,7 +76,7 @@ implementation
     }
     else if( delta < (TARGET_DELTA-MAX_DEVIATION) )
     {
-      // too few 32khz ticks means the DCO is running too fast, slow it down
+      // too few 32kihz ticks means the DCO is running too fast, slow it down
       if( DCOCTL > 0 )
       {
         DCOCTL--;

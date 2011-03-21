@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2007 Technische Universitaet Berlin
  * All rights reserved.
  *
@@ -32,25 +32,33 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * @author Andreas Koepke  <koepke@tkn.tu-berlin.de>
+ * @author Andreas Koepke <koepke@tkn.tu-berlin.de>
  * @author Eric B. Decker <cire831@gmail.com>
+ *
  *
  * Specify the target cpu clock speed of your platform by overriding this file.
  *
- * Be aware that tinyos relies on binary 4MHz, that is 4096 binary kHz.  Some
+ * Be aware that tinyos relies on binary 4MHz, that is 4096 binary kHz (4MHIZ).  Some
  * platforms have an external high frequency oscilator to generate the SMCLK
  * (e.g. eyesIFX, and possibly future ZigBee compliant nodes). These
  * oscillators provide metric frequencies, but may not run in power down
  * modes. Here, we need to switch the SMCLK source, which is easier if
- * the external and thd DCO source frequency are the same.
+ * the external and the DCO source frequency are the same.
  * 
+ * changed the name to reflect binary Hz to avoid confusion with power of 10
+ * values provided by TI for msp430x2xx processors.
  */
-
 
 #ifndef MS430DCOSPEC_H
 #define MS430DCOSPEC_H
 
-#define TARGET_DCO_KHZ 8192
-#define ACLK_KHZ 32
+/* 8 MIHZ */
+#define TARGET_DCO_HZ   8388608UL
+#define ACLK_HZ         32768UL
+
+#ifdef notdef
+#define TARGET_DCO_KHZ	8192	// the target DCO clock rate in binary kHz
+#define ACLK_KHZ	32	// the ACLK rate in binary kHz
+#endif
 
 #endif

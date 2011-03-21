@@ -354,6 +354,8 @@ inline void TOSH_wait(void)
 }
 
 // #define TOSH_CYCLE_TIME_NS 250
+// This is very cpu dependent, for the msp430f1611 running at
+// 4MiHz this is close enough.
 // Our worst case is 250 ns = 1 cycle.
 
 inline void TOSH_wait_250ns(void)

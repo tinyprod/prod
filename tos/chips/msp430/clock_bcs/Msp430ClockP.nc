@@ -73,7 +73,7 @@ implementation {
 
   enum {
     ACLK_CALIB_PERIOD = 8,
-    TARGET_DCO_DELTA = (TARGET_DCO_KHZ / ACLK_KHZ) * ACLK_CALIB_PERIOD,
+    TARGET_DCO_DELTA = (TARGET_DCO_HZ / ACLK_HZ) * ACLK_CALIB_PERIOD,
   };
 
   async command mcu_power_t McuPowerOverride.lowestState() {
@@ -84,7 +84,6 @@ implementation {
     TACTL   = TASSEL_2 | MC_2;		// SMCLK/1, continuous mode, all else 0
     TBCTL   = TBSSEL_1 | MC_2;		// ACLK/1,  continuous
     BCSCTL1 = XT2OFF | RSEL_MAX;
-    BCSCTL1 = XT2OFF | RSEL2;
     BCSCTL2 = 0;
     TBCCTL0 = CM0;
   }

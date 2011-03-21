@@ -47,6 +47,10 @@
  * vector.  This gets cleaned up in the x5 processors but that makes sharing
  * the same code complicated.   The following functional defines tell the story:
  *
+ * x1:  __MSP430_HAS_UART0__	usart0 present
+ *	__MSP430_HAS_I2C__	usart0 has I2C
+ *	__MSP430_HAS_UART1__
+ *
  * x2:	__MSP430_HAS_USCI__
  *	__MSP430_HAS_USCI_AB0__	indicates interrupts messy.
  *	__MSP430_HAS_USCI_AB1__
@@ -170,10 +174,16 @@ DEFINE_UNION_CAST(int2uctl1,msp430_uctl1_t,uint8_t)
 /*
  * The usci/uart baud rate mechanism is significantly different
  * than the msp430 usart uart.  See section 15.3.9 of the TI
- * MSP430x2xx Family User's Guide, slau144e for details.
+ * MSP430x2xx Family User's Guide, slau144f for details.
  *
  * For 32768Hz and 1048576Hz, we use UCOS16=0.
  * For higher cpu dco speeds we use oversampling, UCOS16=1.
+ *
+ * NOTE: keep in mind that baud rates are effected by the submain cpu
+ * clock.  On TinyOS platforms this is a power of 2 hz.  TI defines
+ * various factory calibration values for decimal MHz.  In other words
+ * we don't use the predefined TI values.  To denote this we use MIHZ
+ * nomenclature.
  */
 
 typedef enum {
@@ -193,33 +203,44 @@ typedef enum {
   UBR_1048MHZ_256000=0x0004, UMCTL_1048MHZ_230400=0x02,
 
   /*
-   * 1MHz = 1000000 Hz, 4MHz 4000000, 8MHz 8000000
-   * 16MHz 16000000.   use UCOS16 for oversampling,
+   * new names for later TI processors (x2xxx, msp430f261x).
+   *
+   * 1MIHZ = 1048576 Hz, 4MIHZ 4194304, 8MIHZ 8388608
+   * 16MIHZ 16777216.   use UCOS16 for oversampling,
    * use both UCBRF and UCBRS.
    *
-   * Settings for 1MHz, 8Mhz, and 16MHz are taken from
-   * a table on page 15-22 of slau144f, MSP430x2xx family
-   * User's Guide.  These are powers of 10.
+   * There is a table on page 15-22 of slau144f, MSP430x2xx family User's Guide
+   * but these are mostly powers of 10.   TinyOS clocks are binary so we can't
+   * use these.
    */
-  UBR_1MHZ_9600=0x6,       UMCTL_1MHZ_9600=0x81,
-  UBR_1MHZ_19200=0x3,      UMCTL_1MHZ_19200=0x41,
-  UBR_1MHZ_57600=0x1,      UMCTL_1MHZ_57600=0x0F,
 
-  UBR_8MHZ_4800=0x68,      UMCTL_8MHZ_4800=0x31,
-  UBR_8MHZ_9600=0x34,      UMCTL_8MHZ_9600=0x11,
-  UBR_8MHZ_19200=0x1A,     UMCTL_8MHZ_19200=0x11,
-  UBR_8MHZ_38400=0x0D,     UMCTL_8MHZ_38400=0x01,
-  UBR_8MHZ_57600=0x08,     UMCTL_8MHZ_57600=0xB1,
-  UBR_8MHZ_115200=0x04,    UMCTL_8MHZ_115200=0x3B,
-  UBR_8MHZ_230400=0x02,    UMCTL_8MHZ_230400=0x27,
+  UBR_1MIHZ_9600=0x6,       UMCTL_1MIHZ_9600=0xd1,
+  UBR_1MIHZ_19200=0x3,      UMCTL_1MIHZ_19200=0x71,
+  UBR_1MIHZ_57600=0x1,      UMCTL_1MIHZ_57600=0x21,
 
-  UBR_16MHZ_4800=0xD0,     UMCTL_16MHZ_4800=0x51,
-  UBR_16MHZ_9600=0x68,     UMCTL_16MHZ_9600=0x31,
-  UBR_16MHZ_19200=0x34,    UMCTL_16MHZ_19200=0x11,
-  UBR_16MHZ_38400=0x1A,    UMCTL_16MHZ_38400=0x11,
-  UBR_16MHZ_57600=0x11,    UMCTL_16MHZ_57600=0x61,
-  UBR_16MHZ_115200=0x8,    UMCTL_16MHZ_115200=0xB1,
-  UBR_16MHZ_230400=0x4,    UMCTL_16MHZ_230400=0x3B,
+  UBR_4MIHZ_4800=0x36,      UMCTL_4MIHZ_4800=0xa1,
+  UBR_4MIHZ_9600=0x1B,      UMCTL_4MIHZ_9600=0x51,
+  UBR_4MIHZ_19200=0x0D,     UMCTL_4MIHZ_19200=0xa1,
+  UBR_4MIHZ_38400=0x06,     UMCTL_4MIHZ_38400=0xd1,
+  UBR_4MIHZ_57600=0x04,     UMCTL_4MIHZ_57600=0x91,
+  UBR_4MIHZ_115200=0x02,    UMCTL_4MIHZ_115200=0x41,
+  UBR_4MIHZ_230400=0x01,    UMCTL_4MIHZ_230400=0x21,
+
+  UBR_8MIHZ_4800=0x6D,      UMCTL_8MIHZ_4800=0x41,
+  UBR_8MIHZ_9600=0x36,      UMCTL_8MIHZ_9600=0xA1,
+  UBR_8MIHZ_19200=0x1B,     UMCTL_8MIHZ_19200=0x51,
+  UBR_8MIHZ_38400=0x0D,     UMCTL_8MIHZ_38400=0xA1,
+  UBR_8MIHZ_57600=0x09,     UMCTL_8MIHZ_57600=0x21,
+  UBR_8MIHZ_115200=0x04,    UMCTL_8MIHZ_115200=0x91,
+  UBR_8MIHZ_230400=0x02,    UMCTL_8MIHZ_230400=0x41,
+
+  UBR_16MIHZ_4800=0xDA,     UMCTL_16MIHZ_4800=0x71,
+  UBR_16MIHZ_9600=0x6D,     UMCTL_16MIHZ_9600=0x41,
+  UBR_16MIHZ_19200=0x36,    UMCTL_16MIHZ_19200=0xA1,
+  UBR_16MIHZ_38400=0x1B,    UMCTL_16MIHZ_38400=0x51,
+  UBR_16MIHZ_57600=0x12,    UMCTL_16MIHZ_57600=0x31,
+  UBR_16MIHZ_115200=0x9,    UMCTL_16MIHZ_115200=0x21,
+  UBR_16MIHZ_230400=0x4,    UMCTL_16MIHZ_230400=0x91,
 } msp430_uart_rate_t;
 
 
@@ -264,11 +285,11 @@ typedef union {
 
 /*
  * be sure to check Msp430DcoSpec.h for what speed we think
- * the processor is actually running at.  We assume 8MHz.
+ * the processor is actually running at.  We assume 8MiHz.
  */
 msp430_uart_union_config_t msp430_uart_default_config = { {
-  ubr     :	UBR_8MHZ_115200,
-  umctl   :	UMCTL_8MHZ_115200,
+  ubr     :	UBR_8MIHZ_115200,
+  umctl   :	UMCTL_8MIHZ_115200,
   ucmode  :	0,			// uart
   ucspb   :	0,			// one stop
   uc7bit  :	0,			// 8 bit
