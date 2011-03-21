@@ -1,5 +1,7 @@
 /*
- * Copyright (c) 2005 Stanford University. All rights reserved.
+ * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2005 Stanford University.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,10 +42,7 @@
  * @author Vlado Handziski
  * @author Joe Polastre
  * @author Cory Sharp
- * @date   October 26, 2005
- * @see  Please refer to TEP 112 for more information about this component and its
- *          intended use.
- *
+ * @author Eric B. Decker
  */
 
 module McuSleepC @safe() {
@@ -56,6 +55,11 @@ module McuSleepC @safe() {
   }
 }
 implementation {
+
+MSP430REG_NORACE2(U0CTLnr,U0CTL);
+MSP430REG_NORACE2(I2CTCTLnr,I2CTCTL);
+MSP430REG_NORACE2(I2CDCTLnr,I2CDCTL);
+
   bool dirty = TRUE;
   mcu_power_t powerState = MSP430_POWER_ACTIVE;
 
@@ -80,15 +84,17 @@ implementation {
 	 ((TACTL & TASSEL_3) == TASSEL_2)) ||
 	((ME1 & (UTXE0 | URXE0)) && (U0TCTL & SSEL1)) ||
 	((ME2 & (UTXE1 | URXE1)) && (U1TCTL & SSEL1))
-#ifdef __msp430_have_usart0_with_i2c
+
+/* the following doesn't work for x2 family (but this is x1 file so who cares) */
+#if defined(__msp430_have_usart0_with_i2c) || defined(__MSP430_HAS_I2C__)
 	 // registers end in "nr" to prevent nesC race condition detection
 	 || ((U0CTLnr & I2CEN) && (I2CTCTLnr & SSEL1) &&
 	     (I2CDCTLnr & I2CBUSY) && (U0CTLnr & SYNC) && (U0CTLnr & I2C))
 #endif
 	)
       pState = MSP430_POWER_LPM1;
-    
-#ifdef __msp430_have_adc12
+
+#if defined(__msp430_have_adc12) || defined(__MSP430_HAS_ADC12__)
     // ADC12 check, pre-condition: pState != MSP430_POWER_ACTIVE
     if (ADC12CTL0 & ADC12ON){
       if (ADC12CTL1 & ADC12SSEL_2){
