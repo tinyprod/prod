@@ -39,9 +39,9 @@ module ShimmerSerialP {
 }
 
 implementation {
-  msp430_uart_union_config_t msp430_uart_shimmer2_config = { 
-    { ubr: UBR_1MHZ_115200, 
-      umctl: UMCTL_1MHZ_115200, 
+  msp430_uart_union_config_t msp430_uart_shimmer2_config = { {
+      ubr  : UBR_1MIHZ_115200, 
+      umctl: UMCTL_1MIHZ_115200, 
       ssel: 0x02, 
       pena: 0, 
       pev: 0, 
