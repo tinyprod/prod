@@ -375,7 +375,7 @@ void brief_pause(register unsigned int n)
 		:  "+r" (n));
 }
 
-#define TOSH_uwait(n)   brief_pause((((unsigned long long)n) * TARGET_DCO_KHZ * 1024 / 1000000 - 2) / 3)
+#define TOSH_uwait(n)   brief_pause((((unsigned long long)n) * TARGET_DCO_HZ / 1000000 - 2) / 3)
 
 #define SET_FLAG(port, flag) ((port) |= (flag))
 #define CLR_FLAG(port, flag) ((port) &= ~(flag))
