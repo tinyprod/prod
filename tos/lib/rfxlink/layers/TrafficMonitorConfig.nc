@@ -32,54 +32,10 @@
  * Author: Miklos Maroti
  */
 
-#include <Tasklet.h>
-
 interface TrafficMonitorConfig
 {
 	/**
-	 * Returns the frequency (in milliseconds) when the traffic averages
-	 * should be updated. 
+	 * Returns the number of bytes in this message.
 	 */
-	async command uint16_t getUpdatePeriod();
-
-	/**
-	 * Returns the amount of time this message has occupied the channel.
-	 */
-	async command uint16_t getChannelTime(message_t* msg);
-
-	/**
-	 * Returns the sender address of the message so we can calculate the
-	 * average number of neighbors that send messages per update period.
-	 */
-	async command am_addr_t getSender(message_t* msg);
-
-	/**
-	 * This event should be fired if we notice some anomalies in the operation
-	 * of the channel, such as not receiving acknowledgements, missing
-	 * sequence numbers or packets with corrupted CRC.
-	 */
-	tasklet_async event void channelError();
-
-	/**
-	 * Returns the averaged (exponential decay) transmit channel time 
-	 * during one update period.
-	 */
-	tasklet_async event uint16_t getTransmitAverage();
-
-	/**
-	 * Returns the averaged (exponential decay) receive channel time 
-	 * during one update period.
-	 */
-	tasklet_async event uint16_t getReceiveAverage();
-
-	/**
-	 * Returns the averaged (exponential decay) number of neighbors 
-	 * whose messages this component receives during one update period.
-	 */
-	tasklet_async event uint8_t getNeighborAverage();
-
-	/**
-	 * Returns the averaged error events during one update period.
-	 */
-	tasklet_async event uint8_t getErrorAverage();
+	async command uint16_t getBytes(message_t* msg);
 }

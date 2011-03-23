@@ -170,7 +170,7 @@ implementation {
     return call FastSpiByte.splitRead();
   }
 
-  default async command bool    UsartResource.isOwner[ uint8_t id ]() { return FALSE; }
+  default async command bool UsartResource.isOwner[ uint8_t id ]() { return FALSE; }
   default async command error_t UsartResource.request[ uint8_t id ]() { return FAIL; }
   default async command error_t UsartResource.immediateRequest[ uint8_t id ]() { return FAIL; }
   default async command error_t UsartResource.release[ uint8_t id ]() { return FAIL; }
