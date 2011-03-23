@@ -221,5 +221,6 @@ implementation {
       signal I2CBasicAddr.readDone( error, I2CSA, m_len, m_buf );
   }
   
-  default async command bool UsartResource.isOwner[ uint8_t id ]() { return FALSE; }
+ default async command bool UsartResource.isOwner[ uint8_t id ]() { return FALSE; }
+
 }
