@@ -5,20 +5,26 @@
 * apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
   fixed and made part of the platform/cpu definition.
 
-* What is the purpose of msp430regtypes.h?  Is there a easier way to deal with this?
+-- What is the purpose of msp430regtypes.h?  Is there a easier way to deal with this?
+  No.  This is how it is done.  Provides the linkage to msp430hardware.h and various
+  defines that are there, ie. MSP430_NORACE(xxxxx).   etc.
 
 * There are multiple copies of msp430hardware.h.   Is that reasonable?
 
 * i2c for msp430 isn't done yet.  needs to be cleaned up and made less ugly.  Interface
   needs to be finished.
 
-  (done) Z1 currently overloads the SPI pins.   Switch to using I2C pins so it is clean.
+  shimmer/span has a working i2c.  Investigate bringing that i2c implementation into the
+  main t2 usart and usci areas.
 
 * CC2420 modules use LocalIeeeEui64C to obtain an ipv6 link-local address.  Z1 needs to
   provide.  If the ds2401 (serializer chip) isn't supported how is this done?
 
 * Currently config structs get put into ram via the data copy into ram mechanism.  This
   means that it takes up room in RAM and ROM.  Suboptimal.
+
+  Some platforms (Epic?) actual modify parts of the config structure on the fly.  These
+  need to stay in ram.   Look at const stash on z1-rework.
 
 * Original mm_core port removed McuPowerOverride.  Why?
 
@@ -33,6 +39,13 @@
   Are the bit fields really used or can we nuke them.  Configuration uses a configuration struct
   and functional stuff is code that uses the definitions in the TI HEADERS and other cpu headers.
 
+  bit fields are used by the basic definitions in the interface files.  To get rid of the bit fields
+  requires completly redefining the Hpl interfaces.
+
+* Need better approach to assigning ports.  Should be a platform thing.  this makes it so drivers
+  don't wire directly but instead wire to the platform ports.  Or conversely the platform provides
+  the wiring...   How to do this?
+
 * Do we want to put in TOSThreads support?  Best way if yes is to #ifdef needed code in
   the interrupt handlers.  Old school mechanism clones the code.  Why did Kevin do that?
 
@@ -40,9 +53,7 @@
   Works but isn't clean or straight forward.  Confusing for someone new picking up what is going
   on.
 
-* Need better approach to assigning pins.  Should be a platform thing.  this makes it so drivers
-  don't wire directly but instead wire to the platform ports.  Or conversely the platform provides
-  the wiring...   How to do this?
+  (done) Z1 currently overloads the SPI pins.   Switch to using I2C pins so it is clean.
 
 -- should UcsiB add call for Usci.setUmctl(0)?   No.   not defined (it exists though) but is reset to 0.
 

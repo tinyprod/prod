@@ -39,8 +39,8 @@ module ShimmerSerialP {
 }
 
 implementation {
-  msp430_uart_union_config_t msp430_uart_shimmer2_config = { {
-      ubr  : UBR_1MIHZ_115200, 
+  const msp430_uart_union_config_t msp430_uart_shimmer2_config = { {
+      ubr: UBR_1MIHZ_115200, 
       umctl: UMCTL_1MIHZ_115200, 
       ssel: 0x02, 
       pena: 0, 
@@ -69,7 +69,7 @@ implementation {
 
   event void Resource.granted(){}
 
-  async command msp430_uart_union_config_t * Msp430UartConfigure.getConfig(){
+  async command const msp430_uart_union_config_t * Msp430UartConfigure.getConfig(){
     return &msp430_uart_shimmer2_config;
   }
 }

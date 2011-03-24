@@ -36,5 +36,5 @@
 #include "msp430usart.h"
 
 interface Msp430SpiConfigure {
-  async command msp430_spi_union_config_t* getConfig();
+  async command const msp430_spi_union_config_t* getConfig();
 }

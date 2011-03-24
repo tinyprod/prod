@@ -104,8 +104,8 @@ implementation {
   default async command error_t UsciResource.immediateRequest[ uint8_t id ]() { return FAIL; }
   default async command error_t UsciResource.release[ uint8_t id ]()          { return FAIL; }
   default event void Resource.granted[ uint8_t id ]() {}
-  default async command msp430_i2c_union_config_t* Msp430I2CConfigure.getConfig[uint8_t id]() {
-    return (msp430_i2c_union_config_t *) &msp430_i2c_default_config;
+  default async command const msp430_i2c_union_config_t* Msp430I2CConfigure.getConfig[uint8_t id]() {
+    return &msp430_i2c_default_config;
   }
 
   async command error_t I2CBasicAddr.read( i2c_flags_t flags,

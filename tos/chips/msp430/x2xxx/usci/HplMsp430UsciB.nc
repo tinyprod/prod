@@ -159,7 +159,7 @@ interface HplMsp430UsciB {
    * configure usci as spi using config.
    * leaves interrupts disabled.
    */
-  async command void setModeSpi(msp430_spi_union_config_t* config);
+  async command void setModeSpi(const msp430_spi_union_config_t* config);
 
 
   /***********************************************************************
@@ -179,7 +179,7 @@ interface HplMsp430UsciB {
    * configure usci as i2c using config.
    * leaves interrupts disabled.
    */
-  async command void setModeI2C( msp430_i2c_union_config_t* config );
+  async command void setModeI2C(const msp430_i2c_union_config_t* config);
 
   /* control which direction the bus is in */
   async command void setTransmitMode();

@@ -72,8 +72,7 @@ implementation {
     }
   }
   
-  async command void HplI2C.setModeI2C( msp430_i2c_union_config_t* config ) {
-    
+  async command void HplI2C.setModeI2C(const msp430_i2c_union_config_t* config) {
     call HplUsart.resetUsart(TRUE);
     call HplUsart.disableUart();
     call HplUsart.disableSpi();
@@ -81,14 +80,12 @@ implementation {
     call SIMO.selectModuleFunc();
     call UCLK.makeInput();
     call UCLK.selectModuleFunc();
-    
     atomic {
-      
       U0CTL &= ~(I2C | I2CEN | SYNC);
       U0CTL = SWRST;
       U0CTL |= SYNC | I2C;
       U0CTL &= ~I2CEN;
-      
+
       U0CTL = (config->i2cRegisters.uctl | (I2C | SYNC)) & ~I2CEN;
       
       I2CTCTL = 0x01;  // resetting I2CTCTL first,
@@ -96,15 +93,13 @@ implementation {
                        // for some reason causes the I2C module to
                        // work after SPI has been used (Issue 14)           
       I2CTCTL = config->i2cRegisters.i2ctctl;
-            
+
       I2CPSC = config->i2cRegisters.i2cpsc;
       I2CSCLH = config->i2cRegisters.i2csclh;
       I2CSCLL = config->i2cRegisters.i2cscll;
       I2COA = config->i2cRegisters.i2coa;
       U0CTL |= I2CEN;
-      
     }
-    
   }
   
   // U0CTL

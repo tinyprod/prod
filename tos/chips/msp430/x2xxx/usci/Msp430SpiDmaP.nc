@@ -114,7 +114,7 @@ implementation {
   default async command error_t UsciResource.request[ uint8_t id ]() { return FAIL; }
   default async command error_t UsciResource.immediateRequest[ uint8_t id ]() { return FAIL; }
   default async command error_t UsciResource.release[ uint8_t id ]() { return FAIL; }
-  default async command msp430_spi_union_config_t* Msp430SpiConfigure.getConfig[uint8_t id]() {
+  default async command const msp430_spi_union_config_t* Msp430SpiConfigure.getConfig[uint8_t id]() {
     return &msp430_spi_default_config;
   }
 

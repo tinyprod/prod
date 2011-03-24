@@ -66,7 +66,11 @@ enum {
 
 #include "eyesIFXBaudrates.h"
 
-msp430_uart_union_config_t tda5250_uart_config = { {ubr: TDA5250_UART_UBR, umctl: TDA5250_UART_UMCTL, ssel: 0x02, pena: 0, pev: 0, spb: 0, clen: 1, listen: 0, mm: 0, ckpl: 0, urxse: 0, urxeie:0, urxwie: 0, urxe: 1, utxe: 0} };
+msp430_uart_union_config_t tda5250_uart_config = { {
+  ubr: TDA5250_UART_UBR, umctl: TDA5250_UART_UMCTL, ssel: 0x02, pena: 0,
+  pev: 0, spb: 0, clen: 1, listen: 0, mm: 0,
+  ckpl: 0, urxse: 0, urxeie:0, urxwie: 0, urxe: 1, utxe: 0
+} };
 
 enum {
     TDA5250_32KHZ_BYTE_TIME = (32768UL*10)/TDA5250_UART_BAUDRATE

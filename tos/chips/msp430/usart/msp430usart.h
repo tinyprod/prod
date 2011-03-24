@@ -137,7 +137,7 @@ typedef union {
  * default spi config.
  * /2, SMCLK, master, 3pin
  */
-msp430_spi_union_config_t msp430_spi_default_config = { {
+const msp430_spi_union_config_t msp430_spi_default_config = { {
     ubr    : 2,
     ssel   : 2,
     clen   : 1,
@@ -230,7 +230,7 @@ typedef union {
   msp430_uart_registers_t uartRegisters;
 } msp430_uart_union_config_t;
 
-msp430_uart_union_config_t msp430_uart_default_config = { {
+const msp430_uart_union_config_t msp430_uart_default_config = { {
     ubr    : UBR_4MIHZ_57600,
     umctl  : UMCTL_4MIHZ_57600,
     ssel   : 2,
@@ -301,7 +301,7 @@ typedef union {
   msp430_i2c_registers_t i2cRegisters;
 } msp430_i2c_union_config_t;
 
-msp430_i2c_union_config_t msp430_i2c_default_config = { {
+const msp430_i2c_union_config_t msp430_i2c_default_config = { {
     rxdmaen : 0,
     txdmaen : 0,
     xa : 0,

@@ -5,7 +5,7 @@ module Z1SerialP {
 }
 implementation {
   
-  msp430_uart_union_config_t msp430_uart_z1_config = { {
+  const msp430_uart_union_config_t msp430_uart_z1_config = { {
     ubr    : UBR_8MIHZ_115200,
     umctl  : UMCTL_8MIHZ_115200,
     ucssel : 2,
@@ -16,14 +16,15 @@ implementation {
   command error_t StdControl.start(){
     return call Resource.immediateRequest();
   }
+
   command error_t StdControl.stop(){
     call Resource.release();
     return SUCCESS;
   }
+
   event void Resource.granted(){}
 
-  async command msp430_uart_union_config_t* Msp430UartConfigure.getConfig() {
+  async command const msp430_uart_union_config_t* Msp430UartConfigure.getConfig() {
     return &msp430_uart_z1_config;
   }
-  
 }

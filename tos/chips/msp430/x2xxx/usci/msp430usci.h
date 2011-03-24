@@ -291,7 +291,7 @@ typedef union {
  * be sure to check Msp430DcoSpec.h for what speed we think
  * the processor is actually running at.  We assume 8MiHz.
  */
-msp430_uart_union_config_t msp430_uart_default_config = { {
+const msp430_uart_union_config_t msp430_uart_default_config = { {
   ubr     :	UBR_8MIHZ_115200,
   umctl   :	UMCTL_8MIHZ_115200,
   ucmode  :	0,			// uart
@@ -303,7 +303,7 @@ msp430_uart_union_config_t msp430_uart_default_config = { {
   ucssel  :	2,			// smclk
   utxe    :	1,			// enable tx
   urxe    :	1,			// enable rx
-  } };
+} };
 
 
 /************************************************************************************************************
@@ -343,7 +343,7 @@ typedef union {
 } msp430_spi_union_config_t;
 
 
-msp430_spi_union_config_t msp430_spi_default_config = { {
+const msp430_spi_union_config_t msp430_spi_default_config = { {
   ubr		: 2,			/* smclk/2   */
   ucmode	: 0,			/* 3 pin, no ste */
   ucmst		: 1,			/* master */
@@ -352,7 +352,7 @@ msp430_spi_union_config_t msp430_spi_default_config = { {
   ucckpl	: 0,			/* inactive state low */
   ucckph	: 1,			/* data captured on rising, changed falling */
   ucssel	: 2,			/* smclk */
-  } };
+} };
     
     
 /************************************************************************************************************
@@ -427,7 +427,7 @@ typedef union {
 } msp430_i2c_union_config_t;
 
 
-msp430_i2c_union_config_t msp430_i2c_default_config = { {
+const msp430_i2c_union_config_t msp430_i2c_default_config = { {
     ubr     : 2,			/* smclk/2 */
     ucmode  : 3,			/* i2c mode */
     ucmst   : 1,			/* master */

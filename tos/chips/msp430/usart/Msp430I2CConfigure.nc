@@ -36,5 +36,5 @@
 #include "msp430usart.h"
 
 interface Msp430I2CConfigure {
-  async command msp430_i2c_union_config_t* getConfig();
+  async command const msp430_i2c_union_config_t* getConfig();
 }

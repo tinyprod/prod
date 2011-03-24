@@ -89,7 +89,7 @@ implementation {
    * this m_byte_time kludge is broken
    */
   async command void ResourceConfigure.configure[ uint8_t id ]() {
-    msp430_uart_union_config_t* config = call Msp430UartConfigure.getConfig[id]();
+    const msp430_uart_union_config_t* config = call Msp430UartConfigure.getConfig[id]();
     m_byte_time = config->uartConfig.ubr / 2;
     if (!m_byte_time)
       m_byte_time = 1;
@@ -215,8 +215,8 @@ implementation {
   default async command error_t UsciResource.request[ uint8_t id ]() { return FAIL; }
   default async command error_t UsciResource.immediateRequest[ uint8_t id ]() { return FAIL; }
   default async command error_t UsciResource.release[ uint8_t id ]() { return FAIL; }
-  default async command msp430_uart_union_config_t* Msp430UartConfigure.getConfig[uint8_t id]() {
-    return (msp430_uart_union_config_t *) &msp430_uart_default_config;
+  default async command const msp430_uart_union_config_t* Msp430UartConfigure.getConfig[uint8_t id]() {
+    return &msp430_uart_default_config;
   }
 
   default event void Resource.granted[ uint8_t id ]() {}

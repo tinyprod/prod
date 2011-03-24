@@ -243,7 +243,7 @@ implementation
     }
   }
 
-  void configSpi(msp430_spi_union_config_t* config) {
+  void configSpi(const msp430_spi_union_config_t* config) {
     U1CTL = (config->spiRegisters.uctl) | SYNC | SWRST;  
     U1TCTL = config->spiRegisters.utctl;
 
@@ -252,7 +252,7 @@ implementation
   }
 
 
-  async command void Usart.setModeSpi(msp430_spi_union_config_t* config) {    
+  async command void Usart.setModeSpi(const msp430_spi_union_config_t* config) {    
     atomic {
       call Usart.resetUsart(TRUE);
       call Usart.disableUart();
@@ -266,7 +266,7 @@ implementation
   }
 
 
-  void configUart(msp430_uart_union_config_t* config) {
+  void configUart(const msp430_uart_union_config_t* config) {
 
     U1CTL = (config->uartRegisters.uctl & ~SYNC) | SWRST;
     U1TCTL = config->uartRegisters.utctl;
@@ -276,8 +276,7 @@ implementation
     call Usart.setUmctl(config->uartRegisters.umctl);
   }
 
-  async command void Usart.setModeUart(msp430_uart_union_config_t* config) {
-
+  async command void Usart.setModeUart(const msp430_uart_union_config_t* config) {
     atomic { 
       call Usart.resetUsart(TRUE);
       call Usart.disableSpi();
@@ -297,7 +296,6 @@ implementation
       call Usart.disableIntr();
       call Usart.clrIntr();		/* clear after taking out of reset */
     }
-    
     return;
   }
 

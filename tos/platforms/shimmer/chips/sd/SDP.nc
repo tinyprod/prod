@@ -204,13 +204,12 @@ implementation {
   }
 
   void initSPI() {
-    msp430_spi_union_config_t * config;
+    const msp430_spi_union_config_t * config;
 
     TOSH_MAKE_SD_CS_N_OUTPUT();
     TOSH_SEL_SD_CS_N_IOFUNC();
 
     config = &msp430_spi_default_config;
-    
     call Usart.setModeSpi(config);
 
     /*

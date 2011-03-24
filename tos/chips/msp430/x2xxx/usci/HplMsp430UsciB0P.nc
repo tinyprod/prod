@@ -224,7 +224,7 @@ implementation {
     }
   }
 
-  void configSpi(msp430_spi_union_config_t* config) {
+  void configSpi(const msp430_spi_union_config_t* config) {
     UCB0CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCB0CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
@@ -242,7 +242,7 @@ implementation {
    * Also note that resetting the usci will clear any interrupt enables
    * for the device.  Don't need to explicitly disableIntr.
    */
-  async command void Usci.setModeSpi(msp430_spi_union_config_t* config) {
+  async command void Usci.setModeSpi(const msp430_spi_union_config_t* config) {
     atomic {
       call Usci.resetUsci_n();
       call Usci.enableSpi();
@@ -382,7 +382,7 @@ implementation {
     }  
   }
 
-  void configI2C(msp430_i2c_union_config_t* config) {
+  void configI2C(const msp430_i2c_union_config_t* config) {
     UCB0CTL1 = (config->i2cRegisters.uctl1 | UCSWRST);
     UCB0CTL0 = (config->i2cRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->i2cRegisters.ubr);
@@ -391,7 +391,7 @@ implementation {
     UCB0I2CIE = 0;
   }
 
-  async command void Usci.setModeI2C( msp430_i2c_union_config_t* config ) {
+  async command void Usci.setModeI2C(const msp430_i2c_union_config_t* config) {
     atomic {
       call Usci.resetUsci_n();
       call Usci.enableI2C();

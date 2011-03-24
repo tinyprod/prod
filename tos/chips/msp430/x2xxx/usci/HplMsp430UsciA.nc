@@ -175,7 +175,7 @@ interface HplMsp430UsciA {
    * configure usci as uart using config.
    * leaves interrupts disabled.
    */
-  async command void setModeUart(msp430_uart_union_config_t* config);
+  async command void setModeUart(const msp430_uart_union_config_t* config);
 
 
   /***********************************************************************
@@ -201,5 +201,5 @@ interface HplMsp430UsciA {
    * configure usci as spi using config.
    * leaves interrupts disabled.
    */
-  async command void setModeSpi(msp430_spi_union_config_t* config);
+  async command void setModeSpi(const msp430_spi_union_config_t* config);
 }

@@ -77,16 +77,16 @@ implementation {
 
   void setupUART() {
     /*
-     * NOTE:  this sets the baudrate based upon a 4mhz SMCLK given by the 8mhz xt clock config
-     * to run at the default msp430 clock settings, use _1MHZ_ for these two flags
+     * NOTE:  this sets the baudrate based upon a 4mihz SMCLK given by the 8mihz xt clock config
+     * to run at the default msp430 clock settings, use _1MIHZ_ for these two flags
      */
-    msp430_uart_union_config_t RN_uart_config = { {ubr: UBR_4MHZ_115200, umctl: UMCTL_4MHZ_115200, 
-						   ssel: 0x02, pena: 0, pev: 0, spb: 0, clen: 1,listen: 0, 
-						   mm: 0, ckpl: 0, urxse: 0, urxeie: 0, 
-						   urxwie: 0, utxe : 1, urxe :1} };
+    const msp430_uart_union_config_t RN_uart_config = { {
+      ubr : UBR_4MIHZ_115200, umctl : UMCTL_4MIHZ_115200, ssel : 0x02,
+      pena : 0, pev : 0, spb : 0, clen : 1, listen : 0, mm : 0,
+      ckpl : 0, urxse : 0, urxeie : 0, urxwie : 0, utxe : 1, urxe : 1
+    } };
 
     call UARTControl.setModeUart(&RN_uart_config); // set to UART mode
-
     call UARTControl.enableTxIntr();
     call UARTControl.enableRxIntr();
   }

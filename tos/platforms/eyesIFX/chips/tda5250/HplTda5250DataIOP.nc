@@ -64,8 +64,7 @@ implementation {
     return SUCCESS;
   }
 	
-  async command msp430_uart_union_config_t* UartResourceConfigure.getConfig() {
-    return &tda5250_uart_config;
+  async command const msp430_uart_union_config_t* UartResourceConfigure.getConfig() {
+    return (const msp430_uart_union_config_t*) &tda5250_uart_config;
   }
-
 }

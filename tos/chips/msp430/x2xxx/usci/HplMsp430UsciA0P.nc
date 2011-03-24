@@ -237,7 +237,7 @@ implementation {
     }
   }
 
-  void configSpi(msp430_spi_union_config_t* config) {
+  void configSpi(const msp430_spi_union_config_t* config) {
     UCA0CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCA0CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
@@ -255,7 +255,7 @@ implementation {
    * Also note that resetting the usci will clear any interrupt enables
    * for the device.  Don't need to explicitly disableIntr.
    */
-  async command void Usci.setModeSpi(msp430_spi_union_config_t* config) {
+  async command void Usci.setModeSpi(const msp430_spi_union_config_t* config) {
     atomic {
       call Usci.resetUsci_n();
       call Usci.enableSpi();
@@ -392,7 +392,7 @@ implementation {
     }
   }
 
-  void configUart(msp430_uart_union_config_t* config) {
+  void configUart(const msp430_uart_union_config_t* config) {
     UCA0CTL1 = (config->uartRegisters.uctl1 | UCSWRST);
     UCA0CTL0 = config->uartRegisters.uctl0;		/* ucsync should be off */
     call Usci.setUbr(config->uartRegisters.ubr);
@@ -409,7 +409,7 @@ implementation {
    * Also note that resetting the usci will clear any interrupt enables
    * for the device.  Don't need to explicitly disableIntr.
    */
-  async command void Usci.setModeUart(msp430_uart_union_config_t* config) {
+  async command void Usci.setModeUart(const msp430_uart_union_config_t* config) {
     atomic {
       call Usci.resetUsci_n();
       call Usci.enableUart();

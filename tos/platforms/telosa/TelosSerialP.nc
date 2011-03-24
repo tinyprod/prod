@@ -5,7 +5,7 @@ module TelosSerialP {
 }
 implementation {
   
-  msp430_uart_union_config_t msp430_uart_telos_config = { {
+  const msp430_uart_union_config_t msp430_uart_telos_config = { {
     ubr  : UBR_1MIHZ_115200,
     umctl: UMCTL_1MIHZ_115200,
     ssel: 0x02, pena: 0, pev: 0, spb: 0, clen: 1, listen: 0, mm: 0,
@@ -15,14 +15,15 @@ implementation {
   command error_t StdControl.start(){
     return call Resource.immediateRequest();
   }
+
   command error_t StdControl.stop(){
     call Resource.release();
     return SUCCESS;
   }
+
   event void Resource.granted(){}
 
-  async command msp430_uart_union_config_t* Msp430UartConfigure.getConfig() {
+  async command const msp430_uart_union_config_t* Msp430UartConfigure.getConfig() {
     return &msp430_uart_telos_config;
   }
-  
 }

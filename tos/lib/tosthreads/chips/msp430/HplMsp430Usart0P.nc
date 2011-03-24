@@ -256,7 +256,7 @@ implementation
     }
   }
   
-  void configSpi(msp430_spi_union_config_t* config) {
+  void configSpi(const msp430_spi_union_config_t* config) {
     // U0CTL = (config->spiRegisters.uctl & ~I2C) | SYNC | SWRST;
     U0CTL = (config->spiRegisters.uctl) | SYNC | SWRST;  
     U0TCTL = config->spiRegisters.utctl;
@@ -265,12 +265,11 @@ implementation
     call Usart.setUmctl(0x00);
   }
 
-  async command void Usart.setModeSpi(msp430_spi_union_config_t* config) {
-    
+  async command void Usart.setModeSpi(const msp430_spi_union_config_t* config) {
     atomic {
-    	call Usart.resetUsart(TRUE);
-    	call HplI2C.clearModeI2C();
-    	call Usart.disableUart();
+      call Usart.resetUsart(TRUE);
+      call HplI2C.clearModeI2C();
+      call Usart.disableUart();
       configSpi(config);
       call Usart.enableSpi();
       call Usart.resetUsart(FALSE);
@@ -280,17 +279,15 @@ implementation
     return;
   }
 
-  void configUart(msp430_uart_union_config_t* config) {
-
+  void configUart(const msp430_uart_union_config_t* config) {
     U0CTL = (config->uartRegisters.uctl & ~SYNC) | SWRST;
     U0TCTL = config->uartRegisters.utctl;
     U0RCTL = config->uartRegisters.urctl;        
-    
     call Usart.setUbr(config->uartRegisters.ubr);
     call Usart.setUmctl(config->uartRegisters.umctl);
   }
 
-  async command void Usart.setModeUart(msp430_uart_union_config_t* config) {
+  async command void Usart.setModeUart(const msp430_uart_union_config_t* config) {
 
     atomic { 
       call Usart.resetUsart(TRUE);
