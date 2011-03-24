@@ -92,6 +92,7 @@ enum {
 // message_t type dispatch
 
 enum {
+  AM_SERIAL_PACKET = 0,
   TOS_SERIAL_ACTIVE_MESSAGE_ID = 0,
   TOS_SERIAL_CC1000_ID = 1,
   TOS_SERIAL_802_15_4_ID = 2,
