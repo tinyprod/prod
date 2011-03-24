@@ -34,6 +34,8 @@ endif
 
 OBJCOPY = msp430-objcopy
 OBJDUMP = msp430-objdump
+NM      = msp430-nm
+SIZE    = msp430-size
 SET_ID = tos-set-symbols
 NCC = ncc
 LIBS = -lm
@@ -46,6 +48,8 @@ endif
 AMADDR = ActiveMessageAddressC__addr
 BUILDDIR ?= build/$(PLATFORM)
 MAIN_EXE = $(BUILDDIR)/main.exe
+MAIN_LST = $(BUILDDIR)/main.lst
+MAIN_SYM = $(BUILDDIR)/main.sym
 MAIN_IHEX = $(BUILDDIR)/main.ihex
 INSTALL_IHEX = $(MAIN_IHEX).out$(if $(NODEID),-$(NODEID),)
 
@@ -101,7 +105,7 @@ tosimage: ihex build_tosimage FORCE
 ihex: exe FORCE
 	$(OBJCOPY) --output-target=ihex $(MAIN_EXE) $(MAIN_IHEX)
 
-exe: exe0 bytes FORCE
+exe: exe0 bytes lst sym FORCE
 	@:
 
 exe0: builddir $(BUILD_EXTRA_DEPS) $(COMPONENT).nc FORCE
@@ -116,5 +120,15 @@ builddir: FORCE
 	mkdir -p $(BUILDDIR)
 
 bytes: FORCE
+	@echo "script:"
 	@$(OBJDUMP) -h $(MAIN_EXE) | perl -ne '$$b{$$1}=hex $$2 if /^\s*\d+\s*\.(text|data|bss)\s+(\S+)/; END { printf("%16d bytes in ROM\n%16d bytes in RAM\n",$$b{text}+$$b{data},$$b{data}+$$b{bss}); }'
+	@echo "msp430-size:"
+	@$(SIZE) $(MAIN_EXE)
 
+lst: FORCE
+	@echo "generating listing: $(MAIN_LST)"
+	@$(OBJDUMP) -d --source -w $(MAIN_EXE) > $(MAIN_LST)
+
+sym: FORCE
+	@echo "generating symbol table: $(MAIN_SYM)"
+	@$(NM) -an $(MAIN_EXE) > $(MAIN_SYM)
