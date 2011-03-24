@@ -41,7 +41,21 @@
 #ifndef _H_msp430hardware_h
 #define _H_msp430hardware_h
 
+/*
+ * __MSPGCC__ gets defined in the msp430 uniarch toolchain.   This toolchain
+ * uses msp430.h instead of io.h to pull in the processor definitions.
+ * msp430.h replaces io.h which is deprecated.
+ */
+#ifdef __MSPGCC__
+#include <msp430.h>
+#else
 #include <io.h>
+#endif
+
+/*
+ * signal.h defines lots of interesting things including dint(), eint() and
+ * how to hook interrupts in.
+ */
 #include <signal.h>
 #include "msp430regtypes.h"
 
