@@ -68,6 +68,10 @@
 #error "msp430usci: processor not supported, currently only supports x2xxx (HAS_USCI)"
 #endif
 
+#if __GNUC__ >= 4
+#warning "USCI periph_reg bitfields: mspgcc version >= 4 needs to be checked carefully."
+#endif
+
 /*
  * The MSP430X architecture at least the msp430f2618 family
  * has a total of four ports that can be used independently

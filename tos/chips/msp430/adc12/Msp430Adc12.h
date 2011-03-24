@@ -1,15 +1,19 @@
-/* 
+/*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2006, Technische Universitaet Berlin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
+ *
  * - Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
+ *
  * - Neither the name of the Technische Universitaet Berlin nor the names
  *   of its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -26,16 +30,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * - Revision -------------------------------------------------------------
- * $Revision: 1.5 $
- * $Date: 2007-06-25 15:47:14 $
- * @author: Jan Hauer <hauer@tkn.tu-berlin.de>
- * ========================================================================
+ * @author Jan Hauer <hauer@tkn.tu-berlin.de>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
  
 #ifndef MSP430ADC12_H
 #define MSP430ADC12_H
 #include "Msp430RefVoltGenerator.h"
+
+#if !defined(__msp430_have_adc12) && !defined(__MSP430_HAS_ADC12__)
+#error Target msp430 device does not have ADC12 module
+#endif
 
 #define ADC12_TIMERA_ENABLED
 #define ADC12_P6PIN_AUTO_CONFIGURE
@@ -165,10 +170,7 @@ enum sampcon_id_enum
 #define ADCC_READ_STREAM_SERVICE "AdcC.ReadStream.Client"
 
 
-
 #ifdef __MSP430_TI_HEADERS__
-//#if __GNUC__ >= 4
-  
   // "The bitfield structures that overlay peripheral registers are not part of
   // mspgcc in the future; the recommended way of accessing those fields is to
   // use the masks defined in the TI headers."
@@ -177,8 +179,6 @@ enum sampcon_id_enum
   // Until the ADC driver is updated our temporary workaround is to re-define
   // the old structures -- this may may result in faulty ADC code and should be
   // checked carefully for your specific device (note: msp430x1611 is safe)!
-
-#warning "Accessing Adc12 registers via bitfield structures: this is discouraged mspgcc version >= 4 as it may result in faulty code!" 
 
 typedef struct {
   volatile unsigned
@@ -206,8 +206,11 @@ typedef struct {
     cstartadd:4;
 } __attribute__ ((packed)) adc12ctl1_t;
 
-#else
+#endif		/* __MSP430_TI_HEADERS__ */
 
+#if __GNUC__ >= 4
+#warning "ADC12 periph_reg bitfields: mspgcc version >= 4 needs to be checked carefully." 
+#else
   /* Test for GCC bug (bitfield access) - only version 3.2.3 is known to be stable */
   #define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__ * 10 + __GNUC_PATCHLEVEL__)
   #if GCC_VERSION == 332
@@ -216,11 +219,6 @@ typedef struct {
     #warning "This version of msp430-gcc might contain a bug when accessing bitfield structs (version 3.2.3 is safe - anything else is on your own risk)"
   #endif  
 
-#endif
+#endif		/* __GNUC__ >= 4 */
 
-
-#if !defined(__msp430_have_adc12) && !defined(__MSP430_HAS_ADC12__)
-#error Target msp430 device does not have ADC12 module
-#endif
-
-#endif
+#endif		/* MSP430ADC12_H */
