@@ -455,14 +455,12 @@ enum {
   MSP430_POWER_LPM4   = 5
 };
 
-void __nesc_disable_interrupt(void) @safe()
-{
+inline void __nesc_disable_interrupt(void) @safe() {
   dint();
   nop();
 }
 
-void __nesc_enable_interrupt(void) @safe()
-{
+inline void __nesc_enable_interrupt(void) @safe() {
   eint();
 }
 
@@ -471,6 +469,8 @@ void __nesc_enable_interrupt(void) @safe()
  * or not.  Previously, a bool (still a uint16_t) was used.  However,
  * using the uint16_t (native width of the msp430) fits in with how interrupts
  * are checked below, see definition of __nesc_atomic_start.
+ *
+ * This should be checked to verify that it generates minimal code.
  */
 typedef uint16_t __nesc_atomic_t;
 __nesc_atomic_t  __nesc_atomic_start(void);
@@ -482,12 +482,6 @@ void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts);
  * is #defined, to avoid duplicate functions definitions when binary
  * components are used. Such functions do need a prototype in all cases,
  * though.
- *
- * If we explicitly check for != 0 this generates a fair number of instructions.
- * Simply leaving the GIE bit where it lives and using 0 or not 0 to determine
- * whether to reenable interrupts generates much tighter code.
- *
- * Given how often atomic is used, this is a good thing.
  */
 
 __nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe() {
@@ -498,8 +492,7 @@ __nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe() {
   return result;
 }
 
-void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts) @spontaneous() @safe()
-{
+void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts) @spontaneous() @safe() {
   asm volatile("" : : : "memory"); /* ensure atomic section effect visibility */
   if( reenable_interrupts )
     eint();
