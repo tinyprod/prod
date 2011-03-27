@@ -69,7 +69,7 @@
 #endif
 
 #if __GNUC__ >= 4
-#warning "USCI periph_reg bitfields: mspgcc version >= 4 needs to be checked carefully."
+#warning "USCI periph_reg bitfields: mspgcc >= 4 (check bitfield code gen)."
 #endif
 
 /*
