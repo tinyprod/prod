@@ -2,7 +2,6 @@
 push( @includes, qw(
   %T/platforms/z1
   %T/platforms/z1/chips/msp430/adc12
-  %T/platforms/z1/chips/msp430/timer
   %T/platforms/z1/chips/msp430/usci
   %T/platforms/z1/chips/adxl345
   %T/platforms/z1/chips/cc2420

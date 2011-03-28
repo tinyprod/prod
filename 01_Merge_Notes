@@ -48,3 +48,7 @@ but the msp430 branch brought those things back in.   See the following commit f
 
 * TinyOS timing is based on powers of 2.  The Z1 used the calibration constants provided by TI but
   these constants give timing that are base 10.   This has been changed in the merge.
+
+* removed tos/platforms/z1/chips/msp430/timers from z1/.platform.   Let Z1 use the clock_bcs
+  driver.   This also disables use of Z1 version of Msp430TimerCapComP (uses scs, syncronous for
+  capturing).   z1/Msp430ClockP renamed to z1/Msp430ClockP_TLV.
