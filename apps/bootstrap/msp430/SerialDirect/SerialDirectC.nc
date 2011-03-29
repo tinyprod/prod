@@ -3,7 +3,11 @@ implementation {
   components SerialDirectP as App, MainC;
   App.Boot -> MainC.Boot;
 
-  components HplMsp430UsciA0C as Usci;
-  App.Port -> Usci;
-  App.PortInt -> Usci;
+#ifdef USE_X1
+  components HplMsp430Usart0C as Port;
+#else
+  components HplMsp430UsciA0C as Port;
+#endif
+  App.Port -> Port;
+  App.PortInt -> Port;
 }
