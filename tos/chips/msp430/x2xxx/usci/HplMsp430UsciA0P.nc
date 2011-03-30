@@ -108,35 +108,17 @@ implementation {
   /*
    * setUbr: change the Baud Rate divisor
    *
-   * Modify the baud rate divisor for the usci.  For this to
-   * take effect the module has to be reset.  And resetting
-   * has the effect of bringing TXIFG up.   We duplicate the
-   * behaviour of setModeUart or setModeSpi which would be
-   * used if setUbr wasn't available.  Following the
-   * config modification any interrupts are cleared out.
-   *
    * The BR registers are 2 bytes and accessed as two byte references.
    * We want it to be atomic.   On the x2xxx part can UBR be referenced
-   * as a single atomic word?  (This is how it is done on the x5xxx).
+   * as a single atomic word?  NO.  (This is how it is done on the x5xxx).
    * For now we do it atomically and using two byte references (because
    * of the address space and according to TI documentation).
-   *
-   * WARNING: TXIFG is forced clear after a baud rate change
-   * similar to what setMode causes.
    */
 
   async command void Usci.setUbr(uint16_t control) {
     atomic {
-      if (UCA0CTL1 & UCSWRST) {		/* if already reset, set and bail */
-	UCA0BR0 = control & 0x00FF;
-	UCA0BR1 = (control >> 8) & 0x00FF;
-	return;
-      }
-      call Usci.resetUsci_n();		/* not reset, 1st reset */
-      UCA0BR0 = control & 0x00FF;	/* then set. */
+      UCA0BR0 = control & 0x00FF;
       UCA0BR1 = (control >> 8) & 0x00FF;
-      call Usci.unresetUsci_n();
-      call Usci.clrIntr();
     }
   }
 
