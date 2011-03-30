@@ -1,0 +1,24 @@
+
+Major Changes to the msp430 core software:
+
+* Remove duplicate files between original x1 and Z1 (x2) 
+
+* change usci port named back to h/w centric.  ie. Msp430Uart0 -> Msp430UartA0.  Better matches
+  what will come in with the x5 code where there are lots of ports.
+
+* Default clocks 1611 (x1) 4 MiHz, 2617/2618 (x2) 8 MiHz, 5137/5438 (x5) 16 MiHz
+
+* use common clock module for x1 and x2.  msp430/clock_bcs.  Handles basic_clock and bc2.
+
+* gdb files to support different processor families, tos/chips/msp430/99_gdb/gdb{x1,x2,x5}
+  See tos/chips/msp430/99_gdb/gdbinit for details on how to use these files.
+
+* add stack checking module.  This module allows one to monitor how much of the stack
+  is being use.  See tos/chips/msp430/Stack*.
+
+* Change DCO specifications from KHZ to HZ to eliminate confusion with decimal vs. binary
+  frequency specs.  Make Z1 use binary clocks.
+
+* Revised DCO calibrator to work with both 1611 and Z1 2617/1618.   Z1 uses dco calibrator
+  to sync up to 8MiHz.
+
