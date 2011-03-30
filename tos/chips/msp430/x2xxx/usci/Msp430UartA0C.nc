@@ -63,7 +63,7 @@ implementation {
   UartByte = UartP.UartByte[ CLIENT_ID ];
   Msp430UartConfigure = UartP.Msp430UartConfigure[ CLIENT_ID ];
 
-  components new Msp430UsciA0C() as UsciC;
+  components new Msp430UsciArbA0C() as UsciC;
   ResourceRequested = UsciC;
   UartP.ResourceConfigure[ CLIENT_ID ] <- UsciC.ResourceConfigure;
   UartP.UsciResource[ CLIENT_ID ] -> UsciC.Resource;

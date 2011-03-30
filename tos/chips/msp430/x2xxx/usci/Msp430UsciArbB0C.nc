@@ -33,34 +33,37 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * Arbritrated interface for USCI_B0 for x2 parts.
+ *
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430UsciShareA0P {
+generic configuration Msp430UsciArbB0C() {
   provides {
-    interface Resource[ uint8_t id ];
-    interface ResourceRequested[ uint8_t id ];
-    interface ResourceDefaultOwner;
+    interface Resource;			/* parameterized */
+    interface ResourceRequested;	/* parameterized */
     interface ArbiterInfo;
-    interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
+    interface HplMsp430UsciB;
+    interface HplMsp430UsciInterrupts;	/* parameterized */
   }
-  uses interface ResourceConfigure[ uint8_t id ];
+  uses interface ResourceConfigure;	/* parameterized */
 }
 
 implementation {
-  components new Msp430UsciShareP() as UsciShareP;
-  Interrupts = UsciShareP;
+  enum {
+    CLIENT_ID = unique( MSP430_HPLUSCIB0_RESOURCE ),
+  };
 
-  components new FcfsArbiterC( MSP430_HPLUSCIA0_RESOURCE ) as ArbiterC;
-  Resource                 = ArbiterC;
-  ResourceRequested        = ArbiterC;
-  ResourceDefaultOwner     = ArbiterC;
-  ResourceConfigure        = ArbiterC;
-  ArbiterInfo              = ArbiterC;
-  UsciShareP.ArbiterInfo  -> ArbiterC;
+  components Msp430UsciArbB0P as UsciArbP;
 
-  components HplMsp430UsciA0C as HplUsciC;
-  UsciShareP.RawInterrupts -> HplUsciC;
+  Resource = UsciArbP.Resource[ CLIENT_ID ];
+  ResourceRequested = UsciArbP.ResourceRequested[ CLIENT_ID ];
+  ResourceConfigure = UsciArbP.ResourceConfigure[ CLIENT_ID ];
+  ArbiterInfo = UsciArbP.ArbiterInfo;
+  HplMsp430UsciInterrupts = UsciArbP.Interrupts[ CLIENT_ID ];
+
+  components HplMsp430UsciB0C as HplUsciC;
+  HplMsp430UsciB = HplUsciC;
 }

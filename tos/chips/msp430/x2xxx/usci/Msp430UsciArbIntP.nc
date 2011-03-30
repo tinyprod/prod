@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2010-2011 Eric B. Decker
+ * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
@@ -32,36 +33,32 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Arbritrated interface for USCI_B1 for x2 parts.
- *
- * @author Jonathan Hui <jhui@archedrock.com>
+ * @author Jonathan Hui <jhui@archrock.com>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * Module that provides arbitrated interrupt steering for the x2 processors.
  */
 
-generic configuration Msp430UsciB1C() {
-  provides {
-    interface Resource;			/* parameterized */
-    interface ResourceRequested;	/* parameterized */
+generic module Msp430UsciArbIntP() @safe() {
+  provides interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
+  uses {
+    interface HplMsp430UsciInterrupts as RawInterrupts;
     interface ArbiterInfo;
-    interface HplMsp430UsciB;
-    interface HplMsp430UsciInterrupts;	/* parameterized */
   }
-  uses interface ResourceConfigure;	/* parameterized */
 }
 
 implementation {
-  enum {
-    CLIENT_ID = unique( MSP430_HPLUSCIB1_RESOURCE ),
-  };
+  async event void RawInterrupts.txDone() {
+    if ( call ArbiterInfo.inUse() )
+      signal Interrupts.txDone[ call ArbiterInfo.userId() ]();
+  }
 
-  components Msp430UsciShareB1P as UsciShareP;
+  async event void RawInterrupts.rxDone( uint8_t data ) {
+    if ( call ArbiterInfo.inUse() )
+      signal Interrupts.rxDone[ call ArbiterInfo.userId() ]( data );
+  }
 
-  Resource = UsciShareP.Resource[ CLIENT_ID ];
-  ResourceRequested = UsciShareP.ResourceRequested[ CLIENT_ID ];
-  ResourceConfigure = UsciShareP.ResourceConfigure[ CLIENT_ID ];
-  ArbiterInfo = UsciShareP.ArbiterInfo;
-  HplMsp430UsciInterrupts = UsciShareP.Interrupts[ CLIENT_ID ];
-
-  components HplMsp430UsciB1C as HplUsciC;
-  HplMsp430UsciB = HplUsciC;
+  default async event void Interrupts.txDone[ uint8_t id ]() {}
+  default async event void Interrupts.rxDone[ uint8_t id ]( uint8_t data ) {}
 }

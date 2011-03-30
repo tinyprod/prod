@@ -85,7 +85,7 @@ implementation {
   SpiPacket = SpiP.SpiPacket[CLIENT_ID];
   Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components new Msp430UsciB1C() as UsciC;
+  components new Msp430UsciArbB1C() as UsciC;
   ResourceRequested = UsciC;
   SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
   SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;

@@ -33,14 +33,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Arbritrated interface for USCI_A1 for x2 parts.
+ * Arbritrated interface for USCI_A0 for x2 parts.
  *
  * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-generic configuration Msp430UsciA1C() {
+generic configuration Msp430UsciArbA0C() {
   provides {
     interface Resource;			/* parameterized */
     interface ResourceRequested;	/* parameterized */
@@ -53,17 +53,17 @@ generic configuration Msp430UsciA1C() {
 
 implementation {
   enum {
-    CLIENT_ID = unique( MSP430_HPLUSCIA1_RESOURCE ),
+    CLIENT_ID = unique( MSP430_HPLUSCIA0_RESOURCE ),
   };
 
-  components Msp430UsciShareA1P as UsciShareP;
+  components Msp430UsciArbA0P as UsciArbP;
 
-  Resource = UsciShareP.Resource[ CLIENT_ID ];
-  ResourceRequested = UsciShareP.ResourceRequested[ CLIENT_ID ];
-  ResourceConfigure = UsciShareP.ResourceConfigure[ CLIENT_ID ];
-  ArbiterInfo = UsciShareP.ArbiterInfo;
-  HplMsp430UsciInterrupts = UsciShareP.Interrupts[ CLIENT_ID ];
+  Resource = UsciArbP.Resource[ CLIENT_ID ];
+  ResourceRequested = UsciArbP.ResourceRequested[ CLIENT_ID ];
+  ResourceConfigure = UsciArbP.ResourceConfigure[ CLIENT_ID ];
+  ArbiterInfo = UsciArbP.ArbiterInfo;
+  HplMsp430UsciInterrupts = UsciArbP.Interrupts[ CLIENT_ID ];
 
-  components HplMsp430UsciA1C as HplUsciC;
+  components HplMsp430UsciA0C as HplUsciC;
   HplMsp430UsciA = HplUsciC;
 }

@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2010-2011 Eric B. Decker
- * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
@@ -33,19 +32,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * Arbritrated interface for USCI_A0 for x2 parts.
+ * Arbritrated interface for USCI_B1 for x2 parts.
  *
  * @author Jonathan Hui <jhui@archedrock.com>
- * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-generic configuration Msp430UsciA0C() {
+generic configuration Msp430UsciArbB1C() {
   provides {
     interface Resource;			/* parameterized */
     interface ResourceRequested;	/* parameterized */
     interface ArbiterInfo;
-    interface HplMsp430UsciA;
+    interface HplMsp430UsciB;
     interface HplMsp430UsciInterrupts;	/* parameterized */
   }
   uses interface ResourceConfigure;	/* parameterized */
@@ -53,17 +51,17 @@ generic configuration Msp430UsciA0C() {
 
 implementation {
   enum {
-    CLIENT_ID = unique( MSP430_HPLUSCIA0_RESOURCE ),
+    CLIENT_ID = unique( MSP430_HPLUSCIB1_RESOURCE ),
   };
 
-  components Msp430UsciShareA0P as UsciShareP;
+  components Msp430UsciArbB1P as UsciArbP;
 
-  Resource = UsciShareP.Resource[ CLIENT_ID ];
-  ResourceRequested = UsciShareP.ResourceRequested[ CLIENT_ID ];
-  ResourceConfigure = UsciShareP.ResourceConfigure[ CLIENT_ID ];
-  ArbiterInfo = UsciShareP.ArbiterInfo;
-  HplMsp430UsciInterrupts = UsciShareP.Interrupts[ CLIENT_ID ];
+  Resource = UsciArbP.Resource[ CLIENT_ID ];
+  ResourceRequested = UsciArbP.ResourceRequested[ CLIENT_ID ];
+  ResourceConfigure = UsciArbP.ResourceConfigure[ CLIENT_ID ];
+  ArbiterInfo = UsciArbP.ArbiterInfo;
+  HplMsp430UsciInterrupts = UsciArbP.Interrupts[ CLIENT_ID ];
 
-  components HplMsp430UsciA0C as HplUsciC;
-  HplMsp430UsciA = HplUsciC;
+  components HplMsp430UsciB1C as HplUsciC;
+  HplMsp430UsciB = HplUsciC;
 }

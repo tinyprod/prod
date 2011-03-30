@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
@@ -33,30 +33,34 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * @author Jonathan Hui <jhui@archrock.com>
+ * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-generic module Msp430UsciShareP() @safe() {
-  provides interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
-  uses {
-    interface HplMsp430UsciInterrupts as RawInterrupts;
+configuration Msp430UsciArbA0P {
+  provides {
+    interface Resource[ uint8_t id ];
+    interface ResourceRequested[ uint8_t id ];
+    interface ResourceDefaultOwner;
     interface ArbiterInfo;
+    interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
   }
+  uses interface ResourceConfigure[ uint8_t id ];
 }
 
 implementation {
-  async event void RawInterrupts.txDone() {
-    if ( call ArbiterInfo.inUse() )
-      signal Interrupts.txDone[ call ArbiterInfo.userId() ]();
-  }
+  components new Msp430UsciArbIntP() as UsciIntP;
+  Interrupts = UsciIntP;
 
-  async event void RawInterrupts.rxDone( uint8_t data ) {
-    if ( call ArbiterInfo.inUse() )
-      signal Interrupts.rxDone[ call ArbiterInfo.userId() ]( data );
-  }
+  components HplMsp430UsciA0C as HplUsciC;
+  UsciIntP.RawInterrupts -> HplUsciC;
 
-  default async event void Interrupts.txDone[ uint8_t id ]() {}
-  default async event void Interrupts.rxDone[ uint8_t id ]( uint8_t data ) {}
+  components new FcfsArbiterC( MSP430_HPLUSCIA0_RESOURCE ) as ArbiterC;
+  Resource                 = ArbiterC;
+  ResourceRequested        = ArbiterC;
+  ResourceDefaultOwner     = ArbiterC;
+  ResourceConfigure        = ArbiterC;
+  ArbiterInfo              = ArbiterC;
+  UsciIntP.ArbiterInfo    -> ArbiterC;
 }

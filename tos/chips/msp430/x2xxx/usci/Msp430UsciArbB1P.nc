@@ -38,7 +38,7 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430UsciShareB0P {
+configuration Msp430UsciArbB1P {
   provides {
     interface Resource[ uint8_t id ];
     interface ResourceRequested[ uint8_t id ];
@@ -50,17 +50,17 @@ configuration Msp430UsciShareB0P {
 }
 
 implementation {
-  components new Msp430UsciShareP() as UsciShareP;
-  Interrupts = UsciShareP;
+  components new Msp430UsciArbIntP() as UsciIntP;
+  Interrupts = UsciIntP;
 
-  components new FcfsArbiterC( MSP430_HPLUSCIB0_RESOURCE ) as ArbiterC;
+  components HplMsp430UsciB1C as HplUsciC;
+  UsciIntP.RawInterrupts -> HplUsciC;
+
+  components new FcfsArbiterC( MSP430_HPLUSCIB1_RESOURCE ) as ArbiterC;
   Resource                 = ArbiterC;
   ResourceRequested        = ArbiterC;
   ResourceDefaultOwner     = ArbiterC;
   ResourceConfigure        = ArbiterC;
   ArbiterInfo              = ArbiterC;
-  UsciShareP.ArbiterInfo  -> ArbiterC;
-
-  components HplMsp430UsciB0C as HplUsciC;
-  UsciShareP.RawInterrupts -> HplUsciC;
+  UsciIntP.ArbiterInfo    -> ArbiterC;
 }

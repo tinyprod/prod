@@ -62,7 +62,7 @@ implementation {
   I2CBasicAddr = I2CP.I2CBasicAddr;
   Msp430I2CConfigure = I2CP.Msp430I2CConfigure[CLIENT_ID];
 
-  components new Msp430UsciB1C() as UsciC;
+  components new Msp430UsciArbB1C() as UsciC;
   ResourceRequested = UsciC;
   I2CP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
   I2CP.UsciResource[CLIENT_ID] -> UsciC.Resource;
