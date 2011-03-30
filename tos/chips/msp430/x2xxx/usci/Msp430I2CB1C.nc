@@ -34,39 +34,37 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @author Jonathan Hui <jhui@archedrock.com>
+/*
+ * @author Jonathan Hui <jhui@archrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430Spi2NoDmaP {
+#include <I2C.h>
+#include "msp430usci.h"
+
+generic configuration Msp430I2CB1C() {
   provides {
-    interface Resource[uint8_t id];
-    interface ResourceConfigure[uint8_t id];
-    interface SpiByte;
-    interface SpiPacket[uint8_t id];
+    interface Resource;
+    interface ResourceRequested;
+    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
   }
-  uses {
-    interface Resource as UsciResource[uint8_t id];
-    interface Msp430SpiConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as UsciInterrupts;
-  }
+  uses interface Msp430I2CConfigure;
 }
 
 implementation {
-  components new Msp430SpiNoDmaP() as SpiP;
-  Resource = SpiP.Resource;
-  ResourceConfigure = SpiP.ResourceConfigure;
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
-  SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket;
-  UsciResource = SpiP.UsciResource;
-  UsciInterrupts = SpiP.UsciInterrupts;
+  enum {
+    CLIENT_ID = unique(MSP430_I2CB1_BUS),
+  };
 
-  components HplMsp430UsciA0C as UsciC;
-  SpiP.Usci -> UsciC;
+  components Msp430I2C1P as I2CP;
+  Resource = I2CP.Resource[CLIENT_ID];
+  I2CBasicAddr = I2CP.I2CBasicAddr;
+  Msp430I2CConfigure = I2CP.Msp430I2CConfigure[CLIENT_ID];
 
-  components LedsC as Leds;
-  SpiP.Leds -> Leds;
+  components new Msp430UsciB1C() as UsciC;
+  ResourceRequested = UsciC;
+  I2CP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  I2CP.UsciResource[CLIENT_ID] -> UsciC.Resource;
+  I2CP.Interrupts -> UsciC.HplMsp430UsciInterrupts;
 }

@@ -35,8 +35,19 @@
  */
 
 /*
- * SPI2: SPI/USCI_A0.  Defaults to no DMA, sw SPI implementation.
- * To utilize the DMA, via Msp430Spi2DMAP define ENABLE_SPI2_DMA.
+ * SPI1: SPI/USCI_B1.  Defaults to no DMA.
+ *
+ * On the x2xxx processors, USCI_B1 does not have any DMA triggers available
+ * on the DMA engine so SPI1 does not support DMA.  Note....  This only
+ * applies for the x2xxx processors.  x5xxx processors have more triggers so
+ * can support DMA.  How to handle.
+ *
+ * This argues for this being a platform thing.  The platform indicates
+ * what cpu is being used so also denotes what ports are available.
+ *
+ * Another way to handle this is with cpu functional ifdefs.  Ugly but
+ * would work.  I think we really want the platform to provide SPI ports
+ * which then determine what wires to what physical port.
  *
  * See msp430usci.h for port mappings.
  *
@@ -48,7 +59,7 @@
 
 #include "msp430usci.h"
 
-generic configuration Msp430Spi2C() {
+generic configuration Msp430SpiB1C() {
   provides {
     interface Resource;
     interface ResourceRequested;
@@ -61,22 +72,20 @@ generic configuration Msp430Spi2C() {
 implementation {
 
   enum {
-    CLIENT_ID = unique(MSP430_SPI2_BUS),
+    CLIENT_ID = unique(MSP430_SPIB1_BUS),
   };
 
-#ifdef ENABLE_SPI2_DMA
-#warning "Enabling DMA for SPI2 (usciA0)"
-  components Msp430Spi2DmaP as SpiP;
-#else
-  components Msp430Spi2NoDmaP as SpiP;
+#ifdef ENABLE_SPIB1_DMA
+#error "DMA is not available for SPI (usci B1)"
 #endif
 
+  components Msp430SpiB1NoDmaP as SpiP;
   Resource = SpiP.Resource[CLIENT_ID];
   SpiByte = SpiP.SpiByte;
   SpiPacket = SpiP.SpiPacket[CLIENT_ID];
   Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components new Msp430UsciA0C() as UsciC;
+  components new Msp430UsciB1C() as UsciC;
   ResourceRequested = UsciC;
   SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
   SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;

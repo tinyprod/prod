@@ -58,7 +58,7 @@ implementation {
   Logic.AlertInterrupt -> GeneralIOC.GpioInterrupt[GPIO_TMP102_TEMP_ALERT];
   Logic.InterruptPin -> GeneralIOC.GeneralIO[GPIO_TMP102_TEMP_ALERT];
 
-  components new Msp430I2CC() as I2CBus;
+  components new Msp430I2CB1C() as I2CBus;
   Logic.I2CPacket -> I2CBus;
 
   components TMP102InternalP as Internal;

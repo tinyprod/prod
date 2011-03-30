@@ -32,36 +32,40 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * @author Jonathan Hui <jhui@archrock.com>
- * @author Xavier Orduna <xorduna@dexmatech.com>
+ *
+ * An implementation of the UART on USCIA1 for the MSP430.
+ * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
+ * @author Jonathan Hui <jhui@archedrock.com>
  * @author Eric B. Decker <cire831@gmail.com>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
-configuration Msp430I2C1P {
+#include "msp430usci.h"
+
+generic configuration Msp430UartA1C() {
   provides {
-    interface Resource[uint8_t id];
-    interface ResourceConfigure[uint8_t id];
-    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
+    interface Resource;
+    interface ResourceRequested;
+    interface UartStream;
+    interface UartByte;
   }
-  uses {
-    interface Resource as UsciResource[uint8_t id];
-    interface Msp430I2CConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as Interrupts;
-  }
+  uses interface Msp430UartConfigure;
 }
 
 implementation {
-  components new Msp430I2CP() as I2CP;
-  Resource = I2CP.Resource;
-  ResourceConfigure = I2CP.ResourceConfigure;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure;
-  I2CBasicAddr = I2CP.I2CBasicAddr;
-  UsciResource = I2CP.UsciResource;
-  Interrupts = I2CP.Interrupts;
+  enum {
+    CLIENT_ID = unique( MSP430_UARTA1_BUS ),
+  };
 
-  components HplMsp430UsciB1C as UsciC;
-  I2CP.UsciB -> UsciC;
+  components Msp430UartA1P as UartP;
+  Resource = UartP.Resource[ CLIENT_ID ];
+  UartStream = UartP.UartStream[ CLIENT_ID ];
+  UartByte = UartP.UartByte[ CLIENT_ID ];
+  Msp430UartConfigure = UartP.Msp430UartConfigure[ CLIENT_ID ];
+
+  components new Msp430UsciA1C() as UsciC;
+  ResourceRequested = UsciC;
+  UartP.ResourceConfigure[ CLIENT_ID ] <- UsciC.ResourceConfigure;
+  UartP.UsciResource[ CLIENT_ID ] -> UsciC.Resource;
+  UartP.UsciInterrupts[ CLIENT_ID ] -> UsciC.HplMsp430UsciInterrupts;
 }

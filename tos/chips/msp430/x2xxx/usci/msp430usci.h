@@ -73,56 +73,67 @@
 #endif
 
 /*
- * The MSP430X architecture at least the msp430f2618 family
- * has a total of four ports that can be used independently
- * usciA0, A1 (uart, spi) and usciB0, B1 (i2c, spi only).
+ * The x2 family consists of the msp430f261{6,7,8,9} which provides
+ * 2 USCI_As (UART/SPI) and 2 USCI_Bs (SPI/I2C).  These are mapped on a pure
+ * hardware naming scheme along with appropriate sharing files which enable
+ * arbitration for each h/w module.
  *
- * We set the resources up so multiple use of a given port
- * can be arbritrated.
+ * usciA0: HplMsp430UsciA0, Msp430UartA0, Msp430SpiA0
+ *	   Msp430UsciA0C, Msp430UsciSharedA0P (arbitrated)
+ *	   dma
  *
- * UART0, SPI2 -> usciA0    dma
- * UART1, SPI3 -> usciA1    dma
- * SPI0,  I2C0 -> usciB0    dma
- * SPI1,  I2C1 -> usciB1    no dma
+ * usciA1: HplMsp430UsciA1, Msp430UartA1, Msp430SpiA1
+ *	   Msp430UsciA1C, Msp430UsciSharedA1P (arbitrated)
+ *	   dma
  *
- * spi2,3 are mapped to usciA0,A1 because the typical
- * configuration is to use dual uarts and dual spis
- * so the less used configuration maps the SPI on usciA0
- * as 2 and 3.
+ * usciB0: HplMsp430UsciB0, Msp430SpiB0, Msp430I2CB0
+ *	   Msp430UsciB0C, Msp430UsciSharedB0P (arbitrated)
+ *	   dma
+ *
+ * usciB1: HplMsp430UsciB1, Msp430SpiB1, Msp430I2CB1
+ *	   Msp430UsciB1C, Msp430UsciSharedB1P (arbitrated)
+ *	   no dma
+ *
+ * usciB1 does not support dma because the dma engine can't be triggered
+ * on tx/rx data avail.  Not enough bits.
+ *
+ * Actual mapping between usci h/w and function is done by platform files.
+ * ie.  tos/platforms/<platform>/mappings    or
+ *      tos/platforms/<platform>/chips/<chip>
  */
 
 // USCI A0: UART, SPI
-#define MSP430_HPLUSCIA0_RESOURCE "Msp430UsciA0.Resource"
-#define MSP430_UART0_BUS          "Msp430Uart0.Resource"
-#define MSP430_SPI2_BUS           "Msp430Spi2.Resource"
+#define MSP430_HPLUSCIA0_RESOURCE	"Msp430UsciA0.Resource"
+#define MSP430_UARTA0_BUS		"Msp430UartA0.Resource"
+#define MSP430_SPIA0_BUS		"Msp430SpiA0.Resource"
 
-//#define MSP430_UART0_BUS          MSP430_HPLUSCIA0_RESOURCE
-//#define MSP430_SPI2_BUS           MSP430_HPLUSCIA0_RESOURCE
+//#define MSP430_UARTA0_BUS		MSP430_HPLUSCIA0_RESOURCE
+//#define MSP430_SPIA0_BUS		MSP430_HPLUSCIA0_RESOURCE
 
 // USCI A1: UART, SPI
-#define MSP430_HPLUSCIA1_RESOURCE "Msp430UsciA1.Resource"
-#define MSP430_UART1_BUS          "Msp430Uart1.Resource"
-#define MSP430_SPI3_BUS           "Msp430Spi3.Resource"
+#define MSP430_HPLUSCIA1_RESOURCE	"Msp430UsciA1.Resource"
+#define MSP430_UARTA1_BUS		"Msp430UartA1.Resource"
+#define MSP430_SPIA1_BUS		"Msp430SpiA1.Resource"
 
-//#define MSP430_UART1_BUS          MSP430_HPLUSCIA1_RESOURCE
-//#define MSP430_SPI3_BUS           MSP430_HPLUSCIA1_RESOURCE
+//#define MSP430_UARTA1_BUS		MSP430_HPLUSCIA1_RESOURCE
+//#define MSP430_SPIA1_BUS		MSP430_HPLUSCIA1_RESOURCE
 
 // USCI B0: SPI,  I2C
-#define MSP430_HPLUSCIB0_RESOURCE "Msp430UsciB0.Resource"
-#define MSP430_SPI0_BUS           "Msp430Spi0.Resource"
-#define MSP430_I2C0_BUS           "Msp430I2C0.Resource"
+#define MSP430_HPLUSCIB0_RESOURCE	"Msp430UsciB0.Resource"
+#define MSP430_SPIB0_BUS		"Msp430SpiB0.Resource"
+#define MSP430_I2CB0_BUS		"Msp430I2CB0.Resource"
 
-//#define MSP430_SPI0_BUS		  MSP430_HPLUSCIB0_RESOURCE
-//#define MSP430_I2C0_BUS		  MSP430_HPLUSCIB0_RESOURCE
-
+//#define MSP430_SPIB0_BUS		MSP430_HPLUSCIB0_RESOURCE
+//#define MSP430_I2CB0_BUS		MSP430_HPLUSCIB0_RESOURCE
 
 // USCI B1: SPI,  I2C
-#define MSP430_HPLUSCIB1_RESOURCE "Msp430UsciB1.Resource"
-#define MSP430_SPI1_BUS           "Msp430Spi1.Resource"
-#define MSP430_I2C1_BUS           "Msp430I2C1.Resource"
+#define MSP430_HPLUSCIB1_RESOURCE	"Msp430UsciB1.Resource"
+#define MSP430_SPIB1_BUS		"Msp430SpiB1.Resource"
+#define MSP430_I2CB1_BUS		"Msp430I2CB1.Resource"
 
-//#define MSP430_SPI1_BUS		  MSP430_HPLUSCIB1_RESOURCE
-//#define MSP430_I2C1_BUS		  MSP430_HPLUSCIB1_RESOURCE
+//#define MSP430_SPIB1_BUS		MSP430_HPLUSCIB1_RESOURCE
+//#define MSP430_I2CB1_BUS		MSP430_HPLUSCIB1_RESOURCE
+
 
 typedef enum {
   USCI_NONE = 0,

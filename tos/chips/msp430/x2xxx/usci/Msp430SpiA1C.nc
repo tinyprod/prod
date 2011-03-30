@@ -34,53 +34,49 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @author Jonathan Hui <jhui@archedrock.com>
+/*
+ * SpiA1: SPI/USCI_A1.  Defaults to no DMA, sw SPI implementation.
+ * To utilize the DMA, via Msp430SpiA1DmaP define ENABLE_SPIA1_DMA.
+ *
+ * @author Jonathan Hui <jhui@archrock.com>
  * @author Mark Hays
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-#include "Msp430Dma.h"
+#include "msp430usci.h"
 
-configuration Msp430Spi0DmaP {
+generic configuration Msp430SpiA1C() {
   provides {
-    interface Resource[uint8_t id];
-    interface ResourceConfigure[uint8_t id];
+    interface Resource;
+    interface ResourceRequested;
     interface SpiByte;
-    interface SpiPacket[uint8_t id];
+    interface SpiPacket;
   }
-  uses {
-    interface Resource as UsciResource[uint8_t id];
-    interface Msp430SpiConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as UsciInterrupts;
-  }
+  uses interface Msp430SpiConfigure;
 }
 
 implementation {
-  components new Msp430SpiDmaXP(IFG2_,
-			       UCB0TXBUF_,
-			       UCB0TXIFG,
-			       (uint16_t) DMA_TRIGGER_UCB0TXIFG,
-			       UCB0RXBUF_,
-			       UCB0RXIFG,
-			       (uint16_t) DMA_TRIGGER_UCB0RXIFG) as SpiP;
 
-  Resource = SpiP.Resource;
-  ResourceConfigure = SpiP.ResourceConfigure;
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+  enum {
+    CLIENT_ID = unique(MSP430_SPIA1_BUS),
+  };
+
+#ifdef ENABLE_SPIA1_DMA
+#warning "Enabling DMA for SPI (usciA1)"
+  components Msp430SpiA1DmaP as SpiP;
+#else
+  components Msp430SpiA1NoDmaP as SpiP;
+#endif
+
+  Resource = SpiP.Resource[CLIENT_ID];
   SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket;
-  UsciResource = SpiP.UsciResource;
-  UsciInterrupts = SpiP.UsciInterrupts;
+  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components HplMsp430UsciB0C as UsciC;
-  SpiP.Usci -> UsciC;
-
-  components Msp430DmaC as DmaC;
-  SpiP.DmaChannel1 -> DmaC.Channel1;
-  SpiP.DmaChannel2 -> DmaC.Channel2;
-
-  components LedsC as Leds;
-  SpiP.Leds -> Leds;
+  components new Msp430UsciA1C() as UsciC;
+  ResourceRequested = UsciC;
+  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
+  SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
 }

@@ -32,39 +32,43 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * @author Jonathan Hui <jhui@archrock.com>
- * @author Xavier Orduna <xorduna@dexmatech.com>
+ *
+ * @author Jonathan Hui <jhui@archedrock.com>
+ * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
  * @author Eric B. Decker <cire831@gmail.com>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
-#include <I2C.h>
-#include "msp430usci.h"
-
-generic configuration Msp430I2C1C() {
+configuration Msp430UartA0P {
   provides {
-    interface Resource;
-    interface ResourceRequested;
-    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
+    interface Resource[uint8_t id];
+    interface ResourceConfigure[uint8_t id];
+    interface UartStream[uint8_t id];
+    interface UartByte[uint8_t id];
   }
-  uses interface Msp430I2CConfigure;
+  uses {
+    interface Resource as UsciResource[uint8_t id];
+    interface Msp430UartConfigure[uint8_t id];
+    interface HplMsp430UsciInterrupts as UsciInterrupts[uint8_t id];
+  }
 }
 
 implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_I2C1_BUS),
-  };
+  components new Msp430UartP() as UartP;
+  Resource = UartP.Resource;
+  ResourceConfigure = UartP.ResourceConfigure;
+  Msp430UartConfigure = UartP.Msp430UartConfigure;
+  UartStream = UartP.UartStream;
+  UartByte = UartP.UartByte;
+  UsciResource = UartP.UsciResource;
+  UsciInterrupts = UartP.UsciInterrupts;
 
-  components Msp430I2C1P as I2CP;
-  Resource = I2CP.Resource[CLIENT_ID];
-  I2CBasicAddr = I2CP.I2CBasicAddr;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure[CLIENT_ID];
+  components HplMsp430UsciA0C as UsciC;
+  UartP.Usci -> UsciC;
 
-  components new Msp430UsciB1C() as UsciC;
-  ResourceRequested = UsciC;
-  I2CP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
-  I2CP.UsciResource[CLIENT_ID] -> UsciC.Resource;
-  I2CP.Interrupts -> UsciC.HplMsp430UsciInterrupts;
+  components Counter32khz16C as CounterC;
+  UartP.Counter -> CounterC;
+
+  components LedsC as Leds;
+  UartP.Leds -> Leds;
 }

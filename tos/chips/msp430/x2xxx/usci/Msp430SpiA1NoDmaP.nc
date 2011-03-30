@@ -40,7 +40,7 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430Spi3NoDmaP {
+configuration Msp430SpiA1NoDmaP {
   provides {
     interface Resource[uint8_t id];
     interface ResourceConfigure[uint8_t id];

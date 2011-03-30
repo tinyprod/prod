@@ -32,40 +32,55 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * An implementation of the UART on USCIA1 for the MSP430.
- * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
- * @author Jonathan Hui <jhui@archedrock.com>
- * @author Eric B. Decker <cire831@gmail.com>
- * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
-#include "msp430usci.h"
+/**
+ * @author Jonathan Hui <jhui@archedrock.com>
+ * @author Mark Hays
+ * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
+ */
 
-generic configuration Msp430Uart1C() {
+#include "Msp430Dma.h"
+
+configuration Msp430SpiA1DmaP {
   provides {
-    interface Resource;
-    interface ResourceRequested;
-    interface UartStream;
-    interface UartByte;
+    interface Resource[uint8_t id];
+    interface ResourceConfigure[uint8_t id];
+    interface SpiByte;
+    interface SpiPacket[uint8_t id];
   }
-  uses interface Msp430UartConfigure;
+  uses {
+    interface Resource as UsciResource[uint8_t id];
+    interface Msp430SpiConfigure[uint8_t id];
+    interface HplMsp430UsciInterrupts as UsciInterrupts;
+  }
 }
 
 implementation {
-  enum {
-    CLIENT_ID = unique( MSP430_UART1_BUS ),
-  };
+  components new Msp430SpiDmaP(UC1IFG_,
+			       UCA1TXBUF_,
+			       UCA1TXIFG,
+			       (uint16_t) DMA_TRIGGER_UCA1TXIFG,
+			       UCA1RXBUF_,
+			       UCA1RXIFG,
+			       (uint16_t) DMA_TRIGGER_UCA1RXIFG) as SpiP;
 
-  components Msp430Uart1P as UartP;
-  Resource = UartP.Resource[ CLIENT_ID ];
-  UartStream = UartP.UartStream[ CLIENT_ID ];
-  UartByte = UartP.UartByte[ CLIENT_ID ];
-  Msp430UartConfigure = UartP.Msp430UartConfigure[ CLIENT_ID ];
+  Resource = SpiP.Resource;
+  ResourceConfigure = SpiP.ResourceConfigure;
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+  SpiByte = SpiP.SpiByte;
+  SpiPacket = SpiP.SpiPacket;
+  UsciResource = SpiP.UsciResource;
+  UsciInterrupts = SpiP.UsciInterrupts;
 
-  components new Msp430UsciA1C() as UsciC;
-  ResourceRequested = UsciC;
-  UartP.ResourceConfigure[ CLIENT_ID ] <- UsciC.ResourceConfigure;
-  UartP.UsciResource[ CLIENT_ID ] -> UsciC.Resource;
-  UartP.UsciInterrupts[ CLIENT_ID ] -> UsciC.HplMsp430UsciInterrupts;
+  components HplMsp430UsciA1C as UsciC;
+  SpiP.Usci -> UsciC;
+
+  components Msp430DmaC as DmaC;
+  SpiP.DmaChannel1 -> DmaC.Channel1;
+  SpiP.DmaChannel2 -> DmaC.Channel2;
+
+  components LedsC as Leds;
+  SpiP.Leds -> Leds;
 }

@@ -34,39 +34,49 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @author Jonathan Hui <jhui@archedrock.com>
+/*
+ * SpiB0: SPI/USCI_B0.  Defaults to no DMA, sw SPI implementation.
+ * To utilize the DMA, via Msp430SpiB0DmaP define ENABLE_SPIB0_DMA.
+ *
+ * @author Jonathan Hui <jhui@archrock.com>
+ * @author Mark Hays
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-configuration Msp430Spi1NoDmaP {
+#include "msp430usci.h"
+
+generic configuration Msp430SpiB0C() {
   provides {
-    interface Resource[uint8_t id];
-    interface ResourceConfigure[uint8_t id];
+    interface Resource;
+    interface ResourceRequested;
     interface SpiByte;
-    interface SpiPacket[uint8_t id];
+    interface SpiPacket;
   }
-  uses {
-    interface Resource as UsciResource[uint8_t id];
-    interface Msp430SpiConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as UsciInterrupts;
-  }
+  uses interface Msp430SpiConfigure;
 }
 
 implementation {
-  components new Msp430SpiNoDmaP() as SpiP;
-  Resource = SpiP.Resource;
-  ResourceConfigure = SpiP.ResourceConfigure;
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+
+  enum {
+    CLIENT_ID = unique(MSP430_SPIB0_BUS),
+  };
+
+#ifdef ENABLE_SPIB0_DMA
+#warning "Enabling DMA for SPI (usciB0)"
+  components Msp430SpiB0DmaP as SpiP;
+#else
+  components Msp430SpiB0NoDmaP as SpiP;
+#endif
+
+  Resource = SpiP.Resource[CLIENT_ID];
   SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket;
-  UsciResource = SpiP.UsciResource;
-  UsciInterrupts = SpiP.UsciInterrupts;
+  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components HplMsp430UsciB1C as UsciC;
-  SpiP.Usci -> UsciC;
-
-  components LedsC as Leds;
-  SpiP.Leds -> Leds;
+  components new Msp430UsciB0C() as UsciC;
+  ResourceRequested = UsciC;
+  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
+  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
+  SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
 }

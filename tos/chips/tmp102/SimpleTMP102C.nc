@@ -12,7 +12,8 @@ implementation {
   components new TimerMilliC() as TimerFail;
   SimpleTMP102P.TimerFail -> TimerFail;
 
-  components new Msp430I2C1C() as I2C;
+#warning TMP102 using generic wiring (usciB1).   Platform specific wiring is preferred.
+  components new Msp430I2CB1C() as I2C;
   SimpleTMP102P.Resource -> I2C;
   SimpleTMP102P.ResourceRequested -> I2C;
   SimpleTMP102P.I2CBasicAddr -> I2C;    

@@ -21,7 +21,8 @@ implementation {
   ADXL345Control = ADXL345P;
   Register = ADXL345P.Register;
 
-  components new Msp430I2C1C() as I2C;
+#warning ADXL345: using generic wiring (usciB1).  Should wire actual device in platform wiring.
+  components new Msp430I2CB1C() as I2C;
   ADXL345P.Resource -> I2C;
   ADXL345P.ResourceRequested -> I2C;
   ADXL345P.I2CBasicAddr -> I2C;  

@@ -17,7 +17,7 @@ implementation {
   components LedsC;
   ADXL345P.Leds -> LedsC;
 
-  components new Msp430I2C1C() as I2C;
+  components new Msp430I2CB1C() as I2C;
   ADXL345P.Resource -> I2C;
   ADXL345P.ResourceRequested -> I2C;
   ADXL345P.I2CBasicAddr -> I2C;    

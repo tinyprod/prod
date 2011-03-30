@@ -32,53 +32,43 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * SPI3: SPI/USCI_A1.  Defaults to no DMA, sw SPI implementation.
- * To utilize the DMA, via Msp430Spi3DmaP define ENABLE_SPI3_DMA.
- *
- * See msp430usci.h for port mappings.
  *
  * @author Jonathan Hui <jhui@archedrock.com>
- * @author Mark Hays
- * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
  * @author Eric B. Decker <cire831@gmail.com>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
-#include "msp430usci.h"
-
-generic configuration Msp430Spi3C() {
+configuration Msp430UartA1P {
   provides {
-    interface Resource;
-    interface ResourceRequested;
-    interface SpiByte;
-    interface SpiPacket;
+    interface Resource[uint8_t id];
+    interface ResourceConfigure[uint8_t id];
+    interface UartStream[uint8_t id];
+    interface UartByte[uint8_t id];
   }
-  uses interface Msp430SpiConfigure;
+  uses {
+    interface Resource as UsciResource[uint8_t id];
+    interface Msp430UartConfigure[uint8_t id];
+    interface HplMsp430UsciInterrupts as UsciInterrupts[uint8_t id];
+  }
 }
 
 implementation {
+  components new Msp430UartP() as UartP;
+  Resource = UartP.Resource;
+  ResourceConfigure = UartP.ResourceConfigure;
+  Msp430UartConfigure = UartP.Msp430UartConfigure;
+  UartStream = UartP.UartStream;
+  UartByte = UartP.UartByte;
+  UsciResource = UartP.UsciResource;
+  UsciInterrupts = UartP.UsciInterrupts;
 
-  enum {
-    CLIENT_ID = unique(MSP430_SPI3_BUS),
-  };
+  components HplMsp430UsciA1C as UsciC;
+  UartP.Usci -> UsciC;
 
-#ifdef ENABLE_SPI3_DMA
-#warning "Enabling DMA for SPI3 (usciA1)"
-  components Msp430Spi3DmaP as SpiP;
-#else
-  components Msp430Spi3NoDmaP as SpiP;
-#endif
+  components Counter32khz16C as CounterC;
+  UartP.Counter -> CounterC;
 
-  Resource = SpiP.Resource[CLIENT_ID];
-  SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
-
-  components new Msp430UsciA1C() as UsciC;
-  ResourceRequested = UsciC;
-  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
-  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
-  SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
+  components LedsC as Leds;
+  UartP.Leds -> Leds;
 }

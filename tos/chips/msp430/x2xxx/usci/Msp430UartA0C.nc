@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2011 Eric B. Decker
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
@@ -32,62 +32,40 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*
- * SPI1: SPI/USCI_B1.  Defaults to no DMA.
  *
- * On the x2xxx processors, USCI_B1 does not have any DMA triggers available
- * on the DMA engine so SPI1 does not support DMA.  Note....  This only
- * applies for the x2xxx processors.  x5xxx processors have more triggers so
- * can support DMA.  How to handle.
- *
- * This argues for this being a platform thing.  The platform indicates
- * what cpu is being used so also denotes what ports are available.
- *
- * Another way to handle this is with cpu functional ifdefs.  Ugly but
- * would work.  I think we really want the platform to provide SPI ports
- * which then determine what wires to what physical port.
- *
- * See msp430usci.h for port mappings.
- *
+ * An implementation of the UART on USCIA0 for the MSP430.
+ * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
  * @author Jonathan Hui <jhui@archedrock.com>
- * @author Mark Hays
- * @author Xavier Orduna <xorduna@dexmatech.com>
  * @author Eric B. Decker <cire831@gmail.com>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
 #include "msp430usci.h"
 
-generic configuration Msp430Spi1C() {
+generic configuration Msp430UartA0C() {
   provides {
     interface Resource;
     interface ResourceRequested;
-    interface SpiByte;
-    interface SpiPacket;
+    interface UartStream;
+    interface UartByte;
   }
-  uses interface Msp430SpiConfigure;
+  uses interface Msp430UartConfigure;
 }
 
 implementation {
-
   enum {
-    CLIENT_ID = unique(MSP430_SPI1_BUS),
+    CLIENT_ID = unique( MSP430_UARTA0_BUS ),
   };
 
-#ifdef ENABLE_SPI1_DMA
-#error "DMA is not available for SPI1 (usci B1)"
-#endif
+  components Msp430UartA0P as UartP;
+  Resource = UartP.Resource[ CLIENT_ID ];
+  UartStream = UartP.UartStream[ CLIENT_ID ];
+  UartByte = UartP.UartByte[ CLIENT_ID ];
+  Msp430UartConfigure = UartP.Msp430UartConfigure[ CLIENT_ID ];
 
-  components Msp430Spi1NoDmaP as SpiP;
-  Resource = SpiP.Resource[CLIENT_ID];
-  SpiByte = SpiP.SpiByte;
-  SpiPacket = SpiP.SpiPacket[CLIENT_ID];
-  Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
-
-  components new Msp430UsciB1C() as UsciC;
+  components new Msp430UsciA0C() as UsciC;
   ResourceRequested = UsciC;
-  SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
-  SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;
-  SpiP.UsciInterrupts -> UsciC.HplMsp430UsciInterrupts;
+  UartP.ResourceConfigure[ CLIENT_ID ] <- UsciC.ResourceConfigure;
+  UartP.UsciResource[ CLIENT_ID ] -> UsciC.Resource;
+  UartP.UsciInterrupts[ CLIENT_ID ] -> UsciC.HplMsp430UsciInterrupts;
 }

@@ -32,43 +32,41 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- * @author Jonathan Hui <jhui@archedrock.com>
- * @author Vlado Handziski <handzisk@tkn.tu-berlin.de>
- * @author Eric B. Decker <cire831@gmail.com>
- * @author Xavier Orduna <xorduna@dexmatech.com>
  */
 
-configuration Msp430Uart1P {
+/**
+ * @author Jonathan Hui <jhui@archedrock.com>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
+ */
+
+configuration Msp430SpiB1NoDmaP {
   provides {
     interface Resource[uint8_t id];
     interface ResourceConfigure[uint8_t id];
-    interface UartStream[uint8_t id];
-    interface UartByte[uint8_t id];
+    interface SpiByte;
+    interface SpiPacket[uint8_t id];
   }
   uses {
     interface Resource as UsciResource[uint8_t id];
-    interface Msp430UartConfigure[uint8_t id];
-    interface HplMsp430UsciInterrupts as UsciInterrupts[uint8_t id];
+    interface Msp430SpiConfigure[uint8_t id];
+    interface HplMsp430UsciInterrupts as UsciInterrupts;
   }
 }
 
 implementation {
-  components new Msp430UartP() as UartP;
-  Resource = UartP.Resource;
-  ResourceConfigure = UartP.ResourceConfigure;
-  Msp430UartConfigure = UartP.Msp430UartConfigure;
-  UartStream = UartP.UartStream;
-  UartByte = UartP.UartByte;
-  UsciResource = UartP.UsciResource;
-  UsciInterrupts = UartP.UsciInterrupts;
+  components new Msp430SpiNoDmaP() as SpiP;
+  Resource = SpiP.Resource;
+  ResourceConfigure = SpiP.ResourceConfigure;
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+  SpiByte = SpiP.SpiByte;
+  SpiPacket = SpiP.SpiPacket;
+  UsciResource = SpiP.UsciResource;
+  UsciInterrupts = SpiP.UsciInterrupts;
 
-  components HplMsp430UsciA1C as UsciC;
-  UartP.Usci -> UsciC;
-
-  components Counter32khz16C as CounterC;
-  UartP.Counter -> CounterC;
+  components HplMsp430UsciB1C as UsciC;
+  SpiP.Usci -> UsciC;
 
   components LedsC as Leds;
-  UartP.Leds -> Leds;
+  SpiP.Leds -> Leds;
 }

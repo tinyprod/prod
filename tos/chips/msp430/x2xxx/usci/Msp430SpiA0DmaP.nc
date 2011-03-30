@@ -43,7 +43,7 @@
 
 #include "Msp430Dma.h"
 
-configuration Msp430Spi3DmaP {
+configuration Msp430SpiA0DmaP {
   provides {
     interface Resource[uint8_t id];
     interface ResourceConfigure[uint8_t id];
@@ -58,13 +58,13 @@ configuration Msp430Spi3DmaP {
 }
 
 implementation {
-  components new Msp430SpiDmaXP(UC1IFG_,
-			       UCA1TXBUF_,
-			       UCA1TXIFG,
-			       (uint16_t) DMA_TRIGGER_UCA1TXIFG,
-			       UCA1RXBUF_,
-			       UCA1RXIFG,
-			       (uint16_t) DMA_TRIGGER_UCA1RXIFG) as SpiP;
+  components new Msp430SpiDmaP(IFG2_,
+			       UCA0TXBUF_,
+			       UCA0TXIFG,
+			       (uint16_t) DMA_TRIGGER_UCA0TXIFG,
+			       UCA0RXBUF_,
+			       UCA0RXIFG,
+			       (uint16_t) DMA_TRIGGER_UCA0RXIFG) as SpiP;
 
   Resource = SpiP.Resource;
   ResourceConfigure = SpiP.ResourceConfigure;
@@ -74,7 +74,7 @@ implementation {
   UsciResource = SpiP.UsciResource;
   UsciInterrupts = SpiP.UsciInterrupts;
 
-  components HplMsp430UsciA1C as UsciC;
+  components HplMsp430UsciA0C as UsciC;
   SpiP.Usci -> UsciC;
 
   components Msp430DmaC as DmaC;

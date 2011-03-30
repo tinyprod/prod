@@ -39,7 +39,7 @@
  * @version $Revision: 1.4 $ $Date: 2006/12/12 18:23:11 $
  */
 
-configuration Msp430I2C1P {
+configuration Msp430I2CB1P {
   
   provides interface Resource[ uint8_t id ];
   provides interface ResourceConfigure[uint8_t id ];
