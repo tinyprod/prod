@@ -47,7 +47,14 @@
  * driver.  x5 devices use a different system, the Unified Clock System.
  *
  * FREQ by default is 4MiHz for x1 procs and 8MiHz for x2 procs.  Actual
- * clock frequency is determined by Msp430DcoSpec.h.
+ * clock frequency is determined by Msp430DcoSpec.h.   The default files
+ * are in the different x1, x2, and x5 directories.
+ *
+ * Why the different default speeds?   The x1 processors are spec'd by
+ * TI as having a max speed of 8MHz.   We do binary so would set this up
+ * for 8MiHz which would exceed the stated max.  So the default is set to
+ * 4MiHz.  Be conservative.   x2s have a max of 16MHz so the default is
+ * set to 8MiHz.   And x5s can be run at 25MHz so the default is 16MiHz.
  *
  * ACLK (Aux Clk) is assumed to be run off the LFXT interface (low-freq) at
  * 32KiHz (32768).  This clock is used to calibrate the main DCO clock and
@@ -66,9 +73,28 @@
  * peripherals down) or the timer subsystem is changed to deal with a 500ns
  * tick.
  *
+ * TimerB is run off the 32KiHz crystal oscillator.  This is used to provide
+ * a stable time base for syncronizing the main DCO clock.  It also provides
+ * a stable timer that runs the timer system especially when the cpu is
+ * sleeping.
+ *
  * XT2 isn't used for an external oscillator because it is expensive.  Power
  * wise and it has been measured to take roughly 5ms to power up and stabilize.
  * You don't want to be doing that if one is putting the cpu to sleep a bunch.
+ *
+ * WARNING: This module assumes that the 32KiHz XTAL has stablized.  This
+ * is assumed to have been performed in the Platform Initilization.
+ *
+ * The Platform code gets executed on the way up and so certain assumptions can
+ * be made about the state of clocking system.  Otherwise we have to put the
+ * clocks into a known state and stabilize the 32KiHz.   Once done we can just
+ * proceed here with calibration of the main DCO.
+ *
+ * We may want to revisit this later and move wait_for_32K into this module but
+ * it needs to be thought through better and what the ramifications are.  Placing
+ * wait_for_32k into the startup code in Platform is safe.   It just has the
+ * downside of having to put into each different platform startup when new platforms
+ * are added.
  */
 
 /*

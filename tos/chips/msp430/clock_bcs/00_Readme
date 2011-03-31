@@ -1,3 +1,8 @@
-This directory support the msp430 basic clock (__MSP430_HAS_BASIC_CLOCK) and basic clock plus
-(__MSP430_HAS_BC2_).  These are clock modules support by 1st gen x1xxx processors and 2nd gen
-x2xxx processors (ie. msp430f2618 etc).
+This directory contains support for the msp430 basic clock (__MSP430_HAS_BASIC_CLOCK) and
+basic clock plus (__MSP430_HAS_BC2_).  These are clock modules provided  by 1st gen x1xxx
+processors and 2nd gen x2xxx processors (ie. msp430f2618 etc).
+
+The hardware configuration is assumed to include a 32768 Hz external clock crystal that
+is used as an accurate timebase.  This timebase is used to syncronize internal clocks
+and provides clocking for the primary time base.   This provides timer clocking while
+the processor is sleeping.
