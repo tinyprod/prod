@@ -57,7 +57,7 @@ implementation {
     CLIENT_ID = unique(MSP430_I2CB1_BUS),
   };
 
-  components Msp430I2C1P as I2CP;
+  components Msp430I2CB1P as I2CP;
   Resource = I2CP.Resource[CLIENT_ID];
   I2CBasicAddr = I2CP.I2CBasicAddr;
   Msp430I2CConfigure = I2CP.Msp430I2CConfigure[CLIENT_ID];

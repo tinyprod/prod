@@ -1,12 +1,11 @@
 /**
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 2005-2006 Arch Rock Corporation
+ * Copyright (c) 2005-2006 Arched Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
  *
@@ -32,38 +31,43 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE
  */
- 
+
 /**
- * @author Jonathan Hui <jhui@archrock.com>
+ * @author Jonathan Hui <jhui@archedrock.com>
  * @author Xavier Orduna <xorduna@dexmatech.com>
  * @version $Revision: 1.4 $ $Date: 2006/12/12 18:23:11 $
  */
 
-configuration Msp430I2CB1P {
-  
+configuration Msp430SpiB0NoDmaP {
+
   provides interface Resource[ uint8_t id ];
   provides interface ResourceConfigure[uint8_t id ];
-  provides interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;
-  
+  provides interface SpiByte;
+  provides interface SpiPacket[ uint8_t id ];
+
   uses interface Resource as UsciResource[ uint8_t id ];
-  uses interface Msp430I2CConfigure[ uint8_t id ];
-  uses interface HplMsp430UsciInterrupts as Interrupts;
-  
+  uses interface Msp430SpiConfigure[ uint8_t id ];
+  uses interface HplMsp430UsciInterrupts as UsciInterrupts;
+
 }
 
 implementation {
-  
-  components new Msp430I2CP() as I2CP;
+
+  components new Msp430SpiNoDmaP() as SpiP;
   components new Z1UsciP() as Z1UsciP;
-  Resource = I2CP.Resource;
-  ResourceConfigure = I2CP.ResourceConfigure;
-  Msp430I2CConfigure = I2CP.Msp430I2CConfigure;
-  I2CP.Msp430I2CConfigure -> Z1UsciP.Msp430I2CConfigure;
-  I2CBasicAddr = I2CP.I2CBasicAddr;
-  UsciResource = I2CP.UsciResource;
-  Interrupts = I2CP.Interrupts;
-  
-  components HplMsp430UsciB1C as UsciC;
-  I2CP.UsciB -> UsciC;
-  
+  Resource = SpiP.Resource;
+  ResourceConfigure = SpiP.ResourceConfigure;
+  Msp430SpiConfigure = SpiP.Msp430SpiConfigure;
+  SpiP.Msp430SpiConfigure -> Z1UsciP.Msp430SpiConfigure;
+  SpiByte = SpiP.SpiByte;
+  SpiPacket = SpiP.SpiPacket;
+  UsciResource = SpiP.UsciResource;
+  UsciInterrupts = SpiP.UsciInterrupts;
+
+  components HplMsp430UsciB0C as UsciC;
+  SpiP.Usci -> UsciC;
+
+  components LedsC as Leds;
+  SpiP.Leds -> Leds;
+
 }
