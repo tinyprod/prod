@@ -40,6 +40,9 @@
  * The HplAdc12 interface exports low-level access to the ADC12 registers
  * of the MSP430 MCU.
  *
+ * Older msp430 include files defined ADC_VECTOR (defined to be ADC12_VECTOR)
+ * new includes (TI_HEADERS etc) don't define ADC_VECTOR.  Use the blessed
+ * vector: ADC12_VECTOR.
  */
 
 #if !defined(__MSP430_HAS_ADC12__) && !defined(__MSP430_HAS_ADC12_PLUS__)
@@ -125,7 +128,7 @@ implementation
     
   async command bool HplAdc12.isBusy(){ return (ADC12CTL1 & ADC12BUSY); }
 
-  TOSH_SIGNAL(ADC_VECTOR) {
+  TOSH_SIGNAL(ADC12_VECTOR) {
     signal HplAdc12.conversionDone(ADC12IV);
   }
 }
