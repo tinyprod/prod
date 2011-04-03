@@ -27,7 +27,9 @@
 # a proxy using a remote protocol.
 #
 
-source ../../.gdb2618
+#source ../../.gdb_x1
+ source ../../.gdb_x2
+#source ../../.gdb_x5
 
 set remoteaddresssize 0d64
 set remotetimeout 0d999999
@@ -37,12 +39,12 @@ disp/i $pc
 x/i $pc
 set pri ele 0
 
-b RealMainP.nc:75
-b RealMainP.nc:82
-b SchedulerBasicP.nc:151
-b SchedulerBasicP.nc:148
-b VirtualizeTimerC.nc:81
-dis
+#b RealMainP.nc:75
+#b RealMainP.nc:82
+#b SchedulerBasicP.nc:151
+#b SchedulerBasicP.nc:148
+#b VirtualizeTimerC.nc:81
+#dis
 
 define nx
 fini
