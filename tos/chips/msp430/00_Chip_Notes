@@ -99,10 +99,10 @@ clock_ucs: low level interface to x5 on board clocking.  Unified Clock System in
 	__MSP430_HAS_UCS_RF__  driver.   Waiting for 5137 (surf) and mm5 (5438) integration.
 
 dma:	potential for 1 to 8 independent dma channels.  (We only use processors that define 3
-	channels). MSP430X cpus can address 20 bits via the DMA engines.   20 bits increases
-	the overhead significantly and should only be used if really needed.  ie.  Most cpus only
-	provide RAM in the lower 64K so there really isn't much need for 20 bit addresses,
-	unless one is DMAing out of high memory (ROM).
+	channels, including the x5). MSP430X cpus can address 20 bits via the DMA engines.
+	20 bits increases the overhead significantly and should only be used if really needed.
+	ie.  Most cpus only provide RAM in the lower 64K so there really isn't much need for
+	20 bit addresses, unless one is DMAing out of high memory (ROM).
 
 	Currently, only a 16 bit dma interface is provided.  In the future a dma32 interface could
 	be defined to provide access to the full 20 bits of addressing.   This should wait until
@@ -114,7 +114,9 @@ dma:	potential for 1 to 8 independent dma channels.  (We only use processors tha
 
 	x5 processors have the potential for significantly more triggers than x1 or x2 processors.
 	This is indicated by the presence of DMA0TSEL4 (a 5th TSEL bit, DMA0 is in the unshifted
-	lsb position).
+	lsb position).  The larger TSEL field changes the format for DMACTRLn and changes the
+	number of registers.   This also changes where the Common Control work lives.  This controls
+	different things depending on the processor but includes RoundRobin and ENNMI.
 
 pins:	interface to digital I/O.  Different processors can have radically different amounts of
 	digitial I/O.   These pins are organized into ports.  x2 and x5 processors have enhanced

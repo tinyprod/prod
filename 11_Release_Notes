@@ -1,24 +1,87 @@
 
 Major Changes to the msp430 core software:
 
+Welcome to a major rework of the core msp430 files.  Originally, msp430 support
+was for the first generation msp430 cpus.   Later the MSP430X and MSP430XV2
+processor chips were released by TI.  As newer cpu chips have been ported to
+TinyOS the architecture of the msp430 s/w has needed changes.
+
+Major areas of impact include: peripheral register access, clock modules, dma
+support, usart vs. usci support, and interrupt architecture.  In addition the
+s/w has been reorganized to support major differences between the cpus by
+grouping support into families.
+
+This release has also had initial testing done on newer toolchains.  The msp430
+core has been modified to support toolchains listed below.  Test builds have been
+done using the following:
+
+  mspgcc3.2.3:		original tinyos 2.1.1 toolchain
+  mspgcc3.2.3-z1	z1 modified toolchain (supports MSP430X architectural
+			changes, 26xx processors.   Does not properly support
+			x5 chips.
+  mspgcc4.4.5(20110312) Initial mspgcc4 supports x5 chips.  experimental.
+  mspgcc4.5.2 (uniarch) Uniarch varient supports all chips.  experimental.
+  	      		slated to become new main toolchain.
+
+
+It is recommended that all verification work be done using the uniarch toolchain.
+The sooner we get that toolchain squared away the better.
+
+
+Families:
+
+A family is a group of similar msp430 processor chips that have been instantiated
+in TinyOS.
+
+x1: 1st generation MSP430.   Supported: msp430f149, msp430f1611 (telosb)
+
+x2: 2nd generation MSP430X.  Modified cpu ISA, 20 bit addresses.
+    Supported: msp430f2616, 2617, 2618, 2619
+
+x5: 3rd generation MSP430X.  Modified instruction timings.  Peripheral modifications.
+    Supported: cc430f5137, msp430f5438, 5438a.
+
+
+Other notable changes:
+
 * Remove duplicate files between original x1 and Z1 (x2) 
 
-* change usci port named back to h/w centric.  ie. Msp430Uart0 -> Msp430UartA0.  Better matches
-  what will come in with the x5 code where there are lots of ports.
+* change low level usci port naming back to h/w centric.
+  ie. Msp430Uart0 -> Msp430UartA0.  Better matches what will come in with
+  the x5 code where there are lots of ports.
 
-* Default clocks 1611 (x1) 4 MiHz, 2617/2618 (x2) 8 MiHz, 5137/5438 (x5) 16 MiHz
+* Default clocks 1611 (x1) 4 MiHz, 2617/2618 (x2) 8 MiHz,
+  5137/5438 (x5) 16 MiHz
 
-* use common clock module for x1 and x2.  msp430/clock_bcs.  Handles basic_clock and bc2.
+* use common clock module for x1 and x2.  msp430/clock_bcs.  Handles
+  basic_clock and bc2.
 
-* gdb files to support different processor families, tos/chips/msp430/99_gdb/gdb{x1,x2,x5}
-  See tos/chips/msp430/99_gdb/gdbinit for details on how to use these files.
+* gdb files to support different processor families,
+  tos/chips/msp430/99_gdb/gdb{x1,x2,x5}.  See tos/chips/msp430/99_gdb/gdbinit
+  for details on how to use these files.
 
-* add stack checking module.  This module allows one to monitor how much of the stack
-  is being use.  See tos/chips/msp430/Stack*.
+* add stack checking module.  This module allows one to monitor how much of the
+  stack is being use.  See tos/chips/msp430/Stack*.
 
-* Change DCO specifications from KHZ to HZ to eliminate confusion with decimal vs. binary
-  frequency specs.  Make Z1 use binary clocks.
+* Change DCO specifications from KHZ to HZ to eliminate confusion with decimal vs.
+  binary frequency specs.  Make Z1 use binary clocks.
 
-* Revised DCO calibrator to work with both 1611 and Z1 2617/1618.   Z1 uses dco calibrator
-  to sync up to 8MiHz.
+* Revised DCO calibrator to work with both 1611 and Z1 2617/1618.   Z1 uses dco
+  calibrator to sync up to 8MiHz.
 
+* DMA rework.
+
+  - Simplify Hpl and make more easily adaptable cross cpu (handles x1, x2, and x5).
+  - x1/x2 driver and x5 driver independent.
+  - split out Dma.h for x1/x2 and x5.    Too many differences.  Could be combined but
+    just a little too ugly.  Mostly due to the number of Tsel registers and what they
+    are called.
+  - Make module naming clearer.
+
+
+WARNING: tosthreads hasn't been modified for the new core msp430 structure.
+TosThreads duplicated files rather than modified in place.  This creates
+a lot more work and is not recommended.
+
+TosThreads should be modified to place any necessary hooks into the actual device
+drivers themselves rather than duplicating the files and then shadowing.
