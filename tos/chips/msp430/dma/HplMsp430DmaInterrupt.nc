@@ -12,7 +12,7 @@
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -32,7 +32,6 @@
 
 /**
  * @author Ben Greenstein <ben@cs.ucla.edu>
- * @version $Revision: 1.5 $ $Date: 2010-06-29 22:07:45 $
  */
 
 interface HplMsp430DmaInterrupt {
