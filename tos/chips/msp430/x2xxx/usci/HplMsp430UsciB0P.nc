@@ -141,7 +141,7 @@ implementation {
   /*
    * Reset/unReset
    *
-   * resetUsci(bool): (deprecated) TRUE puts device into reset, FALSE takes it out.  But this
+   * resetUsci(bool): (DEPRECATED) TRUE puts device into reset, FALSE takes it out.  But this
    *   requires pushing the parameter on the stack and all those extra instructions.
    *
    * {un,}resetUsci_n(): reset and unreset the device but result in single instruction that
@@ -253,7 +253,7 @@ implementation {
    * atomically cleans out any error indicators and the IFG.
    */
   async command void Usci.clrRxIntr() {
-    uint8_t temp = call Usci.rx();
+    call Usci.rx();
   }
 
   /*
@@ -262,11 +262,10 @@ implementation {
    * clear any pending interrupts.  Intended to be used when
    * starting up a port and we want a pristine state.
    */
-  async command void Usci.clrIntr() {
-    uint8_t temp;
 
+  async command void Usci.clrIntr() {
     atomic {
-      temp = call Usci.rx();		/* clean rx side out */
+      call Usci.rx();			/* clean rx side out */
       IFG2 &= ~UCB0TXIFG;		/* and turn off tx ifg */
     }
   }

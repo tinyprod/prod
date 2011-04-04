@@ -268,7 +268,7 @@ implementation {
    * atomically cleans out any error indicators and the IFG.
    */
   async command void Usci.clrRxIntr() {
-    uint8_t temp = call Usci.rx();
+    call Usci.rx();
   }
 
   /*
@@ -278,10 +278,8 @@ implementation {
    * starting up a port and we want a pristine state.
    */
   async command void Usci.clrIntr() {
-    uint8_t temp;
-
     atomic {
-      temp = call Usci.rx();		/* clean rx side out */
+      call Usci.rx();			/* clean rx side out */
       IFG2 &= ~UCA0TXIFG;		/* and turn off tx ifg */
     }
   }
