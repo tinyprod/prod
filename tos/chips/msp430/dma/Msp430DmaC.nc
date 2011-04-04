@@ -48,7 +48,7 @@
  */
 
 #if !defined(__MSP430_HAS_DMA_3__) && !defined(__MSP430_HAS_DMAX_3__)
-#error "Msp430DmaC: processor not supported, need 3 DMA channels"
+#error "Msp430DmaC: processor not supported, 3 DMA channels"
 #endif
 
 configuration Msp430DmaC {

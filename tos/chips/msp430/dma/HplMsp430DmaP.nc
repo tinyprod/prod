@@ -42,10 +42,14 @@
 #error "HplMsp430DmaP: processor not supported, need DMA_3 or DMAX_3"
 #endif
 
+/*
+ * The x1 family shares the DMA and DAC interrupt vector.   Strange.
+ * While the x2 has a dedicated interrupt vector.
+ */
 #if defined(DACDMA_VECTOR)
-#define __DMA_VECTOR DACDMA_VECTOR
+#define XX_DMA_VECTOR_XX DACDMA_VECTOR
 #elif defined(DMA_VECTOR)
-#define __DMA_VECTOR DMA_VECTOR
+#define XX_DMA_VECTOR_XX DMA_VECTOR
 #else
 #error "DMA VECTOR not defined for cpu selected"
 #endif
@@ -60,7 +64,7 @@ implementation {
   MSP430REG_NORACE( DMACTL0 );
   MSP430REG_NORACE( DMACTL1 );
 
-  TOSH_SIGNAL(__DMA_VECTOR) {
+  TOSH_SIGNAL(XX_DMA_VECTOR_XX) {
     signal Interrupt.fired();
   }
 
