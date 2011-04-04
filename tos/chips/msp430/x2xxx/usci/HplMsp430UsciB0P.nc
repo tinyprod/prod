@@ -413,8 +413,9 @@ implementation {
   }
 
   async command void Usci.setOwnAddress( uint16_t addr ) {
-	UCB0I2COA &= UCGCEN;		/* currently preserves GC enable */
-	UCB0I2COA |= (addr & ~UCGCEN);
+    atomic {
+      UCB0I2COA = (addr & ~UCGCEN) | (UCB0I2COA & UCGCEN);
+    }
   }
 
   /* set whether to respond to GeneralCall. */

@@ -405,15 +405,16 @@ implementation {
 
   /*
    * get/set I2COA, Own Address register
-   * clears UCGCEN, Genernal Call response enable
    */
   async command uint16_t Usci.getOwnAddress() {
     return (UCB1I2COA & ~UCGCEN);
   }
 
   async command void Usci.setOwnAddress( uint16_t addr ) {
-	UCB1I2COA &= UCGCEN;		/* currently preserves GC enable */
-	UCB1I2COA |= (addr & ~UCGCEN);
+    atomic {
+      UCB1I2COA &= UCGCEN;
+      UCB1I2COA |= (addr & ~UCGCEN);
+    }
   }
 
   /* set whether to respond to GeneralCall. */
