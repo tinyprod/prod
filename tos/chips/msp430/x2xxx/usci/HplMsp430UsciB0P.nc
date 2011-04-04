@@ -72,17 +72,15 @@ module HplMsp430UsciB0P @safe() {
 }
 
 implementation {
-#ifdef notdef
   MSP430REG_NORACE(IE2);
   MSP430REG_NORACE(IFG2);
   MSP430REG_NORACE(UCB0CTL0);
   MSP430REG_NORACE(UCB0CTL1);
   MSP430REG_NORACE(UCB0STAT);
+  MSP430REG_NORACE(UCB0TXBUF);
   MSP430REG_NORACE(UCB0RXBUF);
   MSP430REG_NORACE(UCB0I2COA);
   MSP430REG_NORACE(UCB0I2CIE);
-#endif
-  MSP430REG_NORACE(UCB0TXBUF);
 
   async event void UsciRawInterrupts.rxDone(uint8_t temp) {
     signal Interrupts.rxDone(temp);
