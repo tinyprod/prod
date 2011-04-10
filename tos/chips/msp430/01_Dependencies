@@ -2,7 +2,7 @@
 CPU families:
 
 We currently define 3 cpu families that group similar TI msp430 chips together.   Two chips
-can be grouped together if for that module or interface the behaviour is the similar enough.
+can be grouped together if the module/interface behaviour is similar enough.
 
 The main family is simply "msp430" and whenever possible we endevour to put everything we can into the
 generic msp430 directory.  This is the top level.   However when it becomes too cumbersome to make
@@ -117,14 +117,24 @@ DMA:
    The lower 16 bit object is equivilent to a DMA address on a non-DMAX module.  When this lower
    object is written the upper is automatically zeroed.  This provides backward compatibility
    for drivers written for non-DMAX modules.  These drivers will work fine with DMAX modules
-   when accessing the lower 64K of memory.
+   when accessing the lower 64K of memory.  We will provide a dma16 driver initially and will
+   support 20 bits when there is a well defined need to do so.   Under what circumstances does
+   one actually want to dma out of ROM?  Please feel free to dma into ROM  :-)
 
-2) DMA Transfer select.  Transfer select fields determine what a DMA engine (channel) should
-   use to initiate a transfer cycle.  These fields maybe 4 or 5 bits wide and the driver needs
-   to know how to construct an appropriate control word when interacting with the h/w.
+2) TSEL size.  Transfer_Select determines what triggers a DMA cycle.
+   TSEL is 4 bits on x1 and x2 processors and 5 bits on x5 cpus.
 
-   x1xxx and x2xxx support 4 bit triggers.   x5xxx cpus support 5 bit triggers.  Number of triggers
-   can be determined by looking at what TSEL bits are defined in the cpu header files.
+3) TSEL values.  Trigger values depend tightly on h/w present (processor dependent) and visible
+   to client.  Can this be hidden from the application layer?
+
+4) TSEL location.  3 channels using 4 bit TSELs will fit in one 16 bit control word (x1, x2
+   processors).   The x5 uses 5 bit TSELS organized 2 TSELs per 16 bit word.  (one per byte).
+   DMA_TSEL_BASE, TSEL_MASK and TSEL_SHIFT values will vary depending on processor family.
+
+5) Operation Control word.  This control word on the x1/x2 processors controls DMA_ONFETCH,
+   ROUND_ROBIN, and ENNMI.  (DMACTL1).   The x5 replaces DMA_ONFETCH with DMARMWDIS which
+   disallows dma transfers form oocuring whil read-modify-write operations are occuring.
+
 
    
 3) Interrupt vector:
@@ -134,7 +144,8 @@ DMA:
    The driver uses either DACDMA_VECTOR or DMA_VECTOR if defined.  Otherwise complains about lack of
    support.
 
-4) Clocks.
+
+Clocks:
 
    The x1xxx family has the original basic clock system (BCS) and has a 3 bit range select field.
    The x2xxx family has revision 2 of this system (BC2) with a 4 bit range field but is essentially
@@ -142,7 +153,8 @@ DMA:
 
    The x5xxx family has the Unified Clock System which is different (__MSP430_HAS_UCS__).
 
-5) I0 Port naming.
+
+I0 Port naming:
 
    TI defines 8 bit numbered ports (P1 ... P<n>).  In later families 16 bit lettered ports PORTA, etc.
    are also defined.   Layout of these ports varies by family.  In later parts, lettered ports are

@@ -42,64 +42,35 @@
 #include "Msp430Dma.h"
 
 generic module Msp430DmaChannelP() {
-
   provides interface Msp430DmaChannel as Channel;
   uses interface HplMsp430DmaChannel as HplChannel;
-
 }
 
 implementation {
-
-  norace dma_channel_state_t gChannelState;
-  norace dma_channel_trigger_t gChannelTrigger;
-  
-  async command void Channel.setupTransferRaw( uint16_t s, uint16_t t, 
-					       void* src, void* dest, 
-					       int size ) {
-    call HplChannel.setStateRaw( s, t, src, dest, size );
-  }
-  
-  async command error_t Channel.setupTransfer( dma_transfer_mode_t transfer_mode, 
-					   dma_trigger_t trigger, 
-					   dma_level_t level,
-					   void *src_addr, 
-					   void *dst_addr, 
-					   uint16_t size,
-					   dma_byte_t src_byte, 
-					   dma_byte_t dst_byte,
-					   dma_incr_t src_incr, 
-					   dma_incr_t dst_incr ) {
-    
-    gChannelState.request = 0;
-    gChannelState.abort = 0;
-    gChannelState.interruptEnable = 1;
-    gChannelState.interruptFlag = 0;
-    gChannelState.enable = 0;          /* don't start an xfer */
-    gChannelState.level = level;
-    gChannelState.srcByte = src_byte;
-    gChannelState.dstByte = dst_byte;
-    gChannelState.srcIncrement = src_incr;
-    gChannelState.dstIncrement = dst_incr;
-    gChannelState.transferMode = transfer_mode;
-    
-    gChannelTrigger.trigger = trigger;
-    
-    call HplChannel.setState( gChannelState, gChannelTrigger,
-			      src_addr, dst_addr, size );
-    
+  async command error_t
+    Channel.setupTransfer(uint16_t control,
+			  dma_trigger_t trigger, 
+			  uint16_t src_addr, 
+			  uint16_t dst_addr, 
+			  uint16_t size) {
+    call HplChannel.setSrc(src_addr);
+    call HplChannel.setDst(dst_addr);
+    call HplChannel.setSize(size);
+    call HplChannel.setTrigger(trigger);
+    call HplChannel.setChannelControl(control);
     return SUCCESS;
-    
   }
   
-  async command error_t Channel.startTransfer() {
+  async command error_t Channel.enableDma() {
     call HplChannel.enableDMA();
     return SUCCESS;
   }
   
-  async command error_t Channel.repeatTransfer( void *src_addr, 
-						void *dst_addr, 
-						uint16_t size ) {
-    call HplChannel.setSrc( src_addr );
+  async command error_t
+    Channel.repeatDma(uint16_t src_addr,
+		      uint16_t dst_addr,
+		      uint16_t size ) {
+    call HplChannel.setSrc(src_addr);
     call HplChannel.setDst(dst_addr);
     call HplChannel.setSize(size);
     call HplChannel.enableDMA();
@@ -107,25 +78,27 @@ implementation {
   }
   
   async command error_t Channel.softwareTrigger() {
-    if (gChannelTrigger.trigger != DMA_TRIGGER_DMAREQ) 
+    if (call HplChannel.getTrigger() != DMA_TRIGGER_DMAREQ) 
       return FAIL;
     call HplChannel.triggerDMA();
     return SUCCESS;
   }
   
-  async command error_t Channel.stopTransfer() {
-    if ( gChannelState.transferMode != DMA_BURST_BLOCK_TRANSFER ||
-	 gChannelState.transferMode != DMA_REPEATED_BURST_BLOCK_TRANSFER)
+  async command error_t Channel.stopDma() {
+    uint16_t control;
+
+    control = call HplChannel.getChannelControl();
+    control &= DMADT_3;			/* isolate low two bits of DT field */
+    if (control != DMA_DT_BURST_BLOCK)
       return FAIL;
     call HplChannel.disableDMA();
     return SUCCESS;
     
   }
   
-  async event void HplChannel.transferDone( error_t error ) {
-    signal Channel.transferDone( error );
+  async event void HplChannel.transferDone(error_t error) {
+    signal Channel.transferDone(error);
   }
 
-  default async event void Channel.transferDone( error_t error ) {}
-
+  default async event void Channel.transferDone(error_t error) {}
 }

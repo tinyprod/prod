@@ -40,6 +40,8 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
+#include "Msp430Dma.h"
+
 #if !defined(__MSP430_HAS_DMA_3__) && !defined(__MSP430_HAS_DMAX_3__)
 #error "HplMsp430DmaP: processor not supported, need DMA_3 or DMAX_3"
 #endif
@@ -56,55 +58,28 @@
 #error "DMA VECTOR not defined for cpu selected"
 #endif
 
-module HplMsp430DmaP {
+module HplMsp430DmaControlP {
   provides interface HplMsp430DmaControl as DmaControl;
   provides interface HplMsp430DmaInterrupt as Interrupt;
 }
 
 implementation {
 
-  MSP430REG_NORACE( DMACTL0 );
-  MSP430REG_NORACE( DMACTL1 );
+#define DMA_OP_CTRL    (*(volatile uint8_t  *) DMA_OP_CTRL_)
 
-  TOSH_SIGNAL(XX_DMA_VECTOR_XX) {
-    signal Interrupt.fired();
+  async command void DmaControl.setOpControl(uint16_t op) {
+    DMA_OP_CTRL = op;
   }
 
-  async command void DmaControl.setOnFetch(){
-    DMACTL1 |= DMAONFETCH;
-  }
-
-  async command void DmaControl.clearOnFetch(){
-    DMACTL1 &= ~DMAONFETCH;
-  }
-
-  async command void DmaControl.setRoundRobin(){
-    DMACTL1 |= ROUNDROBIN;
-  }
-  async command void DmaControl.clearRoundRobin(){
-    DMACTL1 &= ~ROUNDROBIN;
-  }
-
-  async command void DmaControl.setENNMI(){
-    DMACTL1 |= ENNMI;
-  }
-
-  async command void DmaControl.clearENNMI(){
-    DMACTL1 &= ~ENNMI;
-  }
-
-  async command void DmaControl.setState(dma_state_t s){
-    DMACTL1 = *(int*)&s;
-  }
-
-  async command dma_state_t DmaControl.getState(){
-    dma_state_t s;
-    s = *(dma_state_t*)&DMACTL1;
-    return s;
+  async command uint16_t DmaControl.getOpControl() {
+    return DMA_OP_CTRL;
   }
 
   async command void DmaControl.reset(){
-    DMACTL0 = 0;
-    DMACTL1 = 0;
+    DMA_OP_CTRL = 0;
+  }
+
+  TOSH_SIGNAL(XX_DMA_VECTOR_XX) {
+    signal Interrupt.fired();
   }
 }

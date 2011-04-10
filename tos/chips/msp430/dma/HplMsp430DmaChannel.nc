@@ -34,54 +34,65 @@
  *
  * @author Ben Greenstein <ben@cs.ucla.edu>
  * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * See Msp430Dma.h for major changes.
  */
 
+#include <Msp430Dma.h>
+
 interface HplMsp430DmaChannel {
-  async command error_t setTrigger(dma_trigger_t trigger);
-  async command void clearTrigger();
-  async command void setSingleMode();
-  async command void setBlockMode();
-  async command void setBurstMode();
-  async command void setRepeatedSingleMode();
-  async command void setRepeatedBlockMode();
-  async command void setRepeatedBurstMode();
-  async command void setSrcNoIncrement();
-  async command void setSrcDecrement();
-  async command void setSrcIncrement();
-  async command void setDstNoIncrement();
-  async command void setDstDecrement();
-  async command void setDstIncrement();
-  async command void setWordToWord(); 
-  async command void setByteToWord(); 
-  async command void setWordToByte(); 
-  async command void setByteToByte(); 
-  async command void setEdgeSensitive();
-  async command void setLevelSensitive();
 
-  async command void enableDMA();
-  async command void disableDMA();
+  /*
+   * Set/Get the DMA Channel Control word.
+   *
+   * Use cpu defines to control a dma channel.  ie.
+   *
+   * call DMA.setChannelControl( DMA_DT_SINGLE | DMA_DT_RPT | DMASBDB
+   *             | DMA_SRC_INC | DMA_DST_INC | DMAEN);
+   *
+   * You should leave the following bits alone:
+   *
+   *     DMAREQ, DMAABORT, DMAIE, and DMAIFG
+   *
+   * There are seperate routines for manipulating or testing
+   * those bits.
+   */
+  async command void		setChannelControl(uint16_t ctl);
+  async command uint16_t	getChannelControl();
 
-  async command void enableInterrupt() ; 
-  async command void disableInterrupt() ; 
+  async command error_t		setTrigger(dma_trigger_t trigger);
+  async command dma_trigger_t	getTrigger();
 
-  async command bool interruptPending();
+  async command void		enableDMA();
+  async command void		disableDMA();
 
-  async command bool aborted();
-  async command void triggerDMA();
+  async command void		enableInterrupt();
+  async command void		disableInterrupt();
 
-  async command void setSrc(void *saddr);
-  async command void setDst(void *daddr);
-  async command void setSize(uint16_t sz);
+  async command bool		interruptPending();
+  async command void		clearInterrupt();
 
-  async command void setState(dma_channel_state_t s, dma_channel_trigger_t t, void* src, void* dest, uint16_t size);
-  async command void setStateRaw(uint16_t state, uint16_t trigger, void* src, void* dest, uint16_t size);
-  async command dma_channel_state_t getState();
-  async command void* getSource();
-  async command void* getDestination();
-  async command uint16_t getSize();
-  async command dma_channel_trigger_t getTrigger();
+  async command bool		aborted();
 
-  async command void reset();
+  async command void		triggerDMA();
 
-  async event void transferDone(error_t success);
+  async command void		setSrc(uint16_t saddr);
+  async command void*		getSrc();
+
+  async command void		setDst(uint16_t daddr);
+  async command void*		getDst();
+
+  async command void		setSize(uint16_t sz);
+  async command uint16_t	getSize();
+
+  /*
+   * Channel Reset
+   *
+   * Turn a dma channel off.  Force reset.
+   * will set Channel Control to 0
+   * will set Channel trigger to 0
+   */
+  async command void		reset();
+
+  async event void		transferDone(error_t success);
 }

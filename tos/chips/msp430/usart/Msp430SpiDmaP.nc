@@ -138,34 +138,29 @@ implementation {
       IFG &= ~( TXIFG | RXIFG );
 
       // set up the RX xfer
-      call DmaChannel1.setupTransfer(DMA_SINGLE_TRANSFER,
-				     RXTRIG,
-				     DMA_EDGE_SENSITIVE,
-				     (void *) RXBUF_addr,
-				     rx_buf ? rx_buf : &m_dump,
-				     len,
-				     DMA_BYTE,
-				     DMA_BYTE,
-				     DMA_ADDRESS_UNCHANGED,
-				     rx_buf ?
-				       DMA_ADDRESS_INCREMENTED :
-				       DMA_ADDRESS_UNCHANGED);
-      // this doesn't start a transfer; it simply enables the channel
-      call DmaChannel1.startTransfer();
+      call DmaChannel1.setupTransfer(
+	  DMA_DT_SINGLE |		// single, edge triggered
+	  DMA_SB_DB |			// byte to byte
+	  DMA_SRC_NO_CHNG |		// src rxbuf, no inc
+	  (rx_buf ? DMA_DST_INC : DMA_DST_NO_CHNG),
+					// if buf inc, else dumping
+	RXTRIG,				// specified trigger
+	(uint16_t) RXBUF_addr,
+	(rx_buf ? rx_buf : &m_dump),
+	len);
+      call DmaChannel1.enableDma();
 
       // set up the TX xfer
-      call DmaChannel2.setupTransfer(DMA_SINGLE_TRANSFER,
-				     TXTRIG,
-				     DMA_EDGE_SENSITIVE,
-				     tx_buf,
-				     (void *) TXBUF_addr,
-				     len,
-				     DMA_BYTE,
-				     DMA_BYTE,
-				     DMA_ADDRESS_INCREMENTED,
-				     DMA_ADDRESS_UNCHANGED);
-      // this doesn't start a transfer; it simply enables the channel
-      call DmaChannel2.startTransfer();
+      call DmaChannel2.setupTransfer(
+	  DMA_DT_SINGLE |		// single, edge triggered
+	  DMA_SB_DB |			// byte to byte
+	  DMA_SRC_INC |			// src tx_buf, inc
+	  DMA_DST_NO_CHNG,		// dst, TXBUF, no inc
+	TXTRIG,				// specified trigger
+	(uint16_t) tx_buf,
+	(uint16_t) TXBUF_addr,
+	len);
+      call DmaChannel2.enableDma();
 
       // pong the tx flag to get things rolling
       IFG |= TXIFG;

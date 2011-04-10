@@ -49,23 +49,27 @@ configuration HplMsp430DmaC {
 
 implementation {
 
-  components HplMsp430DmaP;
-  components new HplMsp430DmaXP( DMA0CTL_, DMA0SA_, DMA0DA_,
-				 DMA0SZ_, DMA0TSEL_MASK, 
-				 DMA0TSEL_SHIFT ) as Dma0;
-  components new HplMsp430DmaXP( DMA1CTL_, DMA1SA_, DMA1DA_,
-				 DMA1SZ_, DMA1TSEL_MASK, 
-				 DMA1TSEL_SHIFT ) as Dma1;
-  components new HplMsp430DmaXP( DMA2CTL_, DMA2SA_, DMA2DA_,
-				 DMA2SZ_, DMA2TSEL_MASK, 
-				 DMA2TSEL_SHIFT ) as Dma2;
+  components HplMsp430DmaControlP as ControlP;
+  components new
+    HplMsp430DmaChannelP(DMA0CTL_, DMA0SA_, DMA0DA_, DMA0SZ_,
+			 TSEL0_BASE, TSEL_MASK, TSEL0_SHIFT)
+	as Dma0P;
 
-  Control = HplMsp430DmaP;
-  Channel0 = Dma0;
-  Channel1 = Dma1;
-  Channel2 = Dma2;
-  Dma0.Interrupt -> HplMsp430DmaP;
-  Dma1.Interrupt -> HplMsp430DmaP;
-  Dma2.Interrupt -> HplMsp430DmaP;
+  components new
+    HplMsp430DmaChannelP(DMA1CTL_, DMA1SA_, DMA1DA_, DMA1SZ_,
+			 TSEL1_BASE, TSEL_MASK, TSEL1_SHIFT)
+	as Dma1P;
 
+  components new
+    HplMsp430DmaChannelP(DMA2CTL_, DMA2SA_, DMA2DA_, DMA2SZ_,
+			 TSEL2_BASE, TSEL_MASK, TSEL2_SHIFT)
+	as Dma2P;
+
+  Control	   = ControlP;
+  Channel0	   = Dma0P;
+  Channel1	   = Dma1P;
+  Channel2	   = Dma2P;
+  Dma0P.Interrupt -> ControlP;
+  Dma1P.Interrupt -> ControlP;
+  Dma2P.Interrupt -> ControlP;
 }

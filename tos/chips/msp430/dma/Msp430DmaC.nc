@@ -77,7 +77,7 @@ implementation {
 
   components Msp430DmaControlP as ControlP;
   Control = ControlP;
-  ControlP.HplControl -> HplDmaC;
+  ControlP.HplControl  -> HplDmaC;
   ControlP.HplChannel0 -> HplDmaC.Channel0;
   ControlP.HplChannel1 -> HplDmaC.Channel1;
   ControlP.HplChannel2 -> HplDmaC.Channel2;

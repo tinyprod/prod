@@ -55,10 +55,10 @@ implementation {
   components new Msp430SpiDmaP(IFG2_,
 			       U1TXBUF_,
 			       UTXIFG1,
-			       (uint16_t) DMA_TRIGGER_UTXIFG1,
+			       DMA_TRIGGER_UTXIFG1,
 			       U1RXBUF_,
 			       URXIFG1,
-			       (uint16_t) DMA_TRIGGER_URXIFG1) as SpiP;
+			       DMA_TRIGGER_URXIFG1) as SpiP;
   Resource = SpiP.Resource;
   ResourceConfigure = SpiP.ResourceConfigure;
   Msp430SpiConfigure = SpiP.Msp430SpiConfigure;

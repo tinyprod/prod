@@ -102,12 +102,14 @@ dma:	potential for 1 to 8 independent dma channels.  (We only use processors tha
 	channels, including the x5). MSP430X cpus can address 20 bits via the DMA engines.
 	20 bits increases the overhead significantly and should only be used if really needed.
 	ie.  Most cpus only provide RAM in the lower 64K so there really isn't much need for
-	20 bit addresses, unless one is DMAing out of high memory (ROM).
+	20 bit addresses, unless one is DMAing out of high memory (ROM).   DMAing into ROM is
+	left as an exercise for the student (there really is an application for this).
 
 	Currently, only a 16 bit dma interface is provided.  In the future a dma32 interface could
 	be defined to provide access to the full 20 bits of addressing.   This should wait until
-	there is an explicit need to access memory above 64K (ie. DMA out of ROM).  Until then who
-	cares.
+	there is an explicit need to access memory above 64K (ie. DMA out of ROM).  It is possible
+	to still keep a singular driver by keying off the size of the address pointers passed into
+	the various routines.  Until then who cares.
 
 	__MSP430_HAS_DMA_3__   3 channel, 16 bit addresses (x1)
 	__MSP430_HAS_DMAX_3__  3 channel, 20 bit addresses (x2, x5).
@@ -115,8 +117,8 @@ dma:	potential for 1 to 8 independent dma channels.  (We only use processors tha
 	x5 processors have the potential for significantly more triggers than x1 or x2 processors.
 	This is indicated by the presence of DMA0TSEL4 (a 5th TSEL bit, DMA0 is in the unshifted
 	lsb position).  The larger TSEL field changes the format for DMACTRLn and changes the
-	number of registers.   This also changes where the Common Control work lives.  This controls
-	different things depending on the processor but includes RoundRobin and ENNMI.
+	number of registers.   This also changes where the common control register  lives.  This
+	controls different things depending on the processor but includes RoundRobin and ENNMI.
 
 pins:	interface to digital I/O.  Different processors can have radically different amounts of
 	digitial I/O.   These pins are organized into ports.  x2 and x5 processors have enhanced

@@ -61,10 +61,11 @@ implementation {
   components new Msp430SpiDmaP(IFG2_,
 			       UCA0TXBUF_,
 			       UCA0TXIFG,
-			       (uint16_t) DMA_TRIGGER_UCA0TXIFG,
+			       DMA_TRIGGER_UCA0TXIFG,	// USCI_A0 TX on x2
 			       UCA0RXBUF_,
 			       UCA0RXIFG,
-			       (uint16_t) DMA_TRIGGER_UCA0RXIFG) as SpiP;
+			       DMA_TRIGGER_UCA0RXIFG)	// USCI_A0 RX on x2
+    as SpiP;
 
   Resource = SpiP.Resource;
   ResourceConfigure = SpiP.ResourceConfigure;
@@ -80,6 +81,9 @@ implementation {
   components Msp430DmaC as DmaC;
   SpiP.DmaChannel1 -> DmaC.Channel1;
   SpiP.DmaChannel2 -> DmaC.Channel2;
+#ifdef DMA_VERBOSE
+#warning Msp430SpiA0DmaP: using dma channels 1 and 2
+#endif
 
   components LedsC as Leds;
   SpiP.Leds -> Leds;

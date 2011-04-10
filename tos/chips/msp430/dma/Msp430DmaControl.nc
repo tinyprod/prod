@@ -39,7 +39,7 @@
 #include "Msp430Dma.h"
 
 interface Msp430DmaControl {
-  async command void init();
-  async command void setFlags( bool enable_nmi, bool round_robin, 
-			       bool on_fetch);
+  async command void     setOpControl(uint16_t op);
+  async command uint16_t getOpControl();
+  async command void     reset();
 }

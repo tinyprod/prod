@@ -55,6 +55,23 @@ implementation
     MULTIPLE_SINGLE_AGAIN,
   };
 
+  /*
+   * ADC12_DMA_OP_CTRL is set depending on what class of machine the
+   * DMA is running on.  X5 cpus define DMARWMDIS instead of DMAONFETCH.
+   *
+   * We set ENNMI, no Round Robin, and then either DMARWMDIS or
+   * DMAONFETCH depending on the cpu family.   Existence of DMARWMDIS
+   * which comes from the cpu dependent headers determines which
+   * family we are on and how the DMA engine behaves.
+   */
+enum {
+#ifdef DMARMWDIS
+    ADC12_DMA_OP_CTRL = (DMARMWDIS | ENNMI),	// x5 flavor
+#else
+    ADC12_DMA_OP_CTRL = (DMAONFETCH | ENNMI),	// x1/x2 flavor
+#endif
+  };
+
   // norace declarations are safe here, because Msp430Adc12P.nc implements 
   // a lock mechanism which guarantees that no two clients can access the ADC
   // and the module variables below are only changed after the lock was acquired
@@ -86,21 +103,18 @@ implementation
     // the end of the whole sequence and DMA has done all the copying
     error_t result = call SubSingleChannel.configureSingleRepeat[id](config, jiffies);
     if (result == SUCCESS){
-      call DMAControl.init();
-      call DMAControl.setFlags(ENABLE_NMI, NOT_ROUND_ROBIN, ON_FETCH);
+      call DMAControl.reset();
+      call DMAControl.setOpControl(ADC12_DMA_OP_CTRL);
       call DMAChannel.setupTransfer(
-        DMA_REPEATED_SINGLE_TRANSFER, 
-        DMA_TRIGGER_ADC12IFGx,
-        DMA_EDGE_SENSITIVE,
-        (void*) ADC12MEM_,
-        buf,
-        length,
-        DMA_WORD,
-        DMA_WORD,
-        DMA_ADDRESS_UNCHANGED,
-        DMA_ADDRESS_INCREMENTED
-        );
-      call DMAChannel.startTransfer();
+	  DMA_DT_RPT | DMA_DT_SINGLE |	// repeated single, edge sensitive
+	  DMA_SW_DW |			// SRC word, DST word
+	  DMA_SRC_NO_CHNG | 		// SRC address, no increment
+	  DMA_DST_INC,			// DST address, increment
+        DMA_TRIGGER_ADC12IFG,
+        (uint16_t) ADC12MEM_,
+	(uint16_t) buf,
+        length);
+      call DMAChannel.enableDma();
       client = id;
       mode = _mode;
       buffer = buf;
@@ -127,7 +141,7 @@ implementation
   async command error_t SingleChannel.getData[uint8_t id]()
   {
     if (mode == MULTIPLE_SINGLE_AGAIN)
-      call DMAChannel.repeatTransfer((void*) ADC12MEM_, buffer, numSamples);
+      call DMAChannel.repeatDma((uint16_t) ADC12MEM_, (uint16_t) buffer, numSamples);
     return call SubSingleChannel.getData[id]();
   }
   
@@ -154,7 +168,7 @@ implementation
     next = signal SingleChannel.multipleDataReady[client](buffer, numSamples);
     if (oldMode == MULTIPLE_REPEAT)
       if (next){
-        call DMAChannel.repeatTransfer((void*) ADC12MEM_, next, numSamples);
+        call DMAChannel.repeatDma((uint16_t) ADC12MEM_, (uint16_t) next, numSamples);
         call AsyncAdcControl.start[client]();
       } else
         call AsyncAdcControl.stop[client]();

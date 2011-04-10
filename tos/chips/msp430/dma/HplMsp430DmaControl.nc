@@ -39,14 +39,7 @@
 #include "Msp430Dma.h"
 
 interface HplMsp430DmaControl {
-
-  async command void setOnFetch();
-  async command void clearOnFetch();
-  async command void setRoundRobin();
-  async command void clearRoundRobin();
-  async command void setENNMI();
-  async command void clearENNMI();
-  async command void setState(dma_state_t s);
-  async command dma_state_t getState();
-  async command void reset();
+  async command void     setOpControl(uint16_t op);
+  async command uint16_t getOpControl();
+  async command void     reset();
 }
