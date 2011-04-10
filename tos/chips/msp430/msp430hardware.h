@@ -52,6 +52,18 @@
 #include <io.h>
 #endif
 
+#if defined(__msp430x261x) && !defined(__msp430x26x)
+/*
+ * The old 3.2.3 toolchain defined __msp430x261x when compiling for the
+ * 261x series of chips.   The new TI HEADER based toolchains however define
+ * __msp430x26x instead.
+ *
+ * We are migrating to using the newer toolchain and the newer __msp430x26x
+ * define.  For backward compatibility, create the new define too if needed.
+ */
+#define __msp430x26x
+#endif
+
 /*
  * signal.h defines lots of interesting things including dint(), eint() and
  * how to hook interrupts in.
