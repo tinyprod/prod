@@ -56,3 +56,10 @@ define noint
 printf "cur sr: %02x\n", $r2
 set $r2=0
 end
+
+define npc
+x/16i $pc
+end
+document npc
+display next (16) instructions from $pc
+end
