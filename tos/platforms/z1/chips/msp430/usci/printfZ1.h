@@ -195,12 +195,12 @@ void printfUART_init_private()
         
         CKEN |= CKEN5_STUART; //enable the UART's clk    
     #elif defined(PLATFORM_Z1)
-                P3SEL |= 0x30;                            // P3.4,5 = USCI_A1 TXD/RXD
-                UCA0CTL1 |= UCSSEL_2;                     // CLK = ACLK
-                UCA0BR0 = 0x45;                           // 32kHz/9600 = 3.41
-                UCA0BR1 = 0x00;                           //
-                UCA0MCTL = UCBRS1 + UCBRS0;               // Modulation UCBRSx = 3
-                UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
+                P3SEL |= 0x30;                            // P3.4,5 = USCI_A0 TXD/RXD
+                UCA0CTL1 |= UCSSEL_2;                     // CLK = SMCLK, 8MiHz
+                UCA0BR0  = 4;				  // set 115200 baud
+                UCA0BR1  = 0;
+                UCA0MCTL = 0x91;
+                UCA0CTL1 &= ~UCSWRST;
 
     #else  // assume TelosA, TelosB, etc.
         // Variabel baud 
