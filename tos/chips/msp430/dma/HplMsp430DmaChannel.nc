@@ -77,10 +77,10 @@ interface HplMsp430DmaChannel {
   async command void		triggerDMA();
 
   async command void		setSrc(uint16_t saddr);
-  async command void*		getSrc();
+  async command uint16_t	getSrc();
 
   async command void		setDst(uint16_t daddr);
-  async command void*		getDst();
+  async command uint16_t	getDst();
 
   async command void		setSize(uint16_t sz);
   async command uint16_t	getSize();

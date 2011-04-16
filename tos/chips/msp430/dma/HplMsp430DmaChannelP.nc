@@ -149,19 +149,19 @@ implementation {
   }
   
   async command void DMA.setSrc(uint16_t saddr) {
-    DMAxSA = ((uint16_t) saddr);
+    DMAxSA = saddr;
   }
   
-  async command void* DMA.getSrc() {
-    return ((void*) DMAxSA);
+  async command uint16_t DMA.getSrc() {
+    return DMAxSA;
   }
 
   async command void DMA.setDst(uint16_t daddr) {
-    DMAxDA = ((uint16_t) daddr);
+    DMAxDA = daddr;
   }
   
-  async command void* DMA.getDst() {
-    return ((void*) DMAxDA);
+  async command uint16_t DMA.getDst() {
+    return DMAxDA;
   }
 
   async command void DMA.setSize(uint16_t sz) {
