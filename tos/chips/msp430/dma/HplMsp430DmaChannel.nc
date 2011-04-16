@@ -60,7 +60,7 @@ interface HplMsp430DmaChannel {
   async command void		setChannelControl(uint16_t ctl);
   async command uint16_t	getChannelControl();
 
-  async command error_t		setTrigger(dma_trigger_t trigger);
+  async command void		setTrigger(dma_trigger_t trigger);
   async command dma_trigger_t	getTrigger();
 
   async command void		enableDMA();

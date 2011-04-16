@@ -100,14 +100,11 @@ implementation {
     return DMAxCTL;
   }
 
-  async error_t command DMA.setTrigger( dma_trigger_t trigger ) {
-    if ( DMAxCTL & DMAEN )
-      return FAIL;
+  async void command DMA.setTrigger( dma_trigger_t trigger ) {
     atomic {
       TSEL = ((TSEL & ~(DMAxTSEL_mask << DMAxTSEL_shift)) |
 	      ((trigger & DMAxTSEL_mask) << DMAxTSEL_shift));
     }
-    return SUCCESS;
   }
 
   async command dma_trigger_t DMA.getTrigger() {
