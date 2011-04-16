@@ -94,5 +94,5 @@ interface HplMsp430DmaChannel {
    */
   async command void		reset();
 
-  async event void		transferDone(error_t success);
+  async event void		transferDone();
 }

@@ -67,7 +67,7 @@ implementation {
     call HplControl.reset();
   } 
 
-  async event void HplChannel0.transferDone( error_t error ) {}
-  async event void HplChannel1.transferDone( error_t error ) {}
-  async event void HplChannel2.transferDone( error_t error ) {}
+  async event void HplChannel0.transferDone() {}
+  async event void HplChannel1.transferDone() {}
+  async event void HplChannel2.transferDone() {}
 }

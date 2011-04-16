@@ -177,12 +177,17 @@ implementation {
     call DMA.setTrigger(0);		/* will set to sw/dmareq */
   }
 
+  /*
+   * Interaction between NMI and DMA resulting in the ABORT
+   * isn't clear.  Hasn't really been fleshed out and is mostly
+   * ignored for now.   ABORT is stupid as is a maskable NMI.
+   * It isn't at all clear what needs to happen if the DMA is
+   * actually aborted because of a NMI.   Also no one seems to
+   * actually look at the return status of a transferDone().
+   * So remove it for now.
+   */
   async event void Interrupt.fired() {
-    error_t error = ( DMAxCTL & DMAABORT ) ? FAIL : SUCCESS;
-    if ( DMAxCTL & DMAIFG ) {
-      DMAxCTL &= ~DMAIFG;
-      DMAxCTL &= ~DMAABORT;
-      signal DMA.transferDone( error );
-    }
+    DMAxCTL &= ~DMAIFG;
+    signal DMA.transferDone();
   }
 }

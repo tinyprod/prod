@@ -74,6 +74,9 @@ interface Msp430DmaChannel {
 
   /**
    * Notification that the transfer has completed
+   *
+   * Used to have an error return but this could only fail
+   * because of an ABORT.  This has been nuked.
    */
-  async event void transferDone(error_t success);
+  async event void transferDone();
 }

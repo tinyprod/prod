@@ -96,9 +96,9 @@ implementation {
     
   }
   
-  async event void HplChannel.transferDone(error_t error) {
-    signal Channel.transferDone(error);
+  async event void HplChannel.transferDone() {
+    signal Channel.transferDone();
   }
 
-  default async event void Channel.transferDone(error_t error) {}
+  default async event void Channel.transferDone() {}
 }
