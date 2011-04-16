@@ -60,7 +60,7 @@
 
 module HplMsp430DmaControlP {
   provides interface HplMsp430DmaControl as DmaControl;
-  provides interface HplMsp430DmaInterrupt as Interrupt;
+  provides interface HplMsp430DmaInterrupt as DmaInterrupt[uint8_t chnl];
 }
 
 implementation {
@@ -79,7 +79,22 @@ implementation {
     DMA_OP_CTRL = 0;
   }
 
+
+  /*
+   * some processors have a DMAIV, interrupt vector that
+   * can be used for accessing a jump table.   But we don't
+   * have a jump table and the code here turns out to be more
+   * efficient because we know there are only 3 possible and
+   * we wire directly into the DmaInterrupt.fired[x].
+   */
   TOSH_SIGNAL(XX_DMA_VECTOR_XX) {
-    signal Interrupt.fired();
+    if ((DMA0CTL & DMAIFG) && (DMA0CTL & DMAIE))
+      signal DmaInterrupt.fired[0]();
+    else if ((DMA1CTL & DMAIFG) && (DMA1CTL & DMAIE))
+      signal DmaInterrupt.fired[1]();
+    else if ((DMA2CTL & DMAIFG) && (DMA2CTL & DMAIE))
+      signal DmaInterrupt.fired[2]();
   }
+
+  default async event void DmaInterrupt.fired[uint8_t chnl] () { }
 }

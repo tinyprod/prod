@@ -69,7 +69,7 @@ implementation {
   Channel0	   = Dma0P;
   Channel1	   = Dma1P;
   Channel2	   = Dma2P;
-  Dma0P.Interrupt -> ControlP;
-  Dma1P.Interrupt -> ControlP;
-  Dma2P.Interrupt -> ControlP;
+  Dma0P.Interrupt -> ControlP.DmaInterrupt[0];
+  Dma1P.Interrupt -> ControlP.DmaInterrupt[1];
+  Dma2P.Interrupt -> ControlP.DmaInterrupt[2];
 }
