@@ -65,7 +65,24 @@ module HplMsp430DmaControlP {
 
 implementation {
 
-#define DMA_OP_CTRL    (*(volatile uint8_t  *) DMA_OP_CTRL_)
+  MSP430REG_NORACE(DMA0CTL);
+  MSP430REG_NORACE(DMA1CTL);
+  MSP430REG_NORACE(DMA2CTL);
+  
+#ifdef TSELW_1
+  /*
+   * X5, DMA_OP_CTRL (DMACTL4), TSELW_0 (DMACTL0), TSELW_1 (DMACTL1)
+   */
+  MSP430REG_NORACE(DMACTL0);
+  MSP430REG_NORACE(DMACTL1);
+  MSP430REG_NORACE(DMACTL4);
+#else
+  /*
+   * x1/2, DMA_OP_CTRL (DMACTL1), TSELW_0 (DMACTL0)
+   */
+  MSP430REG_NORACE(DMACTL0);
+  MSP430REG_NORACE(DMACTL1);
+#endif
 
   async command void DmaControl.setOpControl(uint16_t op) {
     DMA_OP_CTRL = op;
@@ -77,6 +94,13 @@ implementation {
 
   async command void DmaControl.reset(){
     DMA_OP_CTRL = 0;
+    TSELW_0 = 0;
+#ifdef TSELW_1
+    TSELW_1 = 0;
+#endif
+    DMA0CTL = 0;
+    DMA1CTL = 0;
+    DMA2CTL = 0;
   }
 
 

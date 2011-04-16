@@ -85,7 +85,14 @@
  *   On the x1 and x2 processors, these control cells live in the 16 bit i/o memory
  *   starting at 0x0100.  This area MUST be accessed using only 16 bit instructions,
  *   ie. mov not mov.b.    mov.b to an odd IO16 address does nothing.   mov.b to
- *   an even IO16 will zero the upper byte.
+ *   an even IO16 will do strange things.  Only use full 16 bit instructions.
+ *
+ *   There are one or more TSEL words.  These words get zeroed on a full reset of
+ *   the DMA engines.   The x1 and x2 dma engine (using 4 bit TSEL fields) have one
+ *   TSEL word and all 3 TSEL fields fit in this word.   The x5 dma engine uses
+ *   5 bit TSEL fields and has 2 TSEL words.   We define TSELW_x for each TSEL
+ *   control word that exists for the processor.   These are used in the reset
+ *   routine that hits all the engines.
  *
  *
  * - Interrupt Vector
@@ -114,6 +121,7 @@
  *   TSEL registers (DMACTL{0,1} start at 0x500 (DMACTL0_).
  *   TSEL is 5 bits and packed one TSEL field per byte.
  *	TSEL_SHIFT denotes which byte.
+ *   TSELW_0 and TSELW_1 are defined (3 TSEL fields take 2 words)
  *   OpControl (DMACTL4_) is at 0x508, and is DMARMWDIS | ROUNDROBIN | ENNMI.
  *
  * x1/x2 (TSEL4 not defined):
@@ -121,6 +129,7 @@
  *   TSEL fields live in DMACTL0 0x122.
  *   TSEL is 4 bits and packed two TSEL fields per byte.
  *	TSEL_SHIFT denotes which nibble.
+ *   TSELW_0 is defined.
  *   OpControl (DMACTL1_) is at 0x124, and is DMAONFETCH | ROUNDROBIN | ENNMI.
  */
  
@@ -144,14 +153,18 @@
 
 #define TSEL_MASK 0x1f
 
+#define TSELW_0     DMACTL0
 #define TSEL0_BASE  DMACTL0_
 #define TSEL0_SHIFT 0
 #define TSEL1_BASE  DMACTL0_
 #define TSEL1_SHIFT 8
+
+#define TSELW_1     DMACTL1
 #define TSEL2_BASE  DMACTL1_
 #define TSEL2_SHIFT 0
 
 #define DMA_OP_CTRL_ DMACTL4_
+#define DMA_OP_CTRL  DMACTL4
 
 typedef enum {
   DMA_TRIGGER_DMAREQ	=	DMA0TSEL_0,	// DMA_REQ (sw)
@@ -188,6 +201,7 @@ typedef enum {
 
 #define TSEL_MASK 0xf
 
+#define TSELW_0     DMACTL0
 #define TSEL0_BASE  DMACTL0_
 #define TSEL0_SHIFT 0
 #define TSEL1_BASE  DMACTL0_
@@ -196,6 +210,7 @@ typedef enum {
 #define TSEL2_SHIFT 8
 
 #define DMA_OP_CTRL_ DMACTL1_
+#define DMA_OP_CTRL  DMACTL1
 
 typedef enum {
   DMA_TRIGGER_DMAREQ	=	DMA0TSEL_0,	// software trigger

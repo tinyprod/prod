@@ -65,9 +65,6 @@ implementation {
 
   async command void Control.reset() {
     call HplControl.reset();
-    call HplChannel0.reset();
-    call HplChannel1.reset();
-    call HplChannel2.reset();
   } 
 
   async event void HplChannel0.transferDone( error_t error ) {}

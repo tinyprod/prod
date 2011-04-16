@@ -39,7 +39,22 @@
 #include "Msp430Dma.h"
 
 interface HplMsp430DmaControl {
+  /*
+   * setOpControl
+   * getOpControl
+   *
+   * set/get the DMA engine operational Control cell.   This controls
+   * such things as DMAONFETCH/DMARMWDIS, ROUNDROBIN, ENNMI which sets
+   * overall DMA engine operation.
+   */
   async command void     setOpControl(uint16_t op);
   async command uint16_t getOpControl();
+
+  /*
+   * reset
+   *
+   * Fully reset the dma engines.   Clears out any operational Control
+   * cell as well as all DMA engines.
+   */
   async command void     reset();
 }
