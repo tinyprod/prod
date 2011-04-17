@@ -72,11 +72,18 @@ Other notable changes:
 * DMA rework.
 
   - Simplify Hpl and make more easily adaptable cross cpu (handles x1, x2, and x5).
-  - x1/x2 driver and x5 driver independent.
-  - split out Dma.h for x1/x2 and x5.    Too many differences.  Could be combined but
-    just a little too ugly.  Mostly due to the number of Tsel registers and what they
-    are called.
+  - unified driver for x1, x2 and x5.
   - Make module naming clearer.
+  - simplify interfaces for setTrigger.
+  - msp430 dma: nuke ABORT.   ABORT was used to determine the error return from
+    transferDone.  Only comes from NMI abort if ENNMI was on.   This doesn't really
+    buy anything still need to use a timer for DMA hangs.   Further there are no
+    known users of the error return and it isn't checked.
+  - make DmaControl.reset do a full reset.   Simplifies code in Msp430DmaControlP.reset
+    and makes better sense then doing it piece meal.
+  - force src/dst addresses to be 16 bits (was void *).  Be blatant.
+  - make interrupts be parameterized.  This routes dma interrupts to the appropriate
+    channel handler.
 
 
 WARNING: tosthreads hasn't been modified for the new core msp430 structure.
