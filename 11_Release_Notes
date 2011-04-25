@@ -69,6 +69,10 @@ Other notable changes:
 * Revised DCO calibrator to work with both 1611 and Z1 2617/1618.   Z1 uses dco
   calibrator to sync up to 8MiHz.
 
+* Device configuration blocks by default moved to ROM.   This saves start up cpu
+  cycles and space in RAM.   Config blocks can still be placed in RAM and modified
+  if needed.
+
 * DMA rework.
 
   - Simplify Hpl and make more easily adaptable cross cpu (handles x1, x2, and x5).
