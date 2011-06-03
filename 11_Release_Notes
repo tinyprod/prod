@@ -4,7 +4,7 @@ Major Changes to the msp430 core software:
 Welcome to a major rework of the core msp430 files.  Originally, msp430 support
 was for the first generation msp430 cpus.   Later the MSP430X and MSP430XV2
 processor chips were released by TI.  As newer cpu chips have been ported to
-TinyOS the architecture of the msp430 s/w has needed changes.
+TinyOS the architecture of the core msp430 s/w has needed changes.
 
 Major areas of impact include: peripheral register access, clock modules, dma
 support, usart vs. usci support, and interrupt architecture.  In addition the
@@ -72,6 +72,18 @@ Other notable changes:
 * Device configuration blocks by default moved to ROM.   This saves start up cpu
   cycles and space in RAM.   Config blocks can still be placed in RAM and modified
   if needed.
+
+* ADC12 mods:
+
+  o 16 input channels supported.  inch (input channel) in the control structure
+    expanded to 5 bits.  Additional channel place holders defined.
+  o ADC12 and ADC12_PLUS supported.  Newer chips provide the ADC12_PLUS module.
+  o PLATFORM_ADC support added for per platfrom configuration of timer and i/o pins.
+    Backward compatible with prior configuration mechanism.
+  o ADC12_PINS_AVAILABLE defined to denote how many pins are available for ADC use.
+  o headers include bitfield structures for use of new TI HEADERS.
+  o ADC pins in configurations now named An vs. previous PortMN.
+
 
 * DMA rework.
 

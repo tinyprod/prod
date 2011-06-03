@@ -76,6 +76,11 @@ Currently Msp430Adc12MultiChannel is only provided by the first two components.
 I/O PINs
 --------------------------------------------------------------------
 
+New hardware platforms should define ADC12_USE_PLAFORM_ADC in their
+hardware.h, then provide PlatformAdcC component that provides the pins and
+timer information appropriate for that platform.  See Msp430Adc12.h for
+additional configuration information.
+
 During a conversion the respective ADC port pin (ports 6.0 - 6.7) must be
 configured such that the peripheral module function is selected and the port
 pin is switched to input direction. By default, for every client this is done
@@ -177,7 +182,3 @@ tinyos-2.x/tos/chips/msp430/sensors, an HAL test app can be found in
 tinyos-2.x/apps/tests/msp430/Adc12.
 
 -----
-
-$Date: 2008/04/07 09:41:55 $
-@author: Jan Hauer <hauer@tkn.tu-berlin.de>
-

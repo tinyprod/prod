@@ -204,8 +204,6 @@ enum {
       uint16_t buf[], uint16_t num)
   { return 0;}
   
-  default async command error_t AsyncAdcControl.stop[uint8_t id]()
-  { return FAIL; }
-  default async command error_t AsyncAdcControl.start[uint8_t id]()
-  { return FAIL; }
+  default async command error_t AsyncAdcControl.stop[uint8_t id]()  { return FAIL; }
+  default async command error_t AsyncAdcControl.start[uint8_t id]() { return FAIL; }
 }

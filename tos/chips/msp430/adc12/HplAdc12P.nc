@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2011, Eric B. Decker
  * Copyright (c) 2004, Technische Universitaet Berlin
  * All rights reserved.
  *
@@ -132,4 +132,3 @@ implementation
     signal HplAdc12.conversionDone(ADC12IV);
   }
 }
-
