@@ -113,6 +113,7 @@ configuration HplMsp430GeneralIOC
 
   // provides special ports explicitly 
   // this section of HplMsp430GeneralIOC supports the F14x series
+  // x1 family: msp430f149
 #ifdef __msp430x14x
   provides interface HplMsp430GeneralIO as STE0;
   provides interface HplMsp430GeneralIO as SIMO0;
@@ -139,7 +140,7 @@ configuration HplMsp430GeneralIOC
 #endif
 
   // this section of HplMsp430GeneralIOC supports the F16x series
-  // In particular, msp430f1611
+  // x1 family: msp430f1611
 #ifdef __msp430x16x
   provides interface HplMsp430GeneralIO as STE0;
   provides interface HplMsp430GeneralIO as SIMO0;
@@ -174,7 +175,7 @@ configuration HplMsp430GeneralIOC
 #endif
 
 /*
- * Support for the f261{6,7,8,9} processors
+ * x2 family: msp430f261{6,7,8,9} processors
  *
  * Old headers: mspgccX (3.2.3) includes msp430x261x.h (-mmcu=msp430x2617)
  * which defines __msp430x261x.
@@ -228,6 +229,7 @@ configuration HplMsp430GeneralIOC
   provides interface HplMsp430GeneralIO as SVSOUT;
 #endif
 
+  // x5 family: cc430f5137, msp430f5438{,a}
 #if defined(__cc430x513x) || defined(__cc430x612x) || defined(__cc430x613x)
   provides interface HplMsp430GeneralIO as CBOUT0;
   provides interface HplMsp430GeneralIO as TA0CLK;

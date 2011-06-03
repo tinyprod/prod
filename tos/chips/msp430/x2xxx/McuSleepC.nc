@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2005 Stanford University. All rights reserved.
+ * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2005 Stanford University.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,9 +43,7 @@
  * @author Vlado Handziski
  * @author Joe Polastre
  * @author Cory Sharp
- * @date   October 26, 2005
- * @see  Please refer to TEP 112 for more information about this component and its
- *          intended use.
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 module McuSleepC @safe() {
@@ -81,11 +80,10 @@ implementation {
 	((UCA1CTL1 & UCSSEL_3) != UCSSEL_0) ||
 	((UCB0CTL1 & UCSSEL_3) != UCSSEL_0) ||
 	((UCB1CTL1 & UCSSEL_3) != UCSSEL_0)
-	) 
+	)
       pState = MSP430_POWER_LPM1;
 
-    
-#ifdef __msp430_have_adc12
+#if defined(__msp430_have_adc12) || defined(__MSP430_HAS_ADC12__)
     // ADC12 check, pre-condition: pState != MSP430_POWER_ACTIVE
     if (ADC12CTL0 & ADC12ON){
       if (ADC12CTL1 & ADC12SSEL_2){
@@ -117,7 +115,6 @@ implementation {
       computePowerState();
       //dirty = 0;
     }
-
     temp = msp430PowerBits[powerState] | SR_GIE;
     __asm__ __volatile__( "bis  %0, r2" : : "m" (temp) );
     // All of memory may change at this point...

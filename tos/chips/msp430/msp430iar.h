@@ -64,7 +64,7 @@
 #define _BIC_SR_IRQ(_x) __bic_SR_register_on_exit(_x)
 
 /*
- * Avoid gcc whining from gcc about IAR intrinsics by declaring them;
+ * Avoid gcc whining about IAR intrinsics by declaring them;
  * but mark them so the mangler script doesn't leave these bogus
  * prototypes in the source for IAR to find.
  */

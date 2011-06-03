@@ -51,12 +51,9 @@
  * the cpu definitions that are currently being used and supported by the
  * msp430 TinyOS trunk.
  *
- * But really, how are these values used and how do we want to use them if
- * any going forward.   It seems like a different way of using these kinds
- * of things should be found and then this file goes away.  Or becomes minimal
- *
- *
-#ifdef notdef
+ * These values get used in various low level msp430 drivers.  At some point
+ * it may make sense to figure a different way to do this and then get rid
+ * of this file.   Well maybe next year.  :-)
  *
  * No longer supported.   Kept for historical reference:
  *
@@ -72,7 +69,6 @@
  *       print "#define TYPE_$1 $r{$2}\n" if $r{$2};
  *    }
  *   ' | sort -u
-#endif
  */
 
 #define TYPE_ACTL uint16_t

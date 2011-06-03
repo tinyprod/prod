@@ -66,17 +66,17 @@ msp430hardware.h and msp430regtypes.h define various other attributes that inter
 to the tinyos environment.   These files coupled with the chip definition file define the cpu
 and other capabilities available.
 
-The original architecture, the MSP430, provides 16 bit addresses.   A subsequent revision denoted
+The original architecture, the MSP430, provided 16 bit addresses.   A subsequent revision denoted
 MSP430X modifies the cpu and addressing to provide 20 bit addresses.  Backward compatibilty to the
 MSP430 was considered.   A further modification is denoted the MSP430XV2 but it is unclear exactly
-what this modified.  The functional defines __MSP430_HAS_MSP430X_CPU__ and __MSP430_HAS_MSP430XV2_CPU__
-indicate the potential for 20 bit addresses.   Switches to the toolchain will determine the instructions
-used and the size of pointers.
+what this modified.  The functional defines __MSP430_HAS_MSP430X_CPU__ and
+__MSP430_HAS_MSP430XV2_CPU__ indicate the potential for 20 bit addresses.   Switches to the
+toolchain will determine the instructions used and the size of pointers.
 
 MSP430 processors are highly integrated, combining a cpu with various peripherals.  The toolchain
 provides chip definition files (includes) for each processor.  These files indicate what peripherals
-and other functions are present by the use of switches.  These switches are of the form __MSP430_HAS_<stuff>__,
-where <stuff> indicates the function provided.
+and other functions are present by the use of switches.  These switches are of the form
+__MSP430_HAS_<stuff>__, where <stuff> indicates the function provided.
 
 Drivers for the different peripherals are provided in appropriately named subdirectories of the main
 msp430 directory.  Presence of the peripheral can be detected by checking appropriate values in the
@@ -124,9 +124,10 @@ dma:	potential for 1 to 8 independent dma channels.  (We only use processors tha
 
 pins:	interface to digital I/O.  Different processors can have radically different amounts of
 	digitial I/O.   These pins are organized into ports.  x2 and x5 processors have enhanced
-	port electronics which adds pull up/down resistor control and drive strength.  Some processors
-	implement drive strength.  Drive Strength presence can be determined by testing for the presence
-	of the appropriate register define (ie. PADS_).  Currently drive strength isn't supported.
+	port electronics which adds pull up/down resistor control and drive strength.  Some
+	processors implement drive strength.  Drive Strength presence can be determined by testing
+	for the presence of the appropriate register define (ie. PADS_).  Currently drive strength
+	isn't supported.
 
 	x2 and x5 processors define 16 bit overlapping ports denoted using letters (ie. PA).
 

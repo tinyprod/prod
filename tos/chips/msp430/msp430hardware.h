@@ -482,7 +482,7 @@ inline void __nesc_enable_interrupt(void) @safe() {
  * using the uint16_t (native width of the msp430) fits in with how interrupts
  * are checked below, see definition of __nesc_atomic_start.
  *
- * This should be checked to verify that it generates minimal code.
+ * This should be checked to verify that it generates minimal code.  It does.
  */
 typedef uint16_t __nesc_atomic_t;
 __nesc_atomic_t  __nesc_atomic_start(void);

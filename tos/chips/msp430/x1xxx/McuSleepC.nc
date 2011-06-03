@@ -9,11 +9,13 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -29,7 +31,6 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
 /**
@@ -42,7 +43,7 @@
  * @author Vlado Handziski
  * @author Joe Polastre
  * @author Cory Sharp
- * @author Eric B. Decker
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 module McuSleepC @safe() {
@@ -85,7 +86,7 @@ MSP430REG_NORACE2(I2CDCTLnr,I2CDCTL);
 	((ME1 & (UTXE0 | URXE0)) && (U0TCTL & SSEL1)) ||
 	((ME2 & (UTXE1 | URXE1)) && (U1TCTL & SSEL1))
 
-/* the following doesn't work for x2 family (but this is x1 file so who cares) */
+/* the following is only for x1 chips. */
 #if defined(__msp430_have_usart0_with_i2c) || defined(__MSP430_HAS_I2C__)
 	 // registers end in "nr" to prevent nesC race condition detection
 	 || ((U0CTLnr & I2CEN) && (I2CTCTLnr & SSEL1) &&
@@ -137,8 +138,7 @@ MSP430REG_NORACE2(I2CDCTLnr,I2CDCTL);
     atomic dirty = 1;
   }
 
- default async command mcu_power_t McuPowerOverride.lowestState() {
-   return MSP430_POWER_LPM4;
- }
-
+  default async command mcu_power_t McuPowerOverride.lowestState() {
+    return MSP430_POWER_LPM4;
+  }
 }
