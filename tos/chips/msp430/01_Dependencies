@@ -134,12 +134,11 @@ DMA:
 5) Operation Control word.  This control word on the x1/x2 processors controls DMA_ONFETCH,
    ROUND_ROBIN, and ENNMI.  (DMACTL1).   The x5 replaces DMA_ONFETCH with DMARMWDIS which
    disallows dma transfers form oocuring whil read-modify-write operations are occuring.
-
-
    
-3) Interrupt vector:
+6) Interrupt vector:
 
-   On the x1xxx family, the vector is named DACDMA_VECTOR and other families use DMA_VECTOR.
+   On the x1xxx family, the vector is named DACDMA_VECTOR (shared with the DAC) and other
+   families use DMA_VECTOR.
 
    The driver uses either DACDMA_VECTOR or DMA_VECTOR if defined.  Otherwise complains about lack of
    support.
@@ -152,6 +151,24 @@ Clocks:
    mostly compatable with the x1xxx clock.
 
    The x5xxx family has the Unified Clock System which is different (__MSP430_HAS_UCS__).
+
+
+Timers:
+
+   The Msp430 processors have various flavors of timers, the two main categories are TA and TB
+   which have slightly different operational characteristics.  Different cpus support different
+   combinations of timers and compare registers.
+
+   The current TinyOS msp430 interface implements 32KiHz and a 1MiHz timers.  The mapping between
+   a cpu h/w timer and appropriate s/w timer is cpu/family/platform dependent.
+
+   Supported X1 (msp430f149/1611) and X2 (msp430f2615-18) processors provide TA3 and TB7.   The
+   low level driver for timing and clocks is provided in the x1x2 directory and is shared across
+   the x1 and x2 processors.  Mapping from h/w to s/w is provided in the x1x2/timer directory.
+
+   Supported X5 processors (cc430f5137 and msp430f5138) provide T0A5 and T1A3.  Mappings are provided
+   in the x5xxx/timer directory.
+
 
 
 I0 Port naming:

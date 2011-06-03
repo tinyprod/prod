@@ -54,6 +54,8 @@ x1xxx (x1): msp430f1611, msp430f149
 x2xxx (x2): msp430f261{6,7,8,9}
 	    Z1 (2617), MM4 (mam-mark mote, 2618)
 
+x1x2:	    contains low level cpu interfaces shared between the x1 and x2 families.
+
 x5xxx (x5): cc430f5137, msp430f5438{,a}
 	    surf (cc430f5137), ev430-5137, ev430-5438, mm5 (mam-mark mote, msp430f5438a)
 

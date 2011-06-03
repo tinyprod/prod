@@ -21,6 +21,7 @@ push( @includes, qw(
   %T/chips/cc2420/spi
   %T/chips/cc2420/transmit
   %T/chips/cc2420/unique
+  %T/chips/msp430/x1x2/timer
   %T/chips/msp430/x2xxx
   %T/chips/msp430/x2xxx/usci
   %T/chips/msp430
