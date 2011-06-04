@@ -1,4 +1,5 @@
 /* 
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
@@ -35,17 +36,23 @@
 /*
  * TinyOS Msp430 support started with the msp430f1611 which provided
  * 1 TA3 (3 CCRs) and 1 TB7 (7 CCRs).   The cc430 and 5438 cpus (both x5)
- * provide a TA5 and TA3 but no TBs.  Other chips in the MSP430XV2
+ * provide a T0A5 and T1A3 but no TBs.  Other chips in the MSP430XV2
  * series have different suites.  Current TI headers indicate the
  * following sets are available:
  *
- * T0A5 T0B7
+ * T0A3, T0A5
  * T1A2 T1A3 T1A5
  * T2A3
+ * T0B7
+ * T0D3, T1D3
+ *
+ * TA3 is also defined but not in any of the x5 cpu headers.   This may
+ * become an issue when we start to support the x4 family.
  *
  * Timer_B extends Timer_A with some extra features that are not
  * currently supported in TinyOS.  Until those features are needed,
  * Timer_B instances use the same interfaces as Timer_A instances.
+ * Ditto for Timer_D.
  *
  * @note As of this writing, only T0A5 and T1A3 have been tested.
  *
@@ -54,7 +61,7 @@
  */
 
 configuration Msp430TimerC {
-#if defined(__MSP430_HAS_T0A5__)
+#if defined(__MSP430_HAS_T0A3__) || defined(__MSP430_HAS_T0A5__)
   provides interface Msp430Timer as Timer0_A;
 
   provides interface Msp430TimerControl as Control0_A0;
@@ -69,6 +76,7 @@ configuration Msp430TimerC {
   provides interface Msp430Compare as Compare0_A2;
   provides interface Msp430Capture as Capture0_A2;
 
+#if defined(__MSP430_HAS_T0A5__)
   provides interface Msp430TimerControl as Control0_A3;
   provides interface Msp430Compare as Compare0_A3;
   provides interface Msp430Capture as Capture0_A3;
@@ -77,6 +85,7 @@ configuration Msp430TimerC {
   provides interface Msp430Compare as Compare0_A4;
   provides interface Msp430Capture as Capture0_A4;
 #endif /* __MSP430_HAS_T0A5__ */
+#endif /* __MSP430_HAS_T0A3__ || __MSP430_HAS_T0A5__ */
 
 #if defined(__MSP430_HAS_T0B7__)
   provides interface Msp430Timer as Timer0_B;
@@ -108,7 +117,7 @@ configuration Msp430TimerC {
   provides interface Msp430TimerControl as Control0_B6;
   provides interface Msp430Compare as Compare0_B6;
   provides interface Msp430Capture as Capture0_B6;
-#endif /* __MSP430_HAS_T0A5__ */
+#endif /* __MSP430_HAS_T0B7__ */
 
 #if defined(__MSP430_HAS_T1A2__) || defined(__MSP430_HAS_T1A3__) || defined(__MSP430_HAS_T1A5__)
   provides interface Msp430Timer as Timer1_A;
@@ -135,10 +144,9 @@ configuration Msp430TimerC {
   provides interface Msp430Compare as Compare1_A4;
   provides interface Msp430Capture as Capture1_A4;
 #endif /* __MSP430_HAS_T1A5__ */
-
 #endif /* __MSP430_HAS_T1A3__ || __MSP430_HAS_T1A5__ */
-
 #endif /* __MSP430_HAS_T1A2__ || __MSP430_HAS_T1A3__ || __MSP430_HAS_T1A5__ */
+
 
 #if defined(__MSP430_HAS_T2A3__)
   provides interface Msp430Timer as Timer2_A;
@@ -160,7 +168,7 @@ configuration Msp430TimerC {
 implementation {
   components Msp430TimerCommonP as Common;
 
-#if defined(__MSP430_HAS_T0A5__)
+#if defined(__MSP430_HAS_T0A3__) || defined(__MSP430_HAS_T0A5__)
   components new Msp430TimerP( TA0IV_, TA0R_, TA0CTL_, TAIFG, TACLR, TAIE,
 			       TASSEL0, TASSEL1, FALSE ) as Msp430Timer0_A;
 
@@ -190,6 +198,7 @@ implementation {
   Msp430Timer0_A2.Timer -> Msp430Timer0_A.Timer;
   Msp430Timer0_A2.Event -> Msp430Timer0_A.Event[2];
 
+#if defined(__MSP430_HAS_T0A5__)
   components new Msp430TimerCapComP( TA0CCTL3_, TA0CCR3_ ) as Msp430Timer0_A3;
   Control0_A3 = Msp430Timer0_A3.Control;
   Compare0_A3 = Msp430Timer0_A3.Compare;
@@ -205,6 +214,8 @@ implementation {
   Msp430Timer0_A4.Event -> Msp430Timer0_A.Event[4];
 
 #endif /* __MSP430_HAS_T0A5__ */
+#endif /* __MSP430_HAS_T0A3__ || __MSP430_HAS_T0A5__ */
+
 
 #if defined(__MSP430_HAS_T0B7__)
   components new Msp430TimerP( TB0IV_, TB0R_, TB0CTL_, TBIFG, TBCLR, TBIE,
@@ -266,6 +277,7 @@ implementation {
 
 #endif /* __MSP430_HAS_T0B7__ */
 
+
 #if defined(__MSP430_HAS_T1A2__) || defined(__MSP430_HAS_T1A3__) || defined(__MSP430_HAS_T1A5__)
   components new Msp430TimerP( TA1IV_, TA1R_, TA1CTL_, TAIFG, TACLR, TAIE,
 			       TASSEL0, TASSEL1, FALSE ) as Msp430Timer1_A;
@@ -311,11 +323,11 @@ implementation {
   Capture1_A4 = Msp430Timer1_A4.Capture;
   Msp430Timer1_A4.Timer -> Msp430Timer1_A.Timer;
   Msp430Timer1_A4.Event -> Msp430Timer1_A.Event[4];
+
 #endif /* __MSP430_HAS_T1A5__ */
-
 #endif /* __MSP430_HAS_T1A3__ || __MSP430_HAS_T1A5__ */
-
 #endif /* __MSP430_HAS_T1A2__ || __MSP430_HAS_T1A3__ || __MSP430_HAS_T1A5__ */
+
 
 #if defined(__MSP430_HAS_T2A3__)
   components new Msp430TimerP( TA2IV_, TA2R_, TA2CTL_, TAIFG, TACLR, TAIE,

@@ -47,9 +47,15 @@
  */
 
 /*
- * Currently, all MSP430XV2 architectures support T0A5, so we'll use
- * that for the 32KHz timer suite.  If you clone this to a platform
- * area, remember to also clone Msp430Counter32khzC if you change to a
+ * Inspection of cpu header files shows that the following defines exist.
+ * (all of the form __msp430_has_<xxxx>__ where xxxx gets replace with
+ * which timer module.   Modules seen: TA3, T0A3, T0A5, T1A2, T1A3, T1A5, 
+ * T2A3, T0B7, T0D3, T1D3.   Which modules are actually present depends
+ * on which chip is being used and is reflected in the cpu header file.
+ *
+ * All supported x5 (msp430xv2) chips support T0An, so we'll use that
+ * for the 32KHz timer suite.  If you clone this to a platform area,
+ * remember to also clone Msp430Counter32khzC if you change to a
  * different timer.
  */
 
@@ -75,6 +81,7 @@ implementation {
   Msp430TimerControl[2] = Msp430TimerC.Control0_A2;
   Msp430Compare[2] = Msp430TimerC.Compare0_A2;
 
+#if defined(__MSP430_HAS_T0A5__)
   Msp430Timer[3] = Msp430TimerC.Timer0_A;
   Msp430TimerControl[3] = Msp430TimerC.Control0_A3;
   Msp430Compare[3] = Msp430TimerC.Compare0_A3;
@@ -82,4 +89,5 @@ implementation {
   Msp430Timer[4] = Msp430TimerC.Timer0_A;
   Msp430TimerControl[4] = Msp430TimerC.Control0_A4;
   Msp430Compare[4] = Msp430TimerC.Compare0_A4;
+#endif  /* __MSP430_HAS_T0A5__ */
 }

@@ -45,7 +45,7 @@
  *          intended use.
  *
  * The cc430f5137 and the msp430f5138{,a} (both x5 family) have at a minimum the
- * T0A5 and T1A3 timer h/w.  We assign T0A to the 32KiHz timer an T1A to the
+ * T0A5 and T1A3 timer h/w.  We assign T0A to the 32KiHz timer and T1A to the
  * 1 MiHz (TMicro) timer (see Msp430CounterMicro).
  */
 
