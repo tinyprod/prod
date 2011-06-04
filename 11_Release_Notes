@@ -102,6 +102,12 @@ Other notable changes:
     channel handler.
 
 
+* X5 additions:
+
+  - X5 (T0A, T1A) Msp430Timers.   T0A 32KiHz, T1A 1MiHz timebase.
+  - X5 UCS clock driver.   tos/chips/x5xxx/timer/Msp430XV2Clock*.
+
+
 WARNING: tosthreads hasn't been modified for the new core msp430 structure.
 TosThreads duplicated files rather than modified in place.  This creates
 a lot more work and is not recommended.
