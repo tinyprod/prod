@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.

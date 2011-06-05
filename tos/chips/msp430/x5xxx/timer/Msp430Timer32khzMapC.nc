@@ -48,7 +48,7 @@
 
 /*
  * Inspection of cpu header files shows that the following defines exist.
- * (all of the form __msp430_has_<xxxx>__ where xxxx gets replace with
+ * (all of the form __MSP430_HAS_<xxxx>__ where xxxx gets replace with
  * which timer module.   Modules seen: TA3, T0A3, T0A5, T1A2, T1A3, T1A5, 
  * T2A3, T0B7, T0D3, T1D3.   Which modules are actually present depends
  * on which chip is being used and is reflected in the cpu header file.

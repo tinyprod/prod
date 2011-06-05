@@ -58,9 +58,10 @@ module Msp430XV2ClockControlP @safe() {
 
   async command void Msp430XV2ClockControl.configureUnifiedClockSystem (int dco_config) {
     uint16_t divs;
-    
+
     atomic {
-      /* ACLK is to be set to XT1CLK, assumed to be 32KiHz (2^15Hz),
+      /*
+       * ACLK is to be set to XT1CLK, assumed to be 32KiHz (2^15Hz),
        * falls back to REFOCLK if absent.
        *
        * DCO is to be set as configured.  The clock divider is the
@@ -71,20 +72,25 @@ module Msp430XV2ClockControlP @safe() {
        * SMLCK is set to DCOCLKDIV / N such that it has a value of ~ 1MiHz (2^20 Hz)
        *
        * The technique used here is cribbed from the TI Example programs
-       * for the CC430, cc430x613x_UCS_2.c.  */
+       * for the CC430, cc430x613x_UCS_2.c.
+       */
 
       /* Disable FLL control */
       __bis_SR_register(SR_SCG0);
 
-      /* Use XT1CLK as the FLL input: if it isn't valid, the module
+      /*
+       * Use XT1CLK as the FLL input: if it isn't valid, the module
        * will fall back to REFOCLK.  Use FLLREFDIV value 1 (selected
-       * by bits 000) */
+       * by bits 000)
+       */
       UCSCTL3 = SELREF__XT1CLK;
 
-      /* The appropriate value for DCORSEL is obtained from the DCO
+      /*
+       * The appropriate value for DCORSEL is obtained from the DCO
        * Frequency table of the device datasheet.  Find the DCORSEL
        * value from that table where the minimum frequency with DCOx=31
-       * is closest to your desired DCO frequency. */
+       * is closest to your desired DCO frequency.
+       */
       UCSCTL0 = 0x0000;                         // Set lowest possible DCOx, MODx
 
       switch (dco_config) {
@@ -141,7 +147,6 @@ module Msp430XV2ClockControlP @safe() {
           divs = DIVS__32;
           break;
       }
-    
       __bic_SR_register(SR_SCG0);               // Enable the FLL control loop
 
 #ifdef notdef
