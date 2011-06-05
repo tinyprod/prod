@@ -42,8 +42,8 @@ The following families and their associated cpus are listed below.  When a new c
 it can first be isolated and supported independently.   When commonalities are understood, any
 duplication can be removed and subsumed into a flat file via #ifdef's as appropriate.   Any remaining
 interfaces that are too cumbersome, can be supported by an existing cpu family interface or a new family
-can be defined as appropriate.  The intent is to provide a mechanism that allows gradual refactorization as
-new cpus are brought into the fold.
+can be defined as appropriate.  The intent is to provide a mechanism that allows evolutionary
+refactorization as new cpus are brought into the fold.
 
 The following families currently exist.   Included are what cpus have been verified.  Only add cpus that
 have actually been instantiated.
@@ -60,6 +60,9 @@ x5xxx (x5): cc430f5137, msp430f5438{,a}
 	    surf (cc430f5137), ev430-5137, ev430-5438, mm5 (mam-mark mote, msp430f5438a)
 
 
+
+TinyOS Interface:
+
 The tinyos interface is split into several sections:
 
 msp430hardware.h and msp430regtypes.h define various other attributes that interface the cpu
@@ -74,9 +77,13 @@ __MSP430_HAS_MSP430XV2_CPU__ indicate the potential for 20 bit addresses.   Swit
 toolchain will determine the instructions used and the size of pointers.
 
 MSP430 processors are highly integrated, combining a cpu with various peripherals.  The toolchain
-provides chip definition files (includes) for each processor.  These files indicate what peripherals
-and other functions are present by the use of switches.  These switches are of the form
-__MSP430_HAS_<stuff>__, where <stuff> indicates the function provided.
+provides chip definition files (includes) for each processor.  These files are located in
+the directory <toolchain_base_dir>/msp430/include and look like <cpu>.h, ie. msp430f5438a.h.
+
+The header includes switches that describe what peripherals and other functions are present.
+These switches are of the form __MSP430_HAS_<stuff>__, where <stuff> indicates the function provided.
+See the end of this document for a list of current families, cpus, and what _HAS_ clauses are
+provided.
 
 Drivers for the different peripherals are provided in appropriately named subdirectories of the main
 msp430 directory.  Presence of the peripheral can be detected by checking appropriate values in the
@@ -95,7 +102,9 @@ clock_bcs: low level interface to on board clocking.  BASIC CLOCK SYSTEM (x1, x2
 	__MSP430_HAS_BC2__ indicates 2nd rev of BASIC CLOCK.  Same driver supports. (x2)
 
 clock_ucs: low level interface to x5 on board clocking.  Unified Clock System introduced with the
-	x5 processors.
+	x5 processors.   Currently only the x5 family uses the UCS so its files currently reside
+	in the x5xxx/timer directory.   If another family makes use of the UCS then these files
+	should get moved to clock_ucs.
 
 	__MSP430_HAS_UCS__     differences are minor and can probably be supported by the same
 	__MSP430_HAS_UCS_RF__  driver.   Waiting for 5137 (surf) and mm5 (5438) integration.
@@ -177,5 +186,73 @@ usci:	interface to USCI (Universal Serial Communications Interface) modules UART
 	__MSP430_HAS_USCI_A0__	x5.  excellent module base registers, reasonable independent
 	__MSP430_HAS_USCI_B0__	interrupt vectors.
 
+	Given the strange x2 cpu/usci interface (registers, byte vs. word, interrupt interface)
+	there are seperate x2/x5 usci drivers.  For the time being it is simpler that way.  The
+	x5 usci driver is implemented as a model that is used to generate drivers for each
+	individual port.   x5 processors can have many usci ports.
+
 When implementing new functionality a good approach is to base a driver off of one of the
 __MSP430_HAS switches with an appropriately named directory.
+
+
+
+Only the <stuff> clause is listed.  ie.  __MSP430_HAS_<stuff>__ is the actual switch defined.
+
+x1, msp430f149:
+    BASIC_CLOCK TA3 TB7
+    WDT MPY ADC12
+    PORT1 PORT2 PORT3 PORT4 PORT5 PORT6
+    UART0 UART1
+    FLASH COMPA
+
+x1, msp430f1611:
+    BASIC_CLOCK TA3 TB7
+    WDT MPY ADC12 DMA_3
+    PORT1 PORT2 PORT3 PORT4 PORT5 PORT6
+    UART0 UART1 I2C
+    SVS FLASH COMPA DAC12_2
+
+x2, msp430f2618 (msp430f261[6-9] similar):
+    MSP430X_CPU BC2 TA3 TB7
+    WDT MPY ADC12 DMAX_3
+    PORT1_R PORT2_R PORT3_R PORT4_R PORT5_R PORT6_R PORT7_R PORT8_R PORTA_R
+    USCI USCI_AB0 USCI_AB1
+    SVS FLASH2 CAPLUS DAC12_2
+
+x1?, msp430f2274 (currently unsupported)
+    BC2 TA3 TB3
+    WDT ADC10
+    PORT1_R PORT2_R PORT3_R PORT4_R
+    USCI
+    FLASH2 OA_2
+
+x1?, msp430f2370 (currently unsupported)
+    BC2 TA3 TB3
+    WDT MPY
+    PORT1_R PORT2_R PORT3_R PORT4_R
+    USCI
+    FLASH2 CAPLUS
+
+x5, cc430f5137
+    MSP430XV2_CPU UCS_RF T0A5 T1A3
+    WDT_A MPY32 ADC12_PLUS DMAX_3
+    PORT1_R PORT2_R PORTA_R PORT3_R PORT4_R PORTB_R PORT5_R PORTC_R
+    PORTJ_R PORT_MAPPING PORT1_MAPPING PORT2_MAPPING PORT3_MAPPING
+    USCI_A0 USCI_B0
+    CC1101
+    AES CRC COMPB FLASH
+    PMM RC REF RTC SYS SFR TLV
+
+x5, msp430f5438a
+    MSP430XV2_CPU UCS T0A5 T1A3 T0B7
+    WDT_A MPY32 ADC12_PLUS DMAX_3
+    PORT1_R PORT2_R PORTA_R PORT3_R PORT4_R  PORTB_R PORT5_R  PORT6_R PORTC_R
+    PORT7_R PORT8_R PORTD_R PORT9_R PORT10_R PORTE_R PORT11_R         PORTF_R
+    PORTJ_R
+    USCI_A0 USCI_B0 USCI_A1 USCI_B1 USCI_A2 USCI_B2 USCI_A3 USCI_B3
+    CRC FLASH
+    PMM RC REF RTC SYS SFR TLV
+
+
+
+
