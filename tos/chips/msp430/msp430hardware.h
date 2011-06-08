@@ -554,4 +554,4 @@ enum {
 #define STATIC_ARRAY_SIZE(_s) (_s)
 #endif	/* STATIC_ARRAY_SIZE */
 
-#endif	/* _H_msp430hardware_h */
+#endif		// _H_msp430hardware_h

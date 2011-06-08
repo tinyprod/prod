@@ -44,18 +44,32 @@
  */
 #ifdef __MSPGCC__
 #include <msp430.h>
+#include <legacymsp430.h>
 #else
 #include <io.h>
-#endif
 
 /*
  * signal.h defines lots of interesting things including dint(), eint() and
  * how to hook interrupts in.
  */
 #include <signal.h>
+
+#endif	/* __MSPGCC__ */
+
+#if defined(__msp430x261x) && !defined(__msp430x26x)
+/*
+ * The old 3.2.3 toolchain defined __msp430x261x when compiling for the
+ * 261x series of chips.   The new TI HEADER based toolchains however define
+ * __msp430x26x instead.
+ *
+ * We are migrating to using the newer toolchain and the newer __msp430x26x
+ * define.  For backward compatibility, create the new define too if needed.
+ */
+#define __msp430x26x
+#endif
+
 #include "msp430regtypes.h"
 #include "Msp430DcoSpec.h"
-
 
 #ifdef __MSP430_TI_HEADERS__
 
@@ -489,5 +503,4 @@ enum {
   MSP430_PORT_RESISTOR_PULLUP,     /**< Pullup resistor enabled */
 };
 
-#endif//_H_msp430hardware_h
-
+#endif		//_H_msp430hardware_h
