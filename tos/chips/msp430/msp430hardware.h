@@ -48,9 +48,17 @@
  */
 #ifdef __MSPGCC__
 #include <msp430.h>
+#include <legacymsp430.h>
 #else
 #include <io.h>
-#endif
+
+/*
+ * signal.h defines lots of interesting things including dint(), eint() and
+ * how to hook interrupts in.
+ */
+#include <signal.h>
+
+#endif	/* __MSPGCC__ */
 
 #if defined(__msp430x261x) && !defined(__msp430x26x)
 /*
@@ -64,11 +72,6 @@
 #define __msp430x26x
 #endif
 
-/*
- * signal.h defines lots of interesting things including dint(), eint() and
- * how to hook interrupts in.
- */
-#include <signal.h>
 #include "msp430regtypes.h"
 
 /*
