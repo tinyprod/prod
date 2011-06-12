@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2009-2010 People Power Company
+/*
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,35 +32,28 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
+/**
+ * VoltageC is a common name for the Msp430InternalVoltageC voltage
+ * sensor available on the telosb platform.
  *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
+ * To convert from ADC counts to actual voltage, divide by 4096 and
+ * multiply by 3.
  *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
- *
- * @author Peter A. Bigot <pab@peoplepowerco.com>
+ * @author Gilman Tolle <gtolle@archrock.com>
  */
 
-configuration TestAppC {
-} 
+configuration VoltageC {
+  provides {
+    /** Return the voltage in millivolts */
+    interface Read<uint16_t>;
+  }
+}
 
 implementation {
+  
+  components VoltageP;
+  Read = VoltageP;
 
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
-
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
-
+  components new Msp430InternalVoltageC();
+  VoltageP.SubRead -> Msp430InternalVoltageC.Read;
 }

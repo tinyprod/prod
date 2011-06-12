@@ -2,6 +2,8 @@
  * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
  *
+ * This open source code was developed with funding from People Power Company
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -32,35 +34,28 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
+/* SuRF LED configuration.
  *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
- *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
+ * @note Traditionally, the PlatformLedsC component has exported named
+ * GeneralIO interfaces.  We don't do that anymore; see PlatformLedsP
+ * for the rationale.
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
-configuration TestAppC {
-} 
+configuration PlatformLedC {
+  provides {
+    interface Init;
+    interface Leds;
+    interface MultiLed;
+    interface Led[uint8_t led_id];
+  }
+}
 
 implementation {
-
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
-
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
-
+  components PlatformLedP;
+  Init = PlatformLedP.Init;
+  Leds = PlatformLedP;
+  Led = PlatformLedP;
+  MultiLed = PlatformLedP;
 }

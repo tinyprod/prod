@@ -1,6 +1,8 @@
-/* 
- * Copyright (c) 2009-2010 People Power Company
+/*
+ * Copyright (c) 2010 People Power Co.
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,35 +34,17 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
- *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
- *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
+/** Top-level initialization of anything to do with the clock
+ * subsystem.
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
-configuration TestAppC {
-} 
-
-implementation {
-
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
-
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
-
+configuration PlatformClockC {
+  provides interface Init;
+} implementation {
+  components Msp430XV2ClockC;
+  components PlatformClockP;
+  PlatformClockP.SubInit -> Msp430XV2ClockC;
+  Init = PlatformClockP;
 }

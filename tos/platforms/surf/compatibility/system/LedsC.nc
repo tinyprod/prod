@@ -1,5 +1,6 @@
-/* 
- * Copyright (c) 2009-2010 People Power Company
+/*
+ * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2000-2005 The Regents of the University  of California.  
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,35 +33,21 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
+/**
  *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
+ * The basic TinyOS LEDs abstraction.
+ * OSIAN compatibility layer: Remove init (handled elsewhere); use active-high.
  *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
- *
+ * @author Phil Buonadonna
+ * @author David Gay
+ * @author Philip Levis
+ * @author Joe Polastre
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
-configuration TestAppC {
-} 
-
-implementation {
-
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
-
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
-
+configuration LedsC {
+  provides interface Leds;
+} implementation {
+  components PlatformLedC;
+  Leds = PlatformLedC;
 }

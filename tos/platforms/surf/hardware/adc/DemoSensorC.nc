@@ -1,5 +1,5 @@
-/* 
- * Copyright (c) 2009-2010 People Power Company
+/*
+ * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,35 +32,24 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
+/** 
+ * DemoSensorC is a generic sensor device that provides a 16-bit
+ * value. The platform author chooses which sensor actually sits
+ * behind DemoSensorC, and though it's probably Voltage, Light, or
+ * Temperature, there are no guarantees.
  *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
- *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
- *
- * @author Peter A. Bigot <pab@peoplepowerco.com>
+ * This particular Demo Sensor on the SuRF platform provides a
+ * photodiode reading, using LightSensorC. 
+ * 
+ * @author Gilman Tolle <gtolle@archrock.com>
+ * @author David Moss
  */
 
-configuration TestAppC {
-} 
+generic configuration DemoSensorC() {
+  provides interface Read<uint16_t>;
+}
 
 implementation {
-
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
-
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
-
+  components new LightSensorC() as DemoSensor;
+  Read = DemoSensor;
 }

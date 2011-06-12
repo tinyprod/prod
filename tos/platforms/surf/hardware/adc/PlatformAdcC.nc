@@ -1,6 +1,8 @@
-/* 
- * Copyright (c) 2009-2010 People Power Company
+/*
+ * Copyright (c) 2010 People Power Co.
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,35 +34,37 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
- *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
- *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
- *
- * @author Peter A. Bigot <pab@peoplepowerco.com>
- */
+configuration PlatformAdcC {
+  provides {
+      interface HplMsp430GeneralIO as A0;
+      interface HplMsp430GeneralIO as A1;
+      interface HplMsp430GeneralIO as A2;
+      interface HplMsp430GeneralIO as A3;
+      interface HplMsp430GeneralIO as A4;
+      interface HplMsp430GeneralIO as A5;
 
-configuration TestAppC {
-} 
+      interface Msp430Timer as TimerA;
+      interface Msp430TimerControl as ControlA0;
+      interface Msp430TimerControl as ControlA1;
+      interface Msp430Compare as CompareA0;
+      interface Msp430Compare as CompareA1;
+  }	
+}
 
 implementation {
 
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
+  components HplMsp430GeneralIOC;
+  A0 = HplMsp430GeneralIOC.Port20;
+  A1 = HplMsp430GeneralIOC.Port21;
+  A2 = HplMsp430GeneralIOC.Port22;
+  A3 = HplMsp430GeneralIOC.Port23;
+  A4 = HplMsp430GeneralIOC.Port24;
+  A5 = HplMsp430GeneralIOC.Port25;
 
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
-
+  components Msp430TimerC;
+  TimerA = Msp430TimerC.Timer0_A;
+  ControlA0 = Msp430TimerC.Control0_A0;
+  ControlA1 = Msp430TimerC.Control0_A1;
+  CompareA0 = Msp430TimerC.Compare0_A0;
+  CompareA1 = Msp430TimerC.Compare0_A1;
 }

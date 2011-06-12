@@ -2,6 +2,8 @@
  * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
  *
+ * This open source code was developed with funding from People Power Company
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -32,35 +34,28 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Multiple-LED test.
- *
- * Twice per second, a counter will be incremented, and the counter
- * value depicted in the LEDs.  The value of the counter, and the
- * value read from the LEDs, will be printed.  Verify that the LEDs
- * light in order to represent the counter value.  Watch the serial
- * output to ensure the counter and led value match in their lower
- * bits.
- *
- * TESTS: MultiLed interface
- * TESTS: Timer<TMilli>
- *
- * @author Peter A. Bigot <pab@peoplepowerco.com>
+/**
+ * Platform hardware presentation layer for the DS1825 one-wire chip
+ * @author David Moss
  */
 
-configuration TestAppC {
-} 
-
-implementation {
-
-  components TestP,
-      MainC,
-      new TimerMilliC() as TimerC,
-      LedC;
-
-  TestP.Boot -> MainC;
-  TestP.MultiLed -> LedC;
-  TestP.Timer -> TimerC;
-
-  components SerialPrintfC;
+configuration PlatformOneWireInitC {
+  provides {
+    interface Init;
+    interface HplMsp430GeneralIO as Ds1825IO;
+  }
+} implementation {
+  
+  components PlatformOneWireInitP;
+  Init = PlatformOneWireInitP;
+  
+  components HplMsp430GeneralIOC as GeneralIOC;
+#if defined(SURF_REV_A)
+  Ds1825IO = GeneralIOC.Port35;
+  PlatformOneWireInitP.Ds1825IO -> GeneralIOC.Port35;
+#else
+  Ds1825IO = GeneralIOC.Port37;
+  PlatformOneWireInitP.Ds1825IO -> GeneralIOC.Port37;
+#endif
 
 }

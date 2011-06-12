@@ -1,0 +1,44 @@
+The SuRF hardware has undergone various revisions.  The differences between
+those revisions are documented in this file.  A preprocessor symbol
+SURF_REV_XX should be defined when compiling for revision XX.
+
+SuRF Board
+==========
+
+Revision A (Internal)
+---------------------
+
+Evaluation Verification and Testing (EVT) board.
+
+- Five LEDs: P1.0 blue, P1.1 white, P1.2 red, P3.6 yellow, P3.7 green
+- Two buttons: P2.0, P2.1
+
+Revision B1 (Internal)
+----------------------
+
+Design Verification and Testing (DVT) board.
+
+- Pin changes for more flexibility 
+- LED colors/pins changed: P3.0 green, P3.1 red, P3.2 white, P3.3 orange, P3.4 blue
+- Four buttons: P1.0, P1.1, P2.6, P2.7
+- Hardware reset button
+- Improved PCB antenna
+
+Revision B2 (External)
+----------------------
+
+Production Verification and Testing (PVT) board.
+
+- Photodiode moved away from LEDs
+- LED colors changed: P1.0 green, P1.1 red, P1.2 *orange*, P1.3 *white*, P1.4 blue
+- 28-pin header instead of 24-pin header
+- Flash chip changed from AT25S010 to Numonyx M25P10
+
+
+SuRF Block
+==========
+
+Revision BLOCK_A (Internal)
+---------------------------
+
+Evaluation Verification and Testing (EVT) board.
