@@ -94,7 +94,6 @@ module PlatformLedP {
 #if defined(SURF_REV_BLOCK_A)
     { (port_t*)P3IN_, 1 << 1 }, // Green
     { (port_t*)P3IN_, 1 << 2 }, // Red
-    
 #elif defined(SURF_REV_A)
     { (port_t*)P1IN_, 1 << 0 }, // Blue
     { (port_t*)P1IN_, 1 << 1 }, // White

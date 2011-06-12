@@ -37,23 +37,20 @@
 /**
  * @author David Moss
  */
- 
+
 module PlatformOneWireInitP {
   provides { 
     interface Init;
   }
-  
   uses {
     interface HplMsp430GeneralIO as Ds1825IO;
   }
 }
 
 implementation {
-  
   command error_t Init.init() {
     call Ds1825IO.setResistor(MSP430_PORT_RESISTOR_OFF);
     call Ds1825IO.makeInput();
     return SUCCESS;
   }
-
 }

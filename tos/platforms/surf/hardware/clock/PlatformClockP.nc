@@ -34,12 +34,12 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Top-level initialization of anything to do with the clock
+/**
+ * Top-level initialization of anything to do with the clock
  * subsystem.
  *
- * We mostly use the standard initialization in
- * Msp430XV2ClockControlP, except that we may or may not have an
- * external 32kHz crystal populated.
+ * We mostly use the standard initialization in  Msp430XV2ClockControlP,
+ * except that we may or may not have an external 32kHz crystal populated.
  *
  * If the PLATFORM_MSP430_HAS_XT1 preprocessor symbol is undefined, or is defined
  * to a non-zero value, the XIN and XOUT pins are configured to their
@@ -68,29 +68,35 @@ module PlatformClockP {
     /* Specifically told that there is no crystal.  Do nothing. */
 
 #else /* PLATFORM_MSP430_HAS_XT1 */
-    /* Either we don't know whether there's a crystal, or we've been
+
+    /*
+     * Either we don't know whether there's a crystal, or we've been
      * told to expect one.  Configure it and see whether a stable XT1
      * can be identified.  If so, run with it; if not, restore the
      * default configuration.
      *
      * If we were told there should be a crystal present, but it
      * doesn't stabilize, this is probably an error, but can't do
-     * anything about it here. */
+     * anything about it here.
+     */
 
-    /* Enable XT1, permanently, with no additional capacitance.
+    /*
+     * Enable XT1, permanently, with no additional capacitance.
      *
      * @note Both 5.0 and 5.1 must be cleared in P5DIR.
      *
      * @note If the default capacitance of XCAP_3 is retained, SMCLK
      * measures 4 per-mil faster than it should.  On the SuRF
      * hardware, setting XCAP to zero appears to work.  Other values
-     * may be necessary on other hardware. */
+     * may be necessary on other hardware.
+     */
 
     P5DIR &= ~(BIT0 | BIT1);
     P5SEL |= (BIT0 | BIT1);
     UCSCTL6 &= ~(XT1OFF | XCAP_3);
 
-    /* Spin waiting for a stable signal.  This loop runs somewhere
+    /*
+     * Spin waiting for a stable signal.  This loop runs somewhere
      * between 10K and 20K times; if it gets to 65536 without success,
      * assume the crystal's absent or broken.  At the power-up DCO
      * rate of 2MHz and no crystal, the loop takes 625ms to
@@ -101,7 +107,9 @@ module PlatformClockP {
      * revert to XT1 upon stabilization: the UCS module documentation
      * implies that OFIFG must be cleared for this to occur.
      * Consequently, we have to wait for stabilization even if we
-     * "know" a crystal is present.  */
+     * "know" a crystal is present.
+     */
+
     {
       uint16_t ctr = 0;
       do {
@@ -110,18 +118,22 @@ module PlatformClockP {
       } while (++ctr && (SFRIFG1 & OFIFG));
     }
 
-    /* If the XT1 signal is still not valid, disable it; otherwise,
+    /*
+     * If the XT1 signal is still not valid, disable it; otherwise,
      * lower the power it uses.  (XT1DRIVE setting suggested by TI
-     * example code.) */
+     * example code.)
+     */
 
     if (UCSCTL7 & XT1LFOFFG) {
       P5DIR |= (BIT0 | BIT1);
       P5SEL &= ~(BIT0| BIT1);
       UCSCTL6 |= XT1OFF;
     } else {
-      /* TI example code suggests clearing XT1DRIVE to reduce power.
+      /*
+       * TI example code suggests clearing XT1DRIVE to reduce power.
        * Current measurement does not indicate any value in doing so,
-       * at least not in LPM4, but it doesn't seem to hurt either. */
+       * at least not in LPM4, but it doesn't seem to hurt either.
+       */
       UCSCTL6 &= ~(XT1DRIVE_3);                 // Xtal is now stable, reduce drive
     }
 

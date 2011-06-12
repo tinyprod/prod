@@ -31,7 +31,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
 /** An interface to control a series of LEDs.
  *
  * Allows use of a series of LEDs as a visual binary register.  Bit i
@@ -43,7 +43,7 @@
  */
 
 interface MultiLed {
-  
+
   /** Read the value represented by the on status of the LEDs. */
   async command unsigned int get ();
 

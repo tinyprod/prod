@@ -34,7 +34,8 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* SuRF LED configuration.
+/*
+ * SuRF LED configuration.
  *
  * @note Traditionally, the PlatformLedsC component has exported named
  * GeneralIO interfaces.  We don't do that anymore; see PlatformLedsP

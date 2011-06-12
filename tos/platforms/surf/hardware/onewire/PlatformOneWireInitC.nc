@@ -45,10 +45,10 @@ configuration PlatformOneWireInitC {
     interface HplMsp430GeneralIO as Ds1825IO;
   }
 } implementation {
-  
+
   components PlatformOneWireInitP;
   Init = PlatformOneWireInitP;
-  
+
   components HplMsp430GeneralIOC as GeneralIOC;
 #if defined(SURF_REV_A)
   Ds1825IO = GeneralIOC.Port35;
@@ -57,5 +57,4 @@ configuration PlatformOneWireInitC {
   Ds1825IO = GeneralIOC.Port37;
   PlatformOneWireInitP.Ds1825IO -> GeneralIOC.Port37;
 #endif
-
 }

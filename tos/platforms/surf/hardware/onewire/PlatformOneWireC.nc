@@ -61,5 +61,4 @@ implementation {
   PrimaryOneWire = Ds1825ImplC;
   TemperatureCC = Ds1825ImplC;
   Ds1825ImplC.OneWireMaster -> Ds1825MasterC;
-
 }
