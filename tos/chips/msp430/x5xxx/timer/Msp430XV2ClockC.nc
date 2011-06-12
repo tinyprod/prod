@@ -57,6 +57,7 @@ configuration Msp430XV2ClockC {
     interface Init;
     interface Msp430XV2ClockControl;
     interface StdControl as InhibitUcs7WorkaroundControl;
+  }
 }
 implementation {
   components Msp430XV2ClockP;
