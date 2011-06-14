@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2005-2006 Rincon Research Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,19 +32,33 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
+#include "Settings.h"
 
-/**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
- */
+configuration SettingsImplC {
+  provides {
+    /** A distinguished, always-present Settings interface that is the
+     * first one loaded.
+     */
+    interface Settings as SystemSettings;
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+    /** Client-specific settings, starting with client
+     * SETTINGS_CLIENT_BASE.
+     */
+    interface Settings[uint8_t id];
+  }
+}
+implementation {
+  components  SettingsP,
+      MainC;
 
-#endif
+  Settings = SettingsP;
+  SystemSettings = SettingsP.Settings[SETTINGS_CLIENT_SystemSettings];
+
+  MainC.SoftwareInit -> SettingsP;
+
+  components Msp430FlashModifyC;
+  SettingsP.Msp430FlashModify -> Msp430FlashModifyC;
+
+  components Msp430Crc16C;
+  SettingsP.CrcX -> Msp430Crc16C;
+}

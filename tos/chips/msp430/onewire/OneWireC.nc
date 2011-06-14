@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +34,24 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
-
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
+ * This is a façade for the actual 1-wire implementation.
+ * All 1-wire devices provide an ID that can generate
+ * the EUI-64 of a device. This configuration's signature
+ * remains static so this ID can be extracted from any
+ * 1-wire chip.
  *
- * Other chips have the PMM module so this needs to move at some point.
+ * To use a particular 1-wire chip, wire directly to its
+ * implementation, which will provide chip-specific interfaces.
+ *
+ * @author David Moss
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+configuration OneWireC {
+  provides interface OneWire;
+}
+implementation {
 
-#endif
+  components PlatformOneWireC;
+  OneWire = PlatformOneWireC.PrimaryOneWire;
+}

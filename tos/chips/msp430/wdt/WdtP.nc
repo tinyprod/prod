@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2005-2006 Rincon Research Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,19 +32,53 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
+module WdtP {
+  provides {
+    interface StdControl;
+    interface Wdt;
+  }
+  uses interface Timer<TMilli>;
+}
+implementation {
 
-/**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
- */
+  bool on;
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+  /***************** StdControl Commands ****************/
+  command error_t StdControl.start() {
+    on = TRUE;
+    call Wdt.resume();
+    return SUCCESS;
+  }
 
-#endif
+  command error_t StdControl.stop() {
+    on = FALSE;
+    call Wdt.pause();
+    return SUCCESS;
+  }
+
+  /***************** Wdt Commands ****************/
+  command void Wdt.pause() {
+    call Timer.stop();
+    WDTCTL = WDTPW | WDTHOLD;
+  }
+
+  command void Wdt.resume() {
+    if(on) {
+      call Timer.startPeriodic(512);
+    
+      // Watchdog mode clocked from ACLK, 1000 ms reset
+      WDTCTL = WDT_ARST_1000;
+    }    
+  }
+
+  command void Wdt.kick() {
+    if(on) {
+      WDTCTL = WDTPW | ((WDTCTL & 0xFF) | WDTCNTCL);
+    }
+  }
+
+  /***************** Timer Events ****************/
+  event void Timer.fired() {
+    call Wdt.kick();
+  }
+}

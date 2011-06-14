@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2007, Vanderbilt University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,21 +30,53 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Author: Janos Sallai
  */
-
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
 
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
+ * Interface to interact with 1-wire bus devices, as a master on the 1-wire
+ * bus.
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
-
-#endif
+interface OneWireMaster {
+  /**
+   * Initialize bus (pin is input with pullup).
+   */
+  async command void idle();
+  /**
+   * Initialize bus, start sourcing current (pin is input with pullup).
+   */
+  async command void init();
+  /**
+   * Release bus, stop sourcing current (pin is three-stated input).
+   */
+  async command void release();
+  /**
+   * Generate reset signal.
+   * @returns SUCCESS if a client is present, an error_t error value otherwise.
+   */
+  async command error_t reset();
+  /**
+   * Write bit 1 to the bus.
+   */
+  async command void writeOne();
+  /**
+   * Write bit 0 to the bus.
+   */
+  async command void writeZero();
+  /**
+   * Write 8 bits to the bus, LSB first.
+   * @param b the byte to write.
+   */
+  async command void writeByte(uint8_t b);
+  /**
+   * Read a bit from the bus.
+   */
+  async command bool readBit();
+  /**
+   * Read 8 bits from the bus, LSB first.
+   * @returns the byte read.
+   */
+  async command uint8_t readByte();
+}

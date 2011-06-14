@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +34,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
+configuration OneWireCrcC {
+  provides interface OneWireCrc;
+}
+implementation {
 
-/**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
- */
-
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
-
-#endif
+  components OneWireCrcP;
+  OneWireCrc = OneWireCrcP;
+}

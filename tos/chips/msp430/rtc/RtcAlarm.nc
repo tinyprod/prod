@@ -37,6 +37,7 @@
 /**
  * @author David Moss
  */
+
 interface RtcAlarm {
 
   /**

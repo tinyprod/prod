@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2007, Vanderbilt University
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,19 +32,26 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
-
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
+ * @author Janos Sallai
+ * @author David Moss
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+#ifndef ONEWIRE_H
+#define ONEWIRE_H
 
-#endif
+enum {
+  ONEWIRE_SERIAL_LENGTH = 6,
+  ONEWIRE_DATA_LENGTH = 8
+};
+
+typedef union onewire_t {
+  uint8_t data[ONEWIRE_DATA_LENGTH];
+  struct {
+     uint8_t familyCode;
+     uint8_t serial[ONEWIRE_SERIAL_LENGTH];
+     uint8_t crc;
+  };
+} onewire_t;
+
+#endif // ONEWIRE_H

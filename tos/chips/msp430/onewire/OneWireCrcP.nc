@@ -1,6 +1,8 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +34,47 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
-
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
+ * POLYNOMIAL = x^8 + x^5 + x^4 + 1
+ * @author Cory Sharp
+ * @author David Moss
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+#include "OneWire.h"
 
-#endif
+module OneWireCrcP {
+  provides interface OneWireCrc;
+}
+
+implementation {
+
+  /***************** Functions ****************/
+  uint8_t crc8( uint8_t crc, uint8_t newByte ) {
+    int i;
+    crc ^= newByte;
+
+    for(i = 0; i < 8; i++) {
+      if( crc & 1 ) {
+        crc = (crc >> 1) ^ 0x8c;
+      } else {
+        crc >>= 1;
+      }
+    }
+    return crc;
+  }
+  
+  /***************** OneWireCrc Commands ****************/
+  async command uint8_t OneWireCrc.crc(onewire_t *rom) {
+    int i;
+    uint8_t crc = 0;
+
+    for(i = 0; i < 7; i++) {
+      crc = crc8(crc, rom->data[i]);
+    }
+    return crc;
+  }
+  
+  async command bool OneWireCrc.isValid(onewire_t *rom) {
+    return (rom->crc == call OneWireCrc.crc(rom)) && (rom->crc != 0);
+  }
+}

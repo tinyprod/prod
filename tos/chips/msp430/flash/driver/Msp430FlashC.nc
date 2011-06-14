@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 People Power Co.
+ * Copyright (c) 2005-2006 Rincon Research Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,19 +32,29 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
-
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
+ * Modify bytes on flash with the ability to cleanly overwrite
+ * bytes that have already been written
  *
- * Other chips have the PMM module so this needs to move at some point.
+ * Users should use the StorageBridge to know when the flash is
+ * ready to be written.
+ * 
+ * Connect your app to the parameterized interface using unique("StorageModify")
+ *
+ * @author David Moss
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+configuration Msp430FlashC {
+  provides interface Msp430Flash;
+}
+implementation {
 
-#endif
+  components Msp430FlashP;
+  Msp430Flash = Msp430FlashP;
+
+  components WdtC;
+  Msp430FlashP.Wdt -> WdtC;
+
+  components PlatformC;
+  PlatformC.PeripheralInit -> Msp430FlashP;
+}

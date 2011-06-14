@@ -1,6 +1,8 @@
-/*
- * Copyright (c) 2010 People Power Co.
+/* 
+ * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +34,25 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
-
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
+ * @author David Moss
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+interface Constants {
 
-#endif
+  /**
+   * Set the constants in flash. If multiple constants need to be stored,
+   * you must place them in a structure and pass the address and length of that
+   * structure.
+   * @param values The values to store in non-volatile memory
+   * @param length The length of the values
+   */
+  command error_t set(const void *values, uint8_t length);
+
+  /**
+   * @return a pointer to the beginning of the non-volatile memory, which
+   *     must be interpreted as the same type of variable or structure that
+   *     was originally stored with the set(..) command
+   */
+  command void *get();
+}

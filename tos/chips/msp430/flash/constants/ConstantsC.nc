@@ -1,6 +1,8 @@
-/*
- * Copyright (c) 2010 People Power Co.
+/* 
+ * Copyright (c) 2009-2010 People Power Company
  * All rights reserved.
+ *
+ * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,19 +34,24 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MSP430PMM_H
-#define MSP430PMM_H
-
 /**
- * A minimum level of 2 is needed for CC1101 radio operation
- * This CC1101 references the integrated CC1101 (RF1A) on
- * the cc430f5137 chip used by the surf board.
- *
- * Other chips have the PMM module so this needs to move at some point.
+ * Constants are stored in Segment A of the user memory, which can persist
+ * across reprograms if the boot strap loader is configured to 
+ * avoid erasing the entire user memory.
+ * 
+ * Constants must be written and interpreted as one structure, possibly 
+ * containing multiple values.
+ * 
+ * @author David Moss
  */
 
-#ifndef DEFAULT_VCORE_LEVEL
-#define DEFAULT_VCORE_LEVEL 0x2
-#endif
+configuration ConstantsC {
+  provides interface Constants;
+}
+implementation {
+  components ConstantsP;
+  Constants = ConstantsP;
 
-#endif
+  components Msp430FlashC;
+  ConstantsP.Msp430Flash -> Msp430FlashC;
+}
