@@ -49,9 +49,7 @@ configuration MemoryImplementationC {
     interface Memory;
   }
 }
-
 implementation {
-
   components NorFlashMasterC;
   Resource = NorFlashMasterC;
   Memory = NorFlashMasterC;

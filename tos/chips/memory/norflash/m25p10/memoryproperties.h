@@ -61,6 +61,7 @@
 /**
  * Memory properties
  */
+
 enum {
   MEMORY_NUM_ERASEUNITS = 4,
   MEMORY_ERASEUNIT_SIZE_LOG2 = 15,   // In other words, 1000000000000000'b = 0x8000 = 32kB

@@ -72,7 +72,7 @@
  */
 
 interface Memory {
-  
+
   /** 
    * Read bytes from memory
    * @param addr - the address to read from
@@ -80,7 +80,7 @@ interface Memory {
    * @param len - the amount to read
    */
   command void read(uint32_t addr, void *buf, uint32_t len);
-  
+
   /** 
    * Write bytes to memory
    * @param addr - the address to write to
@@ -88,25 +88,25 @@ interface Memory {
    * @param len - the amount to write
    */
   command void write(uint32_t addr, void *buf, uint32_t len);
-  
+
   /**
    * Erase a single erase unit
    * The first block index is 0, the second is 1, etc.
    * @param eraseUnitIndex the erase unit to erase, 0-indexed
    */
   command void eraseBlock(uint16_t eraseUnitIndex);
-  
+
   /**
    * Erase the entire flash. Whether the chip was erased or not depends on if 
    * there were any protected blocks or sectors.
    */
   command void eraseChip();
-  
+
   /**
    * Flush written data to memory. This only applies to some memory chips.
    */
   command void flush();
-  
+
   /**
    * Obtain the CRC of some data sitting in memory
    * @param addr - the address to start the CRC computation
@@ -115,6 +115,4 @@ interface Memory {
    * @return the computed CRC-16
    */
   command uint16_t crc(uint32_t addr, uint32_t len, uint16_t baseCrc);
-    
 }
-

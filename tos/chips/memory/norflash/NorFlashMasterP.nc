@@ -32,14 +32,14 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *
+ * @author David Moss
  */
 
 #include "flashcommands.h"
 #include "platformflash.h"
 
-/**
- * @author David Moss
- */
 module NorFlashMasterP {
   provides {
     interface Memory;
@@ -140,7 +140,7 @@ implementation {
     call NorFlashCommands.sleep();
     return baseCrc;
   }
-  
+
   /***************** NorFlashCommands ****************/
   /**
    * Start a new command to the flash chip. Pay close attention to the 

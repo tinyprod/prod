@@ -67,9 +67,7 @@ configuration ExternalMemoryC {
     interface Memory;
   }
 }
-
 implementation {
-
   components MemoryImplementationC;
   Resource = MemoryImplementationC;
   Memory = MemoryImplementationC;
