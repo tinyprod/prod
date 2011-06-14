@@ -45,10 +45,12 @@
 #include "hardware.h"
 #include "Msp430XV2Dco.h"
 
+#if !defined(__MSP430_HAS_UCS__) && !defined(__MSP430_HAS_UCS_RF__)
+#error "Msp430XV2ClockControlP: requires Unified Clock System"
+#endif
+
 module Msp430XV2ClockControlP @safe() {
-  uses {
-    interface McuSleepEvents;
-  }
+  uses interface McuSleepEvents;
   provides {
     interface Msp430XV2ClockControl;
     interface McuPowerOverride;

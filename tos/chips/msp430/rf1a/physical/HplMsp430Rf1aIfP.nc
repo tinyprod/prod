@@ -43,6 +43,15 @@
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
+/*
+ * TI really has an arm where a leg is needed!    The implementation of
+ * an on chip CC1101 core is called the RF1A but for some stupid reason
+ * they call the define HAS_CC1101.   Sigh.
+ */
+#if !defined(__MSP430_HAS_CC1101__)
+#error "HplMsp430Rf1aIfP: processor not supported, need CC1101 (RF1A)"
+#endif
+
 generic module HplMsp430Rf1aIfP (
   /** Identifier for this RF1A module, unique across chip */
   uint8_t RF1A_ID,

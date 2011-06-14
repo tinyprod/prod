@@ -38,6 +38,10 @@
 
 #include "Msp430Pmm.h"
 
+#if !defined(__MSP430_HAS_PMM__)
+#error "Msp430PmmP: processor not supported, need PMM"
+#endif
+
 module Msp430PmmP {
   provides {
     interface Init;

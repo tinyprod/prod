@@ -40,6 +40,14 @@
  * @author David Moss
  */
 
+#if !defined(__MSP430_HAS_FLASH__) || !defined(__MSP430_HAS_FLASH2__)
+#error "Msp430FlashP: processor not supported, need FLASH or FLASH2"
+#endif
+
+#if defined(__MSP430_HAS_FLASH2__)
+#warn "Msp430FlashP: FLASH2 may not function correctly"
+#endif
+
 #include "Msp430Flash.h"
 
 module Msp430FlashP {

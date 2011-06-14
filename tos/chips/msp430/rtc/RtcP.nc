@@ -34,6 +34,11 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+#if !defined(__MSP430_HAS_RTC__)
+#error "Msp430RtcP: processor not supported, need RTC"
+#endif
+
 #include "Rtc.h"
 
 /**

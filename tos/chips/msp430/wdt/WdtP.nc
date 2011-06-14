@@ -32,6 +32,10 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#if !defined(__MSP430_HAS_WDT__) || !defined(__MSP430_HAS_WDT_A__)
+#error "Msp430WdtP: processor not supported, need WDT or WDT_A"
+#endif
+
 module WdtP {
   provides {
     interface StdControl;

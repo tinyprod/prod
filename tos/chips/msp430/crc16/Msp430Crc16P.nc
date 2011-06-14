@@ -38,6 +38,10 @@
  * @author David Moss
  */
 
+#if !defined(__MSP430_HAS_CRC__)
+#error "Msp430Crc16P: processor not supported, need CRC"
+#endif
+
 module Msp430Crc16P {
   provides interface CrcX<uint16_t>;
 }
