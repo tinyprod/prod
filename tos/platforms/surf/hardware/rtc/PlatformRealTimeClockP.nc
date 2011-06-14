@@ -38,13 +38,9 @@
 module PlatformRealTimeClockP {
   provides {
     interface StdControl;
-#if WITH_OSIAN
     interface RealTimeClock;
-#endif /* WITH_OSIAN */
   }
 } implementation {
-
-#if WITH_OSIAN
 
 /* TI renamed RTC_A_VECTOR to RTC_VECTOR in more recent header
  * releases.  Use the former if we don't have the latter. */
@@ -271,9 +267,4 @@ module PlatformRealTimeClockP {
       signal RealTimeClock.currentTime(&now, event_set);
     }
   }
-
-#else /* WITH_OSIAN */
-  command error_t start () { return FAIL; }
-  command error_t stop () { return EOFF; }
-#endif /* WITH_OSIAN */
 }

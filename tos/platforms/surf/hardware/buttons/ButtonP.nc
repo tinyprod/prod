@@ -40,11 +40,9 @@
 
 generic module ButtonP (bool active_high,
                         uint8_t button_id) {
-#if WITH_OSIAN
   provides {
     interface Button;
   }
-#endif // WITH_OSIAN
   uses {
     interface HplMsp430GeneralIO as ButtonPin;
     interface GpioInterrupt as ButtonInterrupt;
@@ -109,14 +107,12 @@ generic module ButtonP (bool active_high,
       is_pressed = checkAndConfigure_atomic(TRUE);
       call ButtonBridge.stateChange(is_pressed);
     }
-#if WITH_OSIAN
     /* Signal the appropriate event */
     if (is_pressed) {
       signal Button.pressed();
     } else {
       signal Button.released();
     }
-#endif
   }
 
   async event void ButtonBridge.setEnabled (bool enablep)
@@ -128,14 +124,12 @@ generic module ButtonP (bool active_high,
     }
   }
 
-#if WITH_OSIAN
   async command bool Button.isPressed () { return isPressed_(); }
   async command bool Button.isEnabled () { return isEnabled_(); }
   async command bool Button.enable () { return enable_(); }
   async command void Button.disable () { return disable_(); }
   default async event void Button.pressed () { }
   default async event void Button.released () { }
-#endif // WITH_OSIAN
 }
 
 /* 

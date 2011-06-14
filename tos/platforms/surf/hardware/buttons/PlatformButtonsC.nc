@@ -45,7 +45,6 @@ configuration PlatformButtonsC {
   provides {
     interface Get<button_state_t>[uint8_t button_id];
     interface Notify<button_state_t>[uint8_t button_id];
-#if WITH_OSIAN
     interface Button as Button0;
     interface Button as Button1;
 #if 2 < PLATFORM_BUTTON_COUNT
@@ -54,7 +53,6 @@ configuration PlatformButtonsC {
     interface Button as Button3;
 #endif // 3 < PLATFORM_BUTTON_COUNT
 #endif // 2 < PLATFORM_BUTTON_COUNT
-#endif // WITH_OSIAN
   }
 } implementation {
 
@@ -84,36 +82,27 @@ configuration PlatformButtonsC {
   components new Msp430InterruptC() as Button0InterruptC;
   Button0C.ButtonInterrupt -> Button0InterruptC;
   ButtonBridgeP.ButtonBridge[0] <- Button0C;
-#if WITH_OSIAN
   Button0 = Button0C;
-#endif // WITH_OSIAN
 
   components new ButtonP(FALSE, 1) as Button1C;
   components new Msp430InterruptC() as Button1InterruptC;
   Button1C.ButtonInterrupt -> Button1InterruptC;
   ButtonBridgeP.ButtonBridge[1] <- Button1C;
-#if WITH_OSIAN
   Button1 = Button1C;
-#endif // WITH_OSIAN
 
 #if 2 < PLATFORM_BUTTON_COUNT
   components new ButtonP(FALSE, 2) as Button2C;
   components new Msp430InterruptC() as Button2InterruptC;
   Button2C.ButtonInterrupt -> Button2InterruptC;
   ButtonBridgeP.ButtonBridge[2] <- Button2C;
-#if WITH_OSIAN
   Button2 = Button2C;
-#endif // WITH_OSIAN
 
 #if 3 < PLATFORM_BUTTON_COUNT
   components new ButtonP(FALSE, 3) as Button3C;
   components new Msp430InterruptC() as Button3InterruptC;
   Button3C.ButtonInterrupt -> Button3InterruptC;
   ButtonBridgeP.ButtonBridge[3] <- Button3C;
-
-#if WITH_OSIAN
   Button3 = Button3C;
-#endif // WITH_OSIAN
 #endif // 3 < PLATFORM_BUTTON_COUNT
 #endif // 2 < PLATFORM_BUTTON_COUNT
 
