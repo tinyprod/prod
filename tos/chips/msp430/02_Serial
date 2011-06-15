@@ -1,0 +1,81 @@
+
+The MSP430 family of processors can provide one of three flavors of serial
+interfaces, USART (Universal Synchronous Asynchonous Receiver Transmitter),
+USCI (Universal Synchronous Communications Interface), and USI (Universal
+Serial Interface) modules.
+
+USART modules are implemented on the 1st generation x1 family processors (ie.
+msp430f1611).  USART0 can support UART, SPI, or I2C while USART1 does only
+UART or SPI.   A given module can only be in one mode at any given time so
+if different behaviours are needed the module must be arbitrated.
+
+USI (SPI and I2C) modules are used on smaller processors and aren't currently
+supported by TinyOS.
+
+Starting with the x2 family (and continuing with the x5 family), TI introduced
+USCI modules.   A USCI module is an improved more capable USART.  It is
+different so it has its own driver.
+
+USCI can operate in different modes: UART, SPI, I2C, IRDA.  USCIs are
+implemented in pairs, A and B modules.  An A module supports UART, SPI, and
+IrDA while B's only support SPI and I2C.   Further there are significant
+differences between the x2/x5 family USCI/cpu interfaces.   These differences
+are principly what is discussed here.
+
+There are three major differences between the x2 and x5 USCI implementations.
+All of these differences show up in the inteface between the USCI modules and
+the CPU.  These are:
+
+o Regularity of the register map:
+    x2 USCI registers spread out.  A0/B0 IE/IFG in SFRs,  A1/B1 IE/IFG in
+    dedicated register.  A0/B0 IE is in one register, A0/B0 IFG in a different
+    register.
+
+    x5 registers regular.   Same map used for all USCI modules.  IE/IFG flags
+    are in dedicated registers per port.
+
+
+o byte vs. word addressing
+    x2 registers are in the byte I/O range.
+    x5 registers can be accessed using either byte or word accesses
+
+    original x5 driver used a word based configuration structure.  x2 used
+      byte based configuration structure.
+
+    X2 control bytes: CTL0 low byte, CTL1 upper byte.
+    X5 control byte address flipped.  CTL1 low order, CTL0 high order.
+
+o interrupt structure
+    x2 does not have IV register.  (interrupt vector).
+
+    x2 has combined interrupt vectors.  A0/B0 rx is on one vector, A0/B0
+    tx is on another vector.  Etc.   I2C vectors are split across multiple
+    vectors and the vector changes behaviour when I2C is enabled.
+
+    x5 has dedicated vectors per port and an IV register for dispatch.
+
+
+x2 addresses below are absolute,   x5 addresses are offsets from the listed
+                                      base register
+
+       	   	     	     	      	     		A0	B0   A1   B1
+			    x2			    x5	05c0,	05e0 0600 0620
+		A0	B0	A1	B1		0640,	0660 0680 06a0
+
+abctl		5d		cd			10
+irtctl, irrctl	5e,5f		ce,cf			12,13
+ctl0,   ctl1	60,61	68,69	d0,d1	d8,d9		01,00	01,00
+br0,    br1	62,63	6a,6b	d2,d3	da,db		06,07	06,07
+mctl		64		d4			08
+i2cie			6c		dc
+stat		65	6d	d5	dd		0a	0a
+rxbuf,txbuf	66,67	6e,6f	d6,d7	de,df		0c,0e	0c,0e
+i2coa			0118		17c			10
+i2csa			011a		17e			12
+ie							1c	1c
+ifg							1d	1d
+iv							1e	1e
+A0/B0 IE	0001
+A0/B0 IFG	0003
+A1/B1 IE			0006
+A1/B1 IFG			0007
