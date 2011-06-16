@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
@@ -32,6 +33,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author Peter Bigot
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #ifndef _H_hardware_h
@@ -78,5 +80,12 @@ enum {
 #define ADC12_USE_PLATFORM_ADC 1
 #define ADC12_PIN_AUTO_CONFIGURE 1
 #define ADC12_PINS_AVAILABLE 6
+
+/*
+ * The cc430f5137 includes the RF1A.   When the radio is being used
+ * the PMM VCORE setting must be at or abore 2.
+ */
+
+#define RADIO_VCORE_LEVEL 2
 
 #endif // _H_hardware_h

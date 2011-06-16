@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
@@ -30,16 +31,17 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
+#include "hardware.h"
+
 module PlatformP {
-  provides {
-    interface Init;
-  }
+  provides interface Init;
   uses {
     interface Init as PlatformPins;
     interface Init as PlatformLed;
-    interface Init as Msp430Pmm;
     interface Init as PlatformClock;
     interface Init as OneWire;
 
@@ -48,6 +50,7 @@ module PlatformP {
 #endif  // PLATFORM_HAS_FLASH
 
     interface Init as PeripheralInit;
+    interface Pmm;
   }
 }
 implementation {
@@ -61,8 +64,8 @@ implementation {
     WDTCTL = WDTPW + WDTHOLD;             // Stop watchdog timer
 
     call PlatformPins.init();
+    call Pmm.setVoltage(RADIO_VCORE_LEVEL);
     call PlatformLed.init();
-    call Msp430Pmm.init();
     call PlatformClock.init();
     call OneWire.init();
 

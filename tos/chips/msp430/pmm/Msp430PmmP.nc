@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2010 People Power Co.
  * All rights reserved.
  *
@@ -34,26 +35,27 @@
 
 /**
  * @author David Moss
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * This provides a driver for communicating with the Power Management
+ * Module provided on X5 family processors.
+ *
+ * This module should be called from processor initilization to change
+ * the VCORE level.   It can also be called at other times if a change
+ * to VCORE is needed (like if we need to run at a faster frequency).
+ *
+ * On x5 processors examined, VCORE_LEVEL in the PMM is initilized to 0.
+ * But this should be checked with the processor data sheet.
  */
-
-#include "Msp430Pmm.h"
 
 #if !defined(__MSP430_HAS_PMM__)
 #error "Msp430PmmP: processor not supported, need PMM"
 #endif
 
 module Msp430PmmP {
-  provides {
-    interface Init;
-    interface Pmm;
-  }
+  provides interface Pmm;
 }
 implementation {
-
-  command error_t Init.init() {
-    call Pmm.setVoltage(DEFAULT_VCORE_LEVEL);
-    return SUCCESS;
-  }
 
   /**
    * Set the voltage level of the MSP430x core
@@ -61,9 +63,6 @@ implementation {
    *  0x1 => DVcc > 2.0V
    *  0x2 => DVcc > 2.2V
    *  0x3 => DVcc > 2.4V
-   *
-   * The CC1101 radio core requires 0x2.
-   * @param level The voltage level between 0-3
    */
 
   command void Pmm.setVoltage(uint8_t level) {

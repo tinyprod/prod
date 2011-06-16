@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2010 People Power Co.
  * All rights reserved.
  *
@@ -36,19 +37,14 @@
  * Power Management Module
  *
  * @author David Moss
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
-#include "Msp430Pmm.h"
-
 configuration Msp430PmmC {
-  provides {
-    interface Init;
-    interface Pmm;
-  }
+  provides interface Pmm;
 }
 
 implementation {
   components Msp430PmmP;
-  Init = Msp430PmmP;
   Pmm = Msp430PmmP;
 }

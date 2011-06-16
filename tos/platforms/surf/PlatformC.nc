@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009-2010 People Power Co.
  * Copyright (c) 2000-2005 The Regents of the University of California.  
  * All rights reserved.
@@ -37,17 +38,14 @@
  * @author Joe Polastre 
  * @author Cory Sharp
  * @author David Moss
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include "hardware.h"
 
 configuration PlatformC { 
-  provides {
-    interface Init as PlatformInit;
-  }
-  uses {
-    interface Init as PeripheralInit;
-  }
+  provides interface Init as PlatformInit;
+  uses     interface Init as PeripheralInit;
 }
 
 implementation {
@@ -57,13 +55,10 @@ implementation {
   PeripheralInit = PlatformP.PeripheralInit;
 
   /* The following components require no initialization:
-   * Button
-   * Rf1a
-   * RealTimeClock
+   * Button, Rf1a, RealTimeClock
    *
-   * The following components require wiring initialization, but no
-   * code initialization:
-   * Usci
+   * The following components require wiring initialization, but no code initialization:
+   *     Usci
    */
 
   components PlatformPinsC;
@@ -76,7 +71,7 @@ implementation {
   // No code initialization required; just connect the pins
 
   components Msp430PmmC;
-  PlatformP.Msp430Pmm -> Msp430PmmC;
+  PlatformP.Pmm -> Msp430PmmC;
 
   components PlatformClockC;
   PlatformP.PlatformClock -> PlatformClockC;
