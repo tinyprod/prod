@@ -23,11 +23,6 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/x5xxx/timer
   %T/chips/msp430/x5xxx/usci
 
-#  %T/chips/msp430/msp430xv2
-#  %T/chips/msp430/msp430xv2/lpm
-#  %T/chips/msp430/msp430xv2/timer
-#  %T/chips/msp430/usci
-
   %T/chips/msp430
   %T/chips/msp430/pins
   %T/chips/msp430/timer
@@ -35,20 +30,20 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/adc12
   %T/chips/msp430/sensors
 
-#  %T/chips/memory
-#  %T/chips/memory/norflash
+  %T/chips/memory
+  %T/chips/memory/norflash
 
-#  %T/chips/msp430/rf1a
-#  %T/chips/msp430/rf1a/interfaces
-#  %T/chips/msp430/rf1a/system
-#  %T/chips/msp430/rf1a/physical
-#  %T/chips/msp430/rf1a/am
-#  %T/chips/msp430/rf1a/ieee154
-#  %T/chips/msp430/rf1a/layers
+  %T/chips/msp430/rf1a
+  %T/chips/msp430/rf1a/interfaces
+  %T/chips/msp430/rf1a/system
+  %T/chips/msp430/rf1a/physical
+  %T/chips/msp430/rf1a/am
+  %T/chips/msp430/rf1a/ieee154
+  %T/chips/msp430/rf1a/layers
 
   %T/lib/timer
 
-#  %T/lib/util/keyvaluerecord
+  %T/lib/util/keyvaluerecord
 
   %T/lib/serial
   %T/lib/serialprintf
