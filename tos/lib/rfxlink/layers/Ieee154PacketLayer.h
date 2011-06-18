@@ -35,8 +35,15 @@
 #ifndef __IEEE154PACKETLAYER_H__
 #define __IEEE154PACKETLAYER_H__
 
-typedef nx_struct ieee154_header_t
-{
+#warn "Ieee154PacketLayer.h is deprecated.  Replaced by Ieee154.h"
+
+#include <Ieee154.h>
+
+#ifdef notdef
+
+// Contents moved to tos/types/Ieee154.h
+
+typedef nx_struct ieee154_header_t {
 	nxle_uint16_t fcf;
 	nxle_uint8_t dsn;
 	nxle_uint16_t destpan;
@@ -44,8 +51,6 @@ typedef nx_struct ieee154_header_t
 	nxle_uint16_t src;
 } ieee154_header_t;
 
-// These ENUMS were moved to tos/types/Ieee154.h
-/* 
 enum ieee154_fcf_enums {
 	IEEE154_FCF_FRAME_TYPE = 0,
 	IEEE154_FCF_SECURITY_ENABLED = 3,
@@ -70,11 +75,12 @@ enum iee154_fcf_addr_mode_enums {
 	IEEE154_ADDR_EXT = 3,
 	IEEE154_ADDR_MASK = 3,
 };
-*/
 
 enum ieee154_fcf_mask_enums {
 	IEEE154_TYPE_MASK = 7,
 	IEEE154_ADDR_MASK = 3,
 };
+
+#endif		// notdef
 
 #endif//__IEEE154PACKETLAYER_H__
