@@ -1,15 +1,15 @@
 
 Major Changes to the msp430 core software:
 
-Welcome to a major rework of the core msp430 files.  Originally, msp430 support
-was for the first generation msp430 cpus.   Later the MSP430X and MSP430XV2
-processor chips were released by TI.  As newer cpu chips have been ported to
-TinyOS the architecture of the core msp430 s/w has needed changes.
+Welcome to a major rework of the core msp430 files.  Originally, tinyos msp430
+support was for the first generation msp430 cpus.   Later the MSP430X and
+MSP430XV2 processor chips were released by TI.  As newer cpu chips have been
+ported to TinyOS the architecture of the core msp430 s/w has needed changes.
 
 Major areas of impact include: peripheral register access, clock modules, dma
 support, usart vs. usci support, and interrupt architecture.  In addition the
 s/w has been reorganized to support major differences between the cpus by
-grouping support into families.
+grouping support into families (see below for what this means).
 
 This release has also had initial testing done on newer toolchains.  The msp430
 core has been modified to support toolchains listed below.  Test builds have been
@@ -20,11 +20,11 @@ done using the following:
 			changes, 26xx processors.   Does not properly support
 			x5 chips.
   mspgcc4.4.5(20110312) Initial mspgcc4 supports x5 chips.  experimental.
-  mspgcc4.5.2 (uniarch) Uniarch varient supports all chips.  experimental.
-  	      		slated to become new main toolchain.
+  mspgcc4.5.2 (mspgcc)  Uniarch varient supports all chips.  experimental.
+  	(20110612)	slated to become new main toolchain.
 
 
-It is recommended that all verification work be done using the uniarch toolchain.
+It is recommended that all verification work be done using the 20110612 toolchain.
 The sooner we get that toolchain squared away the better.
 
 
@@ -106,11 +106,28 @@ Other notable changes:
 
   - X5 (T0A, T1A) Msp430Timers.   T0A 32KiHz, T1A 1MiHz timebase.
   - X5 UCS clock driver.   tos/chips/x5xxx/timer/Msp430XV2Clock*.
+  - X5 add support for cc430f5137 and PeoplePower Co. Surf board.
+  - X5 pmm, rtc, crc16, flash, onewire, rf1a, wdt support
+
+
+* Other Additions
+
+  - KeyValueRecord code.  Used by Surf radio code.
+
+  - Better documentation on differences between x2 USCI and x5 USCI
+    tos/chips/msp430/02_Serial.
+
+  - Better documentation about what chips are supported.  00_Chip_Notes and 01_Dependencies.
+
+  - Using TI functional presence indicators (__MSP430_HAS_<stuff>) protect
+    modules from being included if the cpu being used doesn't have them.   This
+    makes figuring out what is happening much easier when adding new processors.
 
 
 WARNING: tosthreads hasn't been modified for the new core msp430 structure.
 TosThreads duplicated files rather than modified in place.  This creates
-a lot more work and is not recommended.
+a lot more work and is not recommended.  Cloning for tosthreads creates a
+maintanence headache.
 
 TosThreads should be modified to place any necessary hooks into the actual device
 drivers themselves rather than duplicating the files and then shadowing.
