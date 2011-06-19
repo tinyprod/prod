@@ -91,6 +91,11 @@ implementation {
     TOSH_SEL_ADC_2_MODFUNC();
   }
 
+  // identical to ecg
+  command void shimmerAnalogSetup.addStrainGaugeInputs(){
+    call shimmerAnalogSetup.addECGInputs();
+  }
+
   command void shimmerAnalogSetup.addECGInputs() {
     uint8_t new_chans[] = { 1, 2 };  // ecg_lall, ecg_rall
     addNewChannels(new_chans, 2);
@@ -121,13 +126,13 @@ implementation {
   }
 
   command void shimmerAnalogSetup.addGSRInput() { 
-    uint8_t new_chans[] = { 1 };
+    uint8_t new_chans[] = { 6 };
     addNewChannels(new_chans, 1);
     
     initADC12MEMCTLx();
 
-    TOSH_MAKE_ADC_1_INPUT();         
-    TOSH_SEL_ADC_1_MODFUNC();
+    TOSH_MAKE_ADC_6_INPUT();         
+    TOSH_SEL_ADC_6_MODFUNC();
   }
 
   command void shimmerAnalogSetup.addEMGInput() { 
@@ -194,7 +199,7 @@ implementation {
     initADC12CTL1();
     //    initADC12MEMCTLx();
 
-    TOSH_uwait(50000);
+    TOSH_uwait(50000UL);
     return SUCCESS;
   }
 

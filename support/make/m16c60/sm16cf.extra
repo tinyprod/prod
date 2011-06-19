@@ -3,7 +3,6 @@
  ##
 
 ifeq ($(SM16CF), )
-#$(error SM16CF must be defined, try "make $(TARGETS) help")
 SM16CF = /dev/ttyUSB0
 endif
 

@@ -67,7 +67,7 @@ implementation {
   }
 
   command error_t Init.init() {
-    TOSH_CLR_PROG_OUT_PIN();
+    TOSH_SET_PROG_OUT_PIN();
 
     TOSH_MAKE_ADC_6_INPUT();
 
@@ -84,11 +84,11 @@ implementation {
     scout = databuf0;
     current_buffer = 0;
 
-    TOSH_SET_PROG_OUT_PIN();
+    TOSH_CLR_PROG_OUT_PIN();
   }
 
   command void Gps.disable() {
-    TOSH_CLR_PROG_OUT_PIN();
+    TOSH_SET_PROG_OUT_PIN();
   }
 
   command void Gps.disableBus(){
@@ -112,6 +112,13 @@ implementation {
     return sum;
   }
 
+  // tell it to come up in hot start mode
+  command void Gps.setHotStart() {
+    sprintf(cmdstring, "$PMTK101*32\r\n");
+
+    post send_command();
+  }
+
   // datarate in milliseconds, min 100
   command void Gps.setDatarate(uint16_t datarate) { 
     uint8_t crc;
@@ -132,6 +139,9 @@ implementation {
   }
 
   async event void UARTData.rxDone(uint8_t data) {        
+    if(!call UARTControl.isUart())
+      return;
+
     *scout = data;
     scout++;
 
@@ -167,6 +177,9 @@ implementation {
   }
  
   async event void UARTData.txDone() {
+    if(!call UARTControl.isUart())
+      return;
+
     if(!transmissionComplete) {
       post sendOneChar();
     }

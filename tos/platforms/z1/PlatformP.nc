@@ -55,12 +55,13 @@ implementation {
   }
 
   command error_t Init.init() {
+    WDTCTL = WDTPW + WDTHOLD;
     wait_for_32K();
     call Msp430ClockInit.init();
     call LedsInit.init();
     return SUCCESS;
   }
- 
+
   default command error_t LedsInit.init() { return SUCCESS; }
- 
+
 }

@@ -3,7 +3,7 @@
 #include <Shell.h>
 #include "imgNum2volumeId.h"
 #include "Deluge.h"
-#include "PrintfUART.h"
+#include "blip_printf.h"
 module NWProgP {
   provides interface BootImage;
   uses {
@@ -80,7 +80,7 @@ module NWProgP {
 
   event void Recv.recvfrom(struct sockaddr_in6 *from,
                            void *payload, uint16_t len,
-                           struct ip_metadata *meta) {
+                           struct ip6_metadata *meta) {
     prog_req_t *req = (prog_req_t *)payload;
     uint8_t imgNum = imgNum2volumeId(req->imgno);
     error_t error = FAIL;
@@ -158,16 +158,16 @@ module NWProgP {
 
 #ifdef PARANOID
     if (len != cmp_len) {
-      printfUART("WARNING: write length changed from %i to %lu!\n", cmp_len, len);
+      printf("WARNING: write length changed from %i to %lu!\n", cmp_len, len);
     }
     if (addr != cmp_off) {
-      printfUART("WARNING: write address changed from %li to %li!\n", cmp_off, addr);
+      printf("WARNING: write address changed from %li to %li!\n", cmp_off, addr);
     }
     if (img_num != cmp_img) {
-      printfUART("WARNING: write volume changed from %i to %i\n", cmp_img, img_num);
+      printf("WARNING: write volume changed from %i to %i\n", cmp_img, img_num);
     }
     if (memcmp(buf, cmp_buf, cmp_len) != 0) {
-      printfUART("WARNING: write data changed during call!\n");
+      printf("WARNING: write data changed during call!\n");
     }
     memset(buf, 0, cmp_len);
     if (call BlockRead.read[cmp_img](cmp_off, buf, cmp_len) == SUCCESS) {
@@ -193,18 +193,18 @@ module NWProgP {
 #ifdef PARANOID
     if (paranoid_read) {
       if (len != cmp_len) {
-        printfUART("WARNING: read length changed from %u to %lu!\n", cmp_len, len);
+        printf("WARNING: read length changed from %u to %lu!\n", cmp_len, len);
       }
       if (addr != cmp_off) {
-        printfUART("WARNING: read address changed from %li to %li!\n", cmp_off, addr);
+        printf("WARNING: read address changed from %li to %li!\n", cmp_off, addr);
       }
       if (img_num != cmp_img) {
-        printfUART("WARNING: read volume changed from %i to %i\n", cmp_img, img_num);
+        printf("WARNING: read volume changed from %i to %i\n", cmp_img, img_num);
       }
       if (memcmp(buf, cmp_buf, cmp_len) != 0) {
-        printfUART("WARNING: write data changed during call!\n");
+        printf("WARNING: write data changed during call!\n");
       } else {
-        printfUART("SUCCESS: write verified!\n");
+        printf("SUCCESS: write verified!\n");
       }
 
       paranoid_read = FALSE;

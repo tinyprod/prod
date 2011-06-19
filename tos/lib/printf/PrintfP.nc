@@ -84,16 +84,10 @@
 
 #include "printf.h"
 
-#ifdef _H_atmega128hardware_H
-static int uart_putchar(char c, FILE *stream);
-static FILE atm128_stdout = 
-	FDEV_SETUP_STREAM(TCAST(int (*)(char c, FILE *stream), uart_putchar), 
-	NULL, _FDEV_SETUP_WRITE);
-#endif
-
 module PrintfP @safe() {
   provides {
     interface Init;
+    interface Putchar;
   }
   uses {
     interface PrintfQueue<uint8_t> as Queue;
@@ -113,9 +107,6 @@ implementation {
   uint8_t state = S_STARTED;
   
   command error_t Init.init() {
-#ifdef _H_atmega128hardware_H
-      stdout = &atm128_stdout;
-#endif
       atomic state = S_STARTED;
       return SUCCESS;
   }
@@ -157,19 +148,9 @@ implementation {
     else post retrySend();
   }
   
-#ifdef _H_msp430hardware_h
-  int putchar(int c) __attribute__((noinline)) @C() @spontaneous() {
-#else
-#ifdef _H_atmega128hardware_H
-  int uart_putchar(char c, FILE *stream) __attribute__((noinline)) @C() @spontaneous() {
-#else
-#ifdef __M16C60HARDWARE_H__
-  int lowlevel_putc(int c) __attribute__((noinline)) @C() @spontaneous() {
-#else
-  int lowlevel_putc(int c) __attribute__((noinline)) @C() @spontaneous() {
-#endif
-#endif
-#endif
+#undef putchar
+  command int Putchar.putchar (int c)
+  {
     if((state == S_STARTED) && (call Queue.size() >= ((PRINTF_BUFFER_SIZE)/2))) {
       state = S_FLUSHING;
       sendNext();
