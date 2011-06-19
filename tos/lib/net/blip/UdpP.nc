@@ -2,6 +2,8 @@
 #include <lib6lowpan/in_cksum.h>
 #include <BlipStatistics.h>
 
+#include "blip_printf.h"
+
 module UdpP {
   provides interface UDP[uint8_t clnt];
   provides interface Init;
@@ -9,11 +11,6 @@ module UdpP {
   uses interface IP;
   uses interface IPAddress;
 } implementation {
-
-#ifdef PRINTFUART_ENABLED
-#undef dbg
-#define dbg(X,fmt, args...) printfUART(fmt, ##args)
-#endif
 
   enum {
     N_CLIENTS = uniqueCount("UDP_CLIENT"),
@@ -31,12 +28,12 @@ module UdpP {
   uint16_t alloc_lport(uint8_t clnt) {
     int i, done = 0;
     uint16_t compare = htons(last_localport);
-    last_localport = (last_localport < LOCAL_PORT_START) ? last_localport + 1 : LOCAL_PORT_START;
+    last_localport = (last_localport < LOCAL_PORT_STOP) ? last_localport + 1 : LOCAL_PORT_START;
     while (!done) {
       done = 1;
       for (i = 0; i < N_CLIENTS; i++) {
         if (local_ports[i] == compare) {
-          last_localport = (last_localport < LOCAL_PORT_START) ? last_localport + 1 : LOCAL_PORT_START;
+          last_localport = (last_localport < LOCAL_PORT_STOP) ? last_localport + 1 : LOCAL_PORT_START;
           compare = htons(last_localport);
           done = 0;
           break;
@@ -71,7 +68,7 @@ module UdpP {
     uint16_t my_cksum, rx_cksum = ntohs(udph->chksum);
     struct ip_iovec v;
 
-    dbg("UDP", "UDP - IP.recv: len: %i (%i, %i) srcport: %i dstport: %i\n",
+    printf("UDP - IP.recv: len: %i (%i, %i) srcport: %u dstport: %u\n",
         ntohs(iph->ip6_plen), len, ntohs(udph->len),
         ntohs(udph->srcport), ntohs(udph->dstport));
 
@@ -92,12 +89,13 @@ module UdpP {
     v.iov_next = NULL;
 
     my_cksum = msg_cksum(iph, &v, IANA_UDP);
+    printf("rx_cksum: 0x%x my_cksum: 0x%x\n", rx_cksum, my_cksum);
     if (rx_cksum != my_cksum) {
       BLIP_STATS_INCR(stats.cksum);
-      printfUART("udp ckecksum computation failed: mine: 0x%x theirs: 0x%x [0x%x]\n", 
+      printf("udp ckecksum computation failed: mine: 0x%x theirs: 0x%x [0x%x]\n", 
                  my_cksum, rx_cksum, len);
-      printfUART_buf((void *)iph, sizeof(struct ip6_hdr));
-      iov_print(&v);
+      printf_buf((void *)iph, sizeof(struct ip6_hdr));
+      // iov_print(&v);
       // drop
       return;
     }

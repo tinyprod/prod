@@ -33,7 +33,9 @@
  * ========================================================================
  */
 
- /** Empty placeholder component for DispatchQueueP. */
+ /** Placeholder component for DispatchQueueP: frames are forwarded immediately
+  * without queuing, i.e. this component is not a "dead end" like most other
+  * placeholders.*/
 
 #include "TKN154_MAC.h"
 generic module NoDispatchQueueP() {
@@ -51,23 +53,33 @@ generic module NoDispatchQueueP() {
 }
 implementation
 {
+  uint8_t m_client;
+
   command error_t Reset.init() { return SUCCESS; }
 
   command ieee154_status_t FrameTx.transmit[uint8_t client](ieee154_txframe_t *txFrame)
   {
-    return IEEE154_TRANSACTION_OVERFLOW;
+    ieee154_status_t status;
+    txFrame->client = client;
+    status = call FrameTxCsma.transmit(txFrame);
+    if (status == IEEE154_SUCCESS)
+      m_client = client;
+    return status;
   }
 
-  event void FrameTxCsma.transmitDone(ieee154_txframe_t *txFrame, ieee154_status_t status) { }
+  event void FrameTxCsma.transmitDone(ieee154_txframe_t *txFrame, ieee154_status_t status) 
+  { 
+    signal FrameTx.transmitDone[txFrame->client](txFrame, status);
+  }
 
-  event message_t* SubFrameExtracted.received(message_t* frame) { return frame; }
+  event message_t* SubFrameExtracted.received(message_t* frame) 
+  { 
+    return signal FrameExtracted.received[m_client](frame);
+  }
 
   default event void FrameTx.transmitDone[uint8_t client](ieee154_txframe_t *txFrame, ieee154_status_t status){}
 
-  command ieee154_status_t Purge.purge(uint8_t msduHandle)
-  {
-    return IEEE154_INVALID_HANDLE;
-  }
+  command ieee154_status_t Purge.purge(uint8_t msduHandle) { return IEEE154_INVALID_HANDLE; }
   
   default event void Purge.purgeDone(ieee154_txframe_t *txFrame, ieee154_status_t status){}
 }

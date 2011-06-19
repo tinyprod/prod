@@ -118,7 +118,6 @@ implementation
 		STATE_TRX_OFF_2_RX_ON = 4,
 		STATE_RX_ON = 5,
 		STATE_BUSY_TX_2_RX_ON = 6,
-		STATE_PLL_ON_2_RX_ON = 7,
 	};
 
 	tasklet_norace uint8_t cmd;
@@ -253,8 +252,16 @@ implementation
 		call BusyWait.wait(510);
 
 		writeRegister(RF212_IRQ_MASK, RF212_IRQ_TRX_UR | RF212_IRQ_PLL_LOCK | RF212_IRQ_TRX_END | RF212_IRQ_RX_START);
-		writeRegister(RF212_CCA_THRES, RF212_CCA_THRES_VALUE);
-		writeRegister(RF212_PHY_TX_PWR, RF212_DEF_RFPOWER);
+
+		// update register values if different from default
+		if( RF212_CCA_THRES_VALUE != 0x77 )
+			writeRegister(RF212_CCA_THRES, RF212_CCA_THRES_VALUE);
+
+		if( RF212_DEF_RFPOWER != 0x60 )
+			writeRegister(RF212_PHY_TX_PWR, RF212_DEF_RFPOWER);
+
+		if( RF212_TRX_CTRL_2_VALUE != RF212_DATA_MODE_DEFAULT )
+			writeRegister(RF212_TRX_CTRL_2, RF212_TRX_CTRL_2_VALUE);
 
 		txPower = RF212_DEF_RFPOWER;
 		channel = RF212_DEF_CHANNEL & RF212_CHANNEL_MASK;
@@ -461,7 +468,7 @@ implementation
 		{
 			RADIO_ASSERT( (readRegister(RF212_TRX_STATUS) & RF212_TRX_STATUS_MASK) == RF212_BUSY_RX );
 
-			state = STATE_PLL_ON_2_RX_ON;
+			writeRegister(RF212_TRX_STATE, RF212_RX_ON);
 			return EBUSY;
 		}
 
@@ -710,21 +717,19 @@ implementation
 			}
 #endif
 
-			if( irq & RF212_IRQ_PLL_LOCK )
+			// sometimes we miss a PLL lock interrupt after turn on
+			if( cmd == CMD_TURNON || cmd == CMD_CHANNEL )
 			{
-				if( cmd == CMD_TURNON || cmd == CMD_CHANNEL )
-				{
-					RADIO_ASSERT( state == STATE_TRX_OFF_2_RX_ON );
+				RADIO_ASSERT( irq & RF212_IRQ_PLL_LOCK );
+				RADIO_ASSERT( state == STATE_TRX_OFF_2_RX_ON );
 
-					state = STATE_RX_ON;
-					cmd = CMD_SIGNAL_DONE;
-				}
-				else if( cmd == CMD_TRANSMIT )
-				{
-					RADIO_ASSERT( state == STATE_BUSY_TX_2_RX_ON );
-				}
-				else
-					RADIO_ASSERT(FALSE);
+				state = STATE_RX_ON;
+				cmd = CMD_SIGNAL_DONE;
+			}
+			else if( irq & RF212_IRQ_PLL_LOCK )
+			{
+				RADIO_ASSERT( cmd == CMD_TRANSMIT );
+				RADIO_ASSERT( state == STATE_BUSY_TX_2_RX_ON );
 			}
 
 			if( irq & RF212_IRQ_RX_START )
@@ -737,7 +742,7 @@ implementation
 
 				if( cmd == CMD_NONE )
 				{
-					RADIO_ASSERT( state == STATE_RX_ON || state == STATE_PLL_ON_2_RX_ON );
+					RADIO_ASSERT( state == STATE_RX_ON );
 
 					// the most likely place for busy channel, with no TRX_END interrupt
 					if( irq == RF212_IRQ_RX_START )
@@ -791,20 +796,10 @@ implementation
 				}
 				else if( cmd == CMD_RECEIVE )
 				{
-					RADIO_ASSERT( state == STATE_RX_ON || state == STATE_PLL_ON_2_RX_ON );
+					RADIO_ASSERT( state == STATE_RX_ON );
 
-					if( state == STATE_PLL_ON_2_RX_ON )
-					{
-						RADIO_ASSERT( (readRegister(RF212_TRX_STATUS) & RF212_TRX_STATUS_MASK) == RF212_PLL_ON );
-
-						writeRegister(RF212_TRX_STATE, RF212_RX_ON);
-						state = STATE_RX_ON;
-					}
-					else
-					{
-						// the most likely place for clear channel (hope to avoid acks)
-						rssiClear += (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) - (rssiClear >> 2);
-					}
+					// the most likely place for clear channel (hope to avoid acks)
+					rssiClear += (readRegister(RF212_PHY_RSSI) & RF212_RSSI_MASK) - (rssiClear >> 2);
 
 					cmd = CMD_DOWNLOAD;
 				}
