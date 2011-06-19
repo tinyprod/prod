@@ -138,7 +138,7 @@ implementation
 
 	async command uint16_t SoftwareAckConfig.getAckTimeout()
 	{
-		return (uint16_t)(SOFTWAREACK_TIMEOUT * RADIO_ALARM_MICROSEC);
+	  return (uint16_t)(SOFTWAREACK_TIMEOUT);
 	}
 
 	tasklet_async command void SoftwareAckConfig.reportChannelError()
@@ -225,7 +225,7 @@ implementation
 	{
 		// pure airtime: preable (4 bytes), SFD (1 byte), length (1 byte), payload + CRC (len bytes)
 
-		return call CC2520Packet.payloadLength(msg);
+		return call CC2520Packet.payloadLength(msg) + 6;
 	}
 
 /*----------------- RandomCollisionConfig -----------------*/

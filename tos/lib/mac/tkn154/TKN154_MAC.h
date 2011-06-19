@@ -181,25 +181,44 @@ enum {
 #endif
 
 typedef struct {
+
   uint8_t length;   // top bit denotes -> promiscuous mode
   uint8_t mhr[MHR_MAX_LEN];  
+
+#ifndef TKN154_ACTIVE_MESSAGE_SUPPORT_DISABLED
+  // This is a workaround: both, network and AM ID, are actually part of the
+  // MAC payload, but in the TinyOS world they are part of the header. To
+  // support bridging between between radio and serial stack above AM layer
+  // we will let it look like TinyOS expects it to look like, which involves
+  // some extra overhead in our AM layer (a memmove) as well as adding the
+  // one (or two) struct members below.
+
+  #ifndef TFRAMES_ENABLED
+    /** I-Frame 6LowPAN interoperability byte */
+    uint8_t network;
+  #endif
+
+  /** Active Message identifier */
+  uint8_t type;
+#endif
+
 } ieee154_header_t;
 
-typedef struct {
-  uint8_t rssi;
-  uint8_t linkQuality;
-  uint32_t timestamp;
+typedef nx_struct {
+  nx_uint32_t timestamp;
+  nx_int8_t rssi;
+  nx_uint8_t linkQuality;
 } ieee154_metadata_t;
 
 typedef struct
 {
+  ieee154_header_t *header;
+  uint8_t *payload;
+  ieee154_metadata_t *metadata;
+  uint8_t headerLen;
+  uint8_t payloadLen;
   uint8_t client;
   uint8_t handle;
-  ieee154_header_t *header;
-  uint8_t headerLen;
-  uint8_t *payload;
-  uint8_t payloadLen;
-  ieee154_metadata_t *metadata;
 } ieee154_txframe_t;
 
 typedef struct
@@ -216,9 +235,9 @@ typedef struct ieee154_csma {
 } ieee154_csma_t;
 
 typedef struct {
+  uint32_t transactionTime;
   ieee154_txframe_t *frame;
   ieee154_csma_t csma;
-  uint32_t transactionTime;
 } ieee154_cap_frame_backup_t;
 
 #define MHR(x) (((ieee154_header_t*) (x)->header)->mhr)
