@@ -1,32 +1,4 @@
 
-# one is in the apps/<blah> directory when building the <blah> application.
-# "make z1" in this directory will create the resultant files in the
-# build/z1 directory.  The z1 is based on a msp430f2617.
-#
-# One can then run gdb from the apps/<blah> directory via
-# "gdb build/z1/main.exe", or from within emacs via M-x gdb and then
-# Run gdb (like this): gdb --annotate=3 build/z1/main.exe
-#
-# Note you have to replace the "gdb" with the appropriate gdb for your
-# processor.  For example, when using the telosb then msp430-gdb is the
-# gdb you want to use.
-#
-# GDB can execute gdb run commands from the execution directory and your
-# home directory.  These files are named .gdbinit.  The init file in the
-# build directory is build/telosb/.gdbinit.    But keep in mind that if
-# one does a "make clean" it wipes out build and everything below it.  So
-# the thing to do is place the .gdbinit file and friends in the apps/<blah>
-# directory and link from build/z1.  ie.  "cd build/z1; ln -s ../../.gdbinit;
-# cd ../.."
-#
-# CPU dependent gdb command files are also available for the various flavors
-# of msp430 cpus.   Sourcing one of these files will make available various
-# commands for looking a different parts of the processor.
-#
-# GDB for the msp430 communicates with the cpu under test via JTAG h/w and
-# a proxy using a remote protocol.
-#
-
 #source ../../.gdb_x1
  source ../../.gdb_x2
 #source ../../.gdb_x5
