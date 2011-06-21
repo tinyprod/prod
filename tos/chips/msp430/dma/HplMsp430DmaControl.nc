@@ -39,7 +39,7 @@
 #include "Msp430Dma.h"
 
 interface HplMsp430DmaControl {
-  /*
+  /**
    * setOpControl
    * getOpControl
    *
@@ -50,7 +50,7 @@ interface HplMsp430DmaControl {
   async command void     setOpControl(uint16_t op);
   async command uint16_t getOpControl();
 
-  /*
+  /**
    * reset
    *
    * Fully reset the dma engines.   Clears out any operational Control

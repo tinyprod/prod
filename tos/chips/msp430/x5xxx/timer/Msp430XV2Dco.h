@@ -37,7 +37,7 @@
 #ifndef _MSP430XV2DCO_H
 #define _MSP430XV2DCO_H
 
-/*
+/**
  * Define material relevant to configuring the DCO on an MSP430
  * Unified Clock System module.
  *

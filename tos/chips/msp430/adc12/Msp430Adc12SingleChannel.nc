@@ -34,7 +34,6 @@
  */
 
 /** 
- * 
  * This interface provides access to the ADC12 on the level of HAL. It can be
  * used to sample a single adc channel once or repeatedly (one event is
  * signalled per conversion result) or perform multiple conversions for a
@@ -138,7 +137,6 @@ interface Msp430Adc12SingleChannel
   async command error_t configureMultiple( const msp430adc12_channel_config_t *ONE config, uint16_t *COUNT(numSamples) buffer, uint16_t numSamples, uint16_t jiffies);
 
   /** 
-   *
    * Configures the ADC for sampling a channel multiple times repeatedly.  Any
    * previous configuration will be overwritten. In contrast to the
    * <code>configureSingleRepeat()</code> command this configuration means that

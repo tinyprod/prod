@@ -33,7 +33,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * Clock configuration for an MSP430XV2 board.
  *
  * @note If changing the rate for SMCLK, also update the UART configuration in

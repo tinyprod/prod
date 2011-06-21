@@ -46,7 +46,7 @@
  */
 
 interface Msp430XV2ClockControl {
-  /*
+  /**
    * Configure the unified clock system for a specified DCO (MCLK)
    * rate.  Generally, the parameter is a value from the
    * Msp430XV2DcoConfig_e enumeration, but non-default implementations
@@ -59,7 +59,7 @@ interface Msp430XV2ClockControl {
    */
   async command void configureUnifiedClockSystem (int dco_config);
 
-  /*
+  /**
    * Configure the 32KHz (T32Khz) and 1MHz (TMicro) timers
    *
    * Upon completion, the timers are configured but off.  Invoking
@@ -67,7 +67,7 @@ interface Msp430XV2ClockControl {
    */
   command void configureTimers ();
 
-  /*
+  /**
    * Start the 32KHz timer.
    *
    * Upon completion of this command, the timer is running in
@@ -78,7 +78,7 @@ interface Msp430XV2ClockControl {
    */
   async command void start32khzTimer ();
 
-  /*
+  /**
    * Stop the 32KHz timer.
    *
    * Upon completion of this command, the timer is stopped and
@@ -92,7 +92,7 @@ interface Msp430XV2ClockControl {
   /** Return TRUE iff T32khz is running. */
   async command bool is32khzTimerRunning ();
 
-  /*
+  /**
    * Start the 1MHz timer.
    *
    * Upon completion of this command, the timer is running in
@@ -107,7 +107,7 @@ interface Msp430XV2ClockControl {
    */
   async command void startMicroTimer ();
 
-  /*
+  /**
    * Stop the 1MHz timer.
    *
    * Upon completion of this command, the timer is stopped.

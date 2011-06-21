@@ -43,7 +43,7 @@
 #error "HplMsp430DmaChannelP: processor not supported, need DMA_3 or DMAX_3"
 #endif
 
-/*
+/**
  * Define a DMA channel.
  *
  * DMAxCTL:	Channel control word.  ie.  DMA0CTL (control word for

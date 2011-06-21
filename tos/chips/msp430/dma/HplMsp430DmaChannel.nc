@@ -42,7 +42,7 @@
 
 interface HplMsp430DmaChannel {
 
-  /*
+  /**
    * Set/Get the DMA Channel Control word.
    *
    * Use cpu defines to control a dma channel.  ie.
@@ -85,7 +85,7 @@ interface HplMsp430DmaChannel {
   async command void		setSize(uint16_t sz);
   async command uint16_t	getSize();
 
-  /*
+  /**
    * Channel Reset
    *
    * Turn a dma channel off.  Force reset.

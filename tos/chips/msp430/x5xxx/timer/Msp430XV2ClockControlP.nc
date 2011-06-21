@@ -32,7 +32,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * Configuration for MSP430 Unified Clock System and Timer A modules.
  *
  * X5 (cc430f5137, msp430f5438, MSP430XV2 and friends).   Assumed that

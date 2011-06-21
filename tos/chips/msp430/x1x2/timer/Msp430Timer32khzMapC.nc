@@ -42,7 +42,7 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
-/*
+/**
  * Currently only support TB3 and TB7 modules
  */
 #if !defined(__MSP430_HAS_TB3__) && !defined(__MSP430_HAS_TB7__)

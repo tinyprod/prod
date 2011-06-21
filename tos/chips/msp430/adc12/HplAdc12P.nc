@@ -36,7 +36,9 @@
  * @author Eric B. Decker <cire831@gmail.com>
  * @see  Please refer to TEP 101 for more information about this component and its
  *          intended use.
- *
+ */
+
+/**
  * The HplAdc12 interface exports low-level access to the ADC12 registers
  * of the MSP430 MCU.
  *

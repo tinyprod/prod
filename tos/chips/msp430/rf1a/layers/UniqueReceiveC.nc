@@ -33,6 +33,8 @@
  */
 
 /**
+ * UniqueReceive: check a dsn/source against recent history
+ *
  * If the source address and dsn number of a newly received message matches
  * our recent history, we drop the message because we've already seen it.
  * This should sit near the bottom of the stack, after packets have been
