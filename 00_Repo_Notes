@@ -2,7 +2,7 @@
 * Toolchain:
 
 The focus is on getting the new toolchain verified.  As such this repo is
-intended to be tested using new toolchain (mspgcc 4.4.5, uniarch, ti headers).
+intended to be tested using the new toolchain (mspgcc 4.5, uniarch, ti headers).
 
 Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
 also been done for simple function (ie. does it compile).
@@ -10,13 +10,14 @@ also been done for simple function (ie. does it compile).
 
 * Repo Structure
 
-The msp430.git repo is located at:
+The msp430 integration tree is part of the tinyprod:freeforall repo (branch
+msp430-int).
 
-git clone ssh://hinrg.cs.jhu.edu/home/cire/msp430.git  (r/w)
-git clone git://hinrg.cs.jhu.edu/git/cire/msp430.git   (read-only)
+This repo is located at git@github:tp-freeforall/prod.git
 
-The msp430.git repo tracks the hinrg t2 git repo which in turn imports from the
-main svn T2 trunk.
+git clone git://git@github:tp-freeforall/prod.git
+
+The prod.git repo tracks the tinyos svn trunk via the hinrg git repo.
 
 
 svn t2 mainline ---|
@@ -26,10 +27,10 @@ svn t2 mainline ---|
 ------------------ hinrg t2 -----------------------
        	     | 	       	     | 	       	   |
 	     |		     |		   |
-           master ---------------------------------
+     prod   svn/upstream ---------------------------------
              |			|      	     |
              |			|	     |
-              - master_vhsb -----------------------
+              - svn-vhsb -----------------------
                       |		|      	     |
                       |		|	     |
 	  	       --------------------------msp430-int ----------------
@@ -39,9 +40,9 @@ svn t2 mainline ---|
 
 * Branches:
 
-master: is the main branch coming from the svn t2 mainline.  Updated manually.
+svn-upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
 
-master-vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
+svn-vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
 	trunk.  This branch tracks master but has the superfluous Z1 commit
 	removed as it conflicts with the collapsed msp430 x2xxx work done in
 	mm_core.  This collapsage forms the majority of the work of merging
@@ -53,17 +54,19 @@ msp430-int: main consolidation branch for the msp430 core.   It represents the
        includes all three major families (x1, x2, and x5).  Major cpu dependancies
        held in tos/chips/msp430/{x1xxx,x2xxx,x5xxx}
 
-z1-pu: working directory for Zolertia modifications.   From verification of mm-z1
-       combined tree.
-
+z1-pu: working directory for Zolertia modifications.
 
 
 To pull a working branch do the following:
 
-    cd ~/mm							# make sure at top level, we call it mm
-    git clone git://hinrg.cs.jhu.edu/git/cire/msp430.git	# grab from ro place
+    cd ~/working						# make sure at top level
+    git clone git://github.com/tp-freeforall/prod.git msp430	# grab from ro place
     cd msp430
     git config --add push.default matching	# make sure only existing branches get pushed.
 						# only effects rw repos
+
+check to see if you are on the msp430-int branch (it maybe the default).   If not checkout
+the msp430-int branch using the following commands.
+
     git checkout -t origin/msp430-int		# tracking branch, will be on msp430-int when done
     git checkout -b work			# local working branch

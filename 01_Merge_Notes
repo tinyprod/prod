@@ -8,7 +8,7 @@ but the msp430 branch brought those things back in.   See the following commit f
     270f0cc Z1 changes outside main z1 modifications (outside tos/{chips,platforms}
 
 
-1) created the branch master-vhsb (master with vogon hyper spatial bypass).  The hyper-spatial bypass
+1) created the branch svn-vhsb (svn with vogon hyper spatial bypass).  The hyper-spatial bypass
    jumps over the trunk-Z1 code (deletes it).
 
 2) removed trunk-Z1 commit.   Gets in the way of the collapse work already done.  See the following:
@@ -34,6 +34,8 @@ but the msp430 branch brought those things back in.   See the following commit f
 
 * In apps/IPBaseStation/BaseStationP.nc, Z1 brought in #include CC2420.h that is inside
   an #ifndef SIM.   Why the ifndef?
+
+  Not an issue.  apps/IPBaseStation went bye bye.
 
 * want to check tos/platforms/z1/<stuff>  for duplicates vs. tos/chips/msp430 when done integrating
   and collapsing.

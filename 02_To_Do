@@ -5,6 +5,8 @@
 * apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
   fixed and made part of the platform/cpu definition.
 
+  apps/IPBaseStation deleted.
+
 -- What is the purpose of msp430regtypes.h?  Is there a easier way to deal with this?
   No.  This is how it is done.  Provides the linkage to msp430hardware.h and various
   defines that are there, ie. MSP430_NORACE(xxxxx).   etc.
