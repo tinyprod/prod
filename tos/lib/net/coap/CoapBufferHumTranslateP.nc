@@ -41,10 +41,12 @@ generic module CoapBufferHumTranslateP() {
   }
 
   event void Read.readDone(error_t result, uint16_t val) {
-#ifdef PRINTFUART_ENABLED
-    dbg("Read", "CoapRead.readDone: %hu \n", val);
-#endif
-    val =  (-400 + val*4 -((uint32_t)val*(uint32_t)val)*100/357143);
+    /*
+      The calculation of the relative humidity for TelosB nodes is done according to the datasheet SHT1x (www.sensirion.com/en/pdf/product_information/Datasheet-humidity-sensor-SHT1x.pdf).
+      RH = c1 + c2 * val + c3 * val^2
+      To avoid floating point calculations and to achieve a precision of 0.01 %, the values c1 and c2 are multiplied with 100 to get fixed point values and value c3 is transformed by 1/x. */
+    val =  (-204 + val*4 -((uint32_t)val*(uint32_t)val)*100/628931);
+    printf("CoapRead.readDone: %hu\n", val);
     signal ReadHum.readDone(result, val);
   }
-  }
+}
