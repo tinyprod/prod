@@ -238,7 +238,7 @@ void forward_packet(const void *packet, int len)
   if (ok < 0)
     exit(2);
   if (ok > 0)
-    fprintf(stderr, "Note: write failed\n");
+    fprintf(stderr, "Note: write failed: %d\n", ok);
 }
 
 int main(int argc, char **argv)

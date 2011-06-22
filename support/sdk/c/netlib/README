@@ -1,0 +1,6 @@
+
+Misc. network functions for TinyOS Base Station Apps
+===============================================================================
+
+Netlib provides various helper functions for dealing with network things.
+Included are routines for protected sockaddr display functions and the like.
