@@ -1,0 +1,32 @@
+To install using stow:
+
+      ./bootstrap
+      ./configure --prefix=/opt/stow/motenet
+      make
+
+      sudo -s
+      make install
+
+      ("sudo make install" for some reason doesn't pick up the value of $TOSROOT properly so
+      the make install doesn't work right unless you are root first)
+
+      This will install include/netlib.h and lib/libnetlib.a.
+      These will be installed into /opt/stow/motenet
+
+
+   Install into /opt/{include,lib} using stow.  (still root)
+
+      cd /opt/stow
+      stow motenet
+
+
+Alternative Installation:
+
+      ./bootstrap
+      ./configure --prefix=/opt
+      make
+
+      sudo -s
+      make install
+
+      If no prefix is given, it will default to /usr/local.

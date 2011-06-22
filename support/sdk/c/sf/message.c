@@ -18,6 +18,23 @@ struct tmsg {
   size_t len;
 };
 
+
+static void (*failfn)(void);
+
+
+/*
+ * reset_tmsg: reset the pointers inside the control structure
+ *
+ * Used to more over an encapsulation.
+ */
+void reset_tmsg(tmsg_t *msg, void *packet, size_t len)
+{
+  if (!msg)
+    return;
+  msg->data = packet;
+  msg->len  = len;
+}
+
 tmsg_t *new_tmsg(void *packet, size_t len)
 {
   tmsg_t *x = malloc(sizeof(tmsg_t));
@@ -36,14 +53,6 @@ void free_tmsg(tmsg_t *msg)
     free(msg);
 }
 
-void reset_tmsg(tmsg_t *msg, void *packet, size_t len)
-{
-  if (!msg)
-    return;
-  msg->data = packet;
-  msg->len  = len;
-}
-
 void *tmsg_data(tmsg_t *msg)
 {
   return msg->data;
@@ -54,7 +63,6 @@ size_t tmsg_length(tmsg_t *msg)
   return msg->len;
 }
 
-static void (*failfn)(void);
 
 void tmsg_fail(void)
 {
@@ -67,7 +75,6 @@ void (*tmsg_set_fail(void (*fn)(void)))(void)
   void (*oldfn)(void) = failfn;
 
   failfn = fn;
-
   return oldfn;
 }
 
@@ -273,15 +280,22 @@ void tmsg_write_be(tmsg_t *msg, size_t offset, size_t length, int64_t value)
   tmsg_write_ube(msg, offset, length, value);
 }
 
-/* u2f and f2u convert raw 32-bit values to/from float. This code assumes
-   that the floating point rep in the uint32_t values:
-     bit 31: sign, bits 30-23: exponent, bits 22-0: mantissa
-   matches that of a floating point value when such a value is stored in
-   memory.
-*/
 
-/* Note that C99 wants us to use the union approach rather than the
-   cast-a-pointer approach... */
+/*
+ * u2f and f2u convert raw 32-bit values to/from float. This code assumes
+ * that the floating point rep in the uint32_t values:
+ *
+ * bit 31: sign,
+ * bits 30-23: exponent,
+ * bits 22-0: mantissa
+ *
+ * matches that of a floating point value when such a value is stored in memory.
+ *
+ * Note that C99 wants us to use the union approach rather than the
+ * cast-a-pointer approach...
+ */
+ 
+
 union f_and_u {
   uint32_t u;
   float f;
