@@ -61,7 +61,7 @@ enum {
 };
 
 /** Base header is the stock IEEE 802.15.4 MAC header (MHR) */
-typedef ieee154_header_t rf1a_ieee154_t;
+typedef ieee154_simple_header_t rf1a_ieee154_t;
 
 /** ActiveMessage packets add a NALP header */
 typedef nx_struct rf1a_nalp_am_t {

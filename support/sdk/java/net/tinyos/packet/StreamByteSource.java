@@ -43,14 +43,13 @@
 
 package net.tinyos.packet;
 
-import java.util.*;
 import java.io.*;
 
 abstract public class StreamByteSource implements ByteSource
 {
     protected InputStream is;
     protected OutputStream os;
-    private boolean opened;
+    protected boolean opened;
 
     protected StreamByteSource() {
     }
