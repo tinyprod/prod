@@ -10,14 +10,57 @@ also been done for simple function (ie. does it compile).
 
 * Repo Structure
 
-The msp430 integration tree is part of the tinyprod:freeforall repo (branch
-msp430-int).
+github.com/tinyprod/prod: main TinyProd repo.
+  The VeryBless repo.  Hold the stable mainline (master)
 
-This repo is located at git@github:tp-freeforall/prod.git
+github.com/tp-freeforall/prod: working fork.
+  Blessed repo.  Holds consolidated integration branches and
+  proposed updates.
 
-git clone git://git@github:tp-freeforall/prod.git
+github.com/<github_user>/prod: user's tinyprod working fork.
+  branched off tp-freeforall/prod.   working branches
+  should be branched off the tp-freeforall/prod(branch)
+  that the user is working on.
 
-The prod.git repo tracks the tinyos svn trunk via the hinrg git repo.
+
+
+main persistent branches:
+
+svn/upstream: svn tinyos tracking branch.
+
+master: the main tinyprod release line.
+
+next: integration branch for next release on master.
+
+pu:   integration branch for proposed updates.
+
+<feature>-int: integration branch for feature
+<feature>-int-pu: proposed update.
+<feature>-int-next: accepted updates.
+
+(some of these branches may be skipped depending on need).
+
+
+
+Other current branches:
+
+msp430-int: msp430 integration (msp430 core, x1, x2, x5) feature branch
+
+msp430-int-pu: proposed updates to msp430-int (no msp430-int-next).
+
+swreset: potential msp430 swreset implementation.
+
+motenet-rel: replacement for the serialforwarder.
+
+svn-vhsb: remove bad z1 commit from svn trunk
+
+(note: tinyprod's master branch will eventually consist of a merge between
+msp430-int, svn-vhsb, swreset, and motenet-rel).
+
+
+
+user branches are working branches in user working forks.
+
 
 
 svn t2 mainline ---|
@@ -28,14 +71,21 @@ svn t2 mainline ---|
        	     | 	       	     | 	       	   |
 	     |		     |		   |
      prod   svn/upstream ---------------------------------
-             |			|      	     |
-             |			|	     |
-              - svn-vhsb -----------------------
-                      |		|      	     |
+             |			|
+             |			|
+              - svn-vhsb ------------\
+       	       			      \
+		swreset	    ------------------ master
+		       		      /
+		motenet-rel ---------/
+
+
+
+                svn-vhsb ---------------------
                       |		|	     |
 	  	       --------------------------msp430-int ----------------
-       	       	       	       	       	       	   |
-						    ----- z1-pu ----
+						    |
+       	       	       	       	       	       	    ----- z1-pu ----
 
 
 * Branches:
@@ -57,16 +107,65 @@ msp430-int: main consolidation branch for the msp430 core.   It represents the
 z1-pu: working directory for Zolertia modifications.
 
 
-To pull a working branch do the following:
 
-    cd ~/working						# make sure at top level
-    git clone git://github.com/tp-freeforall/prod.git msp430	# grab from ro place
-    cd msp430
-    git config --add push.default matching	# make sure only existing branches get pushed.
-						# only effects rw repos
+Workflow:  (github user: Robert Hunter)
 
-check to see if you are on the msp430-int branch (it maybe the default).   If not checkout
-the msp430-int branch using the following commands.
+    on github, fork github.com/tp-freeforall/prod  (as Robert Hunter)
+       (this creates the github repo, github.com/roberthunter/prod)
 
-    git checkout -t origin/msp430-int		# tracking branch, will be on msp430-int when done
-    git checkout -b work			# local working branch
+    mkdir -p ~/working/msp430
+    cd ~/working/msp430
+    git clone git@github.com:roberthunter/prod.git tinyos-2.x
+    cd tinyos-2.x
+    git remote add up git://github.com/tp-freeforall/prod.git
+    git fetch up
+    git checkout msp430-int               # make sure on the msp430-int branch
+    git checkout -b rh                    # create the rh branch off msp430-int
+
+
+
+tinyprod/prod
+
+    fork -> tp-freeforall/prod.git
+                    msp430-int branch
+
+             roberthunter/prod.git
+	            msp430-int branch
+		           rh branch
+			       ......  rh changes ---
+						     |
+						     |
+		     tp-freeforall/prod.git	     |
+		              msp430-int-pu -------------
+							 |
+							 |
+		                     msp430-int -------------
+
+
+Robert Hunter makes changes and commits his working branch (rh) on his local
+repo (local).  This gets pushed to github/roberthunter/prod.git and lives as
+the rh branch in that repo.
+
+The integrator pulls these changes after review into the
+tp-freeforall/prod(msp430-int-pu) branch.   After other changes from other
+developers comes in and msp430-int-pu has sufficiently matured, msp430-int-pu
+is merged into tp-freeforall/prod(msp430-int).
+
+When all integration branches have matured sufficiently, they are merged
+together, tested, and becomes tinyprod/prod(master).
+
+
+While various integration work is being done, working branches should be
+refreshed with more current content from the integration repositories.
+
+For example, Robert wants to make sure that his changes are consistent with
+what is happening on the tp-freeforall/prod(msp430-int-pu) branch.  He
+accomplishes this by the following commands:
+
+    cd ~/working/msp430/tinyos-2.x
+    git fetch up                         # get current information from
+    	      				 # tp-freeforall
+
+    git checkout rh                      # make sure on rh branch
+    git merge up/msp430-int-pu           # merge in the current
+                                         # proposed integration branch
