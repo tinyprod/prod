@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 João Gonçalves
  * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2000-2003 The Regents of the University of California.  
