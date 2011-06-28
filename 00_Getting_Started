@@ -269,6 +269,7 @@ redacted)...
 
     Keep the history clean and understandable.
 
+
   o Use meaningful commit messages.
 
     the first line (50 chars or less) is used as the short message.   This
@@ -281,13 +282,28 @@ redacted)...
     change necessary.  Its not a bad habit to get into when it makes sense
     to do so.
 
-  o Use the imperative present tense when writing commit messages.  Use commands.
+  o Use the imperative present tense when writing commit messages.
 
   o Always include a blank line after the short message (the first line).
 
   o Always run git diff --check to make sure you aren't introducing trailing
     whitespace.   Some tools bitch about this and it is really annoying.
 
+
+* Copyright.
+
+  The main TinyOS code is copyrighted by individual authors using the 3 clause
+  Modified BSD license.   The simplest thing to do is either use no copyright
+  or use the BSD license.
+
+  We are trying to get any new code to use the same boilerplate license.   The
+  intent is to minimize any extraneous noise when generating diffs.   The
+  boilerplate is written so the only part that needs to be modified as new
+  authors are added is the actually Copyright (c) <year> <name> clause at
+  the front.
+
+  A template for this copyright can be found in $(TOSROOT)/licenses/bsd.txt.
+  
 
 * coding style.   These are suggestions.   There isn't a style nazi.
 
