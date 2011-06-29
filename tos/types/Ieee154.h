@@ -59,6 +59,7 @@ typedef struct {
 #define i_saddr ieee_addr.saddr
 #define i_laddr ieee_addr.laddr
 
+#ifdef notdef
 typedef nx_struct ieee154_simple_header_t {
   nxle_uint16_t fcf;
   nxle_uint8_t  dsn;
@@ -78,6 +79,7 @@ typedef nx_struct ieee154_fcf_t {
   nxle_uint16_t frame_version: 2;
   nxle_uint16_t src_addr_mode: 2;
 } ieee154_fcf_t;
+#endif
 
 enum {
   IEEE154_BROADCAST_ADDR = 0xffff,
