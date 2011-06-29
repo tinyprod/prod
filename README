@@ -2,4 +2,7 @@
 TinyProd
    tp-freeforall/prod
 
-msp430-int:  msp430 integration
+msp430-int:     msp430 integration
+msp430-int-pu:  msp430 integration (proposed updates)
+
+If in doubt, branch off from msp430-int-pu.
