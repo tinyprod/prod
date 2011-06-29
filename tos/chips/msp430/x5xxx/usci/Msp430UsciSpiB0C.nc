@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 João Gonçalves
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
@@ -38,7 +39,11 @@
 
 /**
  * Generic configuration for a client that shares USCI_B0 in SPI mode.
+ *
+ * Connected the SPI pins to HplMsp430GeneralIOC
+ * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
  */
+
 
 generic configuration Msp430UsciSpiB0C() {
   provides {
@@ -62,4 +67,10 @@ generic configuration Msp430UsciSpiB0C() {
   Msp430UsciError = SpiC.Msp430UsciError;
 
   UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
+
+   components HplMsp430GeneralIOC as GIO;
+
+   SpiC.SIMO -> GIO.UCB0SIMO;
+   SpiC.SOMI -> GIO.UCB0SOMI;
+   SpiC.CLK -> GIO.UCB0CLK;
 }
