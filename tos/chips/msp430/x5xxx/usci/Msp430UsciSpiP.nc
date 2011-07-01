@@ -182,7 +182,13 @@ generic module Msp430UsciSpiP () @safe() {
       bytesLeft=bytesLeft-1;
     }
 
-    signal SpiPacket.sendDone[client](txBuf, rxBuf, len, SUCCESS);
+    /*
+     * WARNING: interrupts are disabled for this signal handler (event).   This
+     * in general is a bad idea.   We are doing it here because this is wired
+     * into the CC2420 stack which yields lots of non-atomic accesses.  A redesign
+     * of some flavor would be needed to fix this unless we put an atomic here.
+     */
+    atomic signal SpiPacket.sendDone[client](txBuf, rxBuf, len, SUCCESS);
     return SUCCESS;
   }
 
