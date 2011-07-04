@@ -113,7 +113,20 @@ configurations should wire the appropriate chip pins to Msp430UsciSpiB0P.
 I2C Mode Support
 ----------------
 
-Due to lack of I2C support on a platform based on an MSP430XV2 chip, I2C
-support has not yet been implemented.  Adding support for this should be a
-straightforward extension from that for the other USCI modes.
+I2C support added by Derek Baker (derek@red-slate.com)
 
+Added support for I2C master 7 bit addressing ~100khz/~400khz NONE interrupt driven, 
+tested on cc430F5137 with microchip 24lc1025 and Melexis MLX90614 thermometer.
+I2CPacket.read, I2CPacket.write, I2CPacketreadDone, I2CPacketwriteDone
+Bits taken from both PeoplePower and Z1 authors with thanks also to Eric Decker.
+
+Note / Gotcha
+
+When setting the address of the slave device remember you only need the 7 bits, most
+devices datasheets show the address in a 8bit format, e.g 24lc1025 address is 0xA0,
+this turns into 0x50, the 7 msb's right shifted one, the read/right bit is added by 
+the UART when you select the read/write function of the UART in I2C mode.
+
+When writing to a device multiple time, check the data sheet for write times, you
+need to give the device time to commit before you write again else the I2CPacket.write
+will FAIL.

@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Redslate Ltd.
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
@@ -45,6 +46,8 @@
  * module.
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
+ * @author Derek Baker <derek@red-slate.co.uk>
+ *   I2C support
  */
 
 generic module HplMsp430UsciP(
@@ -89,6 +92,8 @@ implementation {
 
   async command uint16_t Usci.getCtlw0() { return UCmxCTLW0; }
   async command void Usci.setCtlw0(uint16_t v) { UCmxCTLW0 = v; }
+  async command uint8_t Usci.getCtl1() { return UCmxCTL1; }
+  async command void Usci.setCtl1(uint8_t v) { UCmxCTL1 = v; }
   async command uint16_t Usci.getBrw() { return UCmxBRW; }
   async command void Usci.setBrw(uint16_t v) { UCmxBRW = v; }
   async command uint8_t Usci.getMctl() { return UCmxMCTL; }
@@ -160,6 +165,29 @@ implementation {
       return MSP430_USCI_SPI;
     }
   }
+
+  /* set direction of the bus */
+  async command void Usci.setTransmitMode() { UCmxCTL1 |=  UCTR; }
+  async command void Usci.setReceiveMode()  { UCmxCTL1 &= ~UCTR; }
+
+  /* get stop bit in i2c mode */
+  async command bool Usci.getStopBit() { return (UCmxCTL1 & UCTXSTP); }
+  async command bool Usci.getStartBit() { return (UCmxCTL1 & UCTXSTT); }
+  async command bool Usci.getNackBit() { return (UCmxCTL1 & UCTXNACK); }
+  async command bool Usci.getTransmitReceiveMode() { return (UCmxCTL1 & UCTR); }
+
+  /* transmit a NACK, Stop condition, or Start condition, automatically cleared */
+  async command void Usci.setTXNACK()  { UCmxCTL1 |= UCTXNACK; }
+  async command void Usci.setTXStop()  { UCmxCTL1 |= UCTXSTP;  }
+  async command void Usci.setTXStart() { UCmxCTL1 |= UCTXSTT; }
+
+  async command bool Usci.isTxIntrPending() { return (UCmxIFG & UCTXIFG); }
+  async command bool Usci.isRxIntrPending() { return (UCmxIFG & UCRXIFG); }
+  async command bool Usci.isNackIntrPending() { return (UCmxIFG & UCNACKIFG); }
+
+  async command void Usci.clrTxIntr() { UCmxIFG &= ~UCTXIFG; }
+  async command void Usci.clrRxIntr() { UCmxIFG &= ~UCRXIFG; }
+  async command void Usci.clrNackIntr() { UCmxIFG &= ~UCNACKIFG; }
 
   /*
    * Upon receipt of an interrupt, if the USCI is active then demux
