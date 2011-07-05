@@ -132,9 +132,8 @@ implementation {
    * left off.
    */
   error_t configure_ (const msp430_usci_config_t* config) {
-    if ( !config ) {
+    if ( !config )
       return FAIL;
-    }
 
     /* Do basic configuration, leaving USCI in reset mode.  Configure
      * the I2C pins, enable the USCI, and turn off the interrupts.
@@ -170,15 +169,15 @@ implementation {
     uint8_t * m_rx_buf = data;
     uint16_t m_rx_addr = addr;
 
-    if((flags & I2C_STOP) && (flags & I2C_ACK_END)) {		/*can only set one or the other*/
+    if ((flags & I2C_STOP) && (flags & I2C_ACK_END)) {		/*can only set one or the other*/
       m_rx_len = 0;
       signal I2CPacket.readDone[client](FAIL,m_rx_addr,m_rx_len,m_rx_buf);
       return FAIL;
     }
 
-    if(flags & I2C_START) {
+    if (flags & I2C_START) {
       call Usci.setReceiveMode();				/*put the uart into receive mode*/
-      call Usci.setI2csa(addr);					/*Set the Slave Address*/
+      call Usci.setI2Csa(addr);					/*Set the Slave Address*/
       i=0;
       while (call Usci.getStopBit()) {
 	if (i >= TIMEOUT) {
@@ -227,7 +226,7 @@ implementation {
       length--;
     }
 
-    if(flags & I2C_ACK_END) {					/*dont end the receive, we want to receive more*/
+    if (flags & I2C_ACK_END) {					/*dont end the receive, we want to receive more*/
       m_rx_len -= length;
       signal I2CPacket.readDone[client](SUCCESS,m_rx_addr,m_rx_len,m_rx_buf);
       return SUCCESS;	
@@ -269,7 +268,7 @@ implementation {
 
     if(flags & I2C_START) {
       call Usci.setTransmitMode();				/*set transmit mode on i2c*/
-      call Usci.setI2csa(addr);					/*Set the Slave Address*/
+      call Usci.setI2Csa(addr);					/*Set the Slave Address*/
       i=0;
       while (call Usci.getStopBit()) {
 	if (i >= TIMEOUT) {
@@ -280,7 +279,7 @@ implementation {
 	i++;
       }
       i=0;
-      while((call Usci.getStat() & UCBBUSY)) {
+      while ((call Usci.getStat() & UCBBUSY)) {
 	if (i >= TIMEOUT) {
 	  m_tx_len = 0;
 	  signal I2CPacket.writeDone[client](FAIL,m_tx_addr,m_tx_len,m_tx_buf);
@@ -311,7 +310,7 @@ implementation {
       length--;
     }
 
-    if(flags & I2C_STOP) {
+    if (flags & I2C_STOP) {
       call Usci.setTXStop();					/*Set the uart to generate a STOP*/
       i=0;
       while (call Usci.getStopBit()) {
@@ -333,10 +332,12 @@ implementation {
 
   default async event void I2CPacket.writeDone[uint8_t client] (error_t error, uint16_t addr, uint8_t length, uint8_t* data) { }
 
+  /*
+   * Interrupts currently not implemented.
+   */
   async event void Interrupts.interrupted (uint8_t iv) {
-    if ( !call ArbiterInfo.inUse()) {
+    if ( !call ArbiterInfo.inUse())
       return;
-    }
     return;
   }
 
