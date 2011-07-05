@@ -50,7 +50,8 @@ generic configuration Msp430UsciI2CB0C() {
     interface I2CPacket<TI2CBasicAddr>;
     interface Msp430UsciError;
   }
-} implementation {
+}
+implementation {
   enum {
     CLIENT_ID = unique(MSP430_USCI_B0_RESOURCE),
   };

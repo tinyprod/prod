@@ -19,6 +19,10 @@ Code Composer Studio distribution:
      msp430x47x3 msp430x47x4 msp430x241x msp430x24x msp430x24x1 msp430x26x
      msp430x471x6 msp430x471x7 msp430x47x3 msp430x47x4
 
+     The interrupt structure on these chips is significantly more complicated
+     than on the x5 chips.  The various vectors are shared and don't really
+     make a whole lot of sense.   The x5 is significantly cleaner.
+
  __MSP430_HAS_USCI_A0__, __MSP430_HAS_USCI_B0__ -- third generation USCI
    implementation on chips:
      cc430x513x cc430x612x cc430x613x msp430x54x msp430x54xA msp430x551x

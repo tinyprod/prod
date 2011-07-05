@@ -51,7 +51,8 @@ configuration Msp430UsciI2CB0P {
     interface HplMsp430GeneralIO as SDA;
     interface HplMsp430GeneralIO as SCL;
  }
-} implementation {
+}
+implementation {
 
   components Msp430UsciB0P as UsciC;
 

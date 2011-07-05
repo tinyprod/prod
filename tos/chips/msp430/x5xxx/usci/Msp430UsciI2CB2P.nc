@@ -1,7 +1,7 @@
 /* DO NOT MODIFY
- * This file cloned from Msp430UsciSpiB0C.nc for B2 */
-/*
- * Copyright (c) 2011 João Gonçalves
+ * This file cloned from Msp430UsciI2CB0P.nc for B2 */
+/**
+ * Copyright (c) 2011 Redslate Ltd.
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
@@ -37,41 +37,36 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "msp430usci.h"
-
-/**
- * Generic configuration for a client that shares USCI_B2 in SPI mode.
- *
- * Connected the SPI pins to HplMsp430GeneralIOC
- * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+/*
+ * @author Derek Baker <derek@red-slate.com>
+ *   tweak SPI into I2C.
  */
 
-generic configuration Msp430UsciSpiB2C() {
+configuration Msp430UsciI2CB2P {
   provides {
-    interface Resource;
-    interface SpiPacket;
-    interface SpiByte;
+    interface I2CPacket<TI2CBasicAddr>[ uint8_t client ];
     interface Msp430UsciError;
+    interface ResourceConfigure[ uint8_t client ];
   }
+  uses {
+    interface Msp430UsciConfigure[ uint8_t client ];
+    interface HplMsp430GeneralIO as SDA;
+    interface HplMsp430GeneralIO as SCL;
+ }
 }
 implementation {
-  enum {
-    CLIENT_ID = unique(MSP430_USCI_B2_RESOURCE),
-  };
 
   components Msp430UsciB2P as UsciC;
-  Resource = UsciC.Resource[CLIENT_ID];
 
-  components Msp430UsciSpiB2P as SpiC;
-  SpiPacket = SpiC.SpiPacket[CLIENT_ID];
-  SpiByte = SpiC.SpiByte;
-  Msp430UsciError = SpiC.Msp430UsciError;
+  components new Msp430UsciI2CP() as I2CC;
+  I2CC.Usci -> UsciC;
+  I2CC.Interrupts -> UsciC.Interrupts[MSP430_USCI_I2C];
+  I2CC.ArbiterInfo -> UsciC;
 
-  UsciC.ResourceConfigure[CLIENT_ID] -> SpiC.ResourceConfigure[CLIENT_ID];
-
-  components HplMsp430GeneralIOC as GIO;
-
-  SpiC.SIMO -> GIO.UCB2SIMO;
-  SpiC.SOMI -> GIO.UCB2SOMI;
-  SpiC.CLK -> GIO.UCB2CLK;
+  Msp430UsciConfigure = I2CC;
+  ResourceConfigure = I2CC;
+  I2CPacket = I2CC;
+  Msp430UsciError = I2CC;
+  SDA = I2CC.SDA;
+  SCL = I2CC.SCL;
 }
