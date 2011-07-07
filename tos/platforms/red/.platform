@@ -8,6 +8,7 @@ for (split(/\n/, <<'EOText'
   %P/hardware/pins
   %P/hardware/leds
   %P/hardware/usci
+  %P/hardware/onewire			
   %P/hardware/radio
   %P/hardware/clock
   %P/hardware/IPV6/Identity
@@ -24,6 +25,12 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/pmm
   %T/chips/msp430/adc12
   %T/chips/msp430/sensors
+  %T/chips/msp430/wdt
+  %T/chips/msp430/rtc
+  %T/chips/msp430/flash/settings
+  %T/chips/msp430/flash/driver
+  %T/chips/msp430/flash/constants
+  %T/chips/msp430/crc16
 
   %T/chips/msp430/rf1a
   %T/chips/msp430/rf1a/interfaces
