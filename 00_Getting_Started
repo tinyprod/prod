@@ -275,13 +275,13 @@ redacted)...
 
     the first line (50 chars or less) is used as the short message.   This
     message is displayed in one line logs and other places.  Make it
-    meaningful.
+    meaningful and concise if possible.
 
-    The rest of the commit message should provide more detailed information
-    about what the commit does.  The GIT project itself requires motivation
-    as well as contrasting the new behaviour to old behaviour.  Why was this
-    change necessary.  Its not a bad habit to get into when it makes sense
-    to do so.
+    Follow the first line by a blank line then a more detailed message which
+    should provide more detailed information about what the commit does.  The
+    GIT project itself requires motivation as well as contrasting the new
+    behaviour to old behaviour.  Why was this change necessary?  Its not a
+    bad habit to get into when it makes sense to do so.
 
   o Use the imperative present tense when writing commit messages.
 
