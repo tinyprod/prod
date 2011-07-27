@@ -67,8 +67,15 @@ implementation{
   uint16_t pos;
   
   msp430adc12_channel_config_t adcconfig = {
+
+    // inch: INPUT_CHANNEL_A7,
     inch: TEMPERATURE_DIODE_CHANNEL,
     sref: REFERENCE_AVcc_AVss,
+
+    /* For battery readings */
+    // inch: SUPPLY_VOLTAGE_HALF_CHANNEL,
+    // sref: REFERENCE_VREFplus_AVss,
+
     ref2_5v: REFVOLT_LEVEL_1_5,
     adc12ssel: SHT_SOURCE_ACLK,
     adc12div: SHT_CLOCK_DIV_1,
@@ -78,24 +85,22 @@ implementation{
   };
 
   void showerror(){
-  	call Leds.led0On();
+    call Leds.led0On();
   }
 
   void configureSingle(){
     error_t e;
     printfz1("configuring single\n");
     e = call adc.configureSingle(&adcconfig);
-    if(e != SUCCESS)
-      showerror();
+    if(e != SUCCESS) showerror();
     printfz1("error %d\n", e);
   }
   
   void configureMultiple(){
     error_t e;
     printfz1("configuring multiple\n");
-    e = call adc.configureMultiple(&adcconfig, adb, FADSAMPLES, 3); 
-    if(e != SUCCESS)
-      showerror();
+    e = call adc.configureMultiple(&adcconfig, adb, FADSAMPLES, 20); 
+    if(e != SUCCESS) showerror();
     printfz1("error %d\n", e);
   }
   
@@ -116,7 +121,7 @@ implementation{
   
   event void Boot.booted(){
     printfz1_init();
-    printfz1("booting\n");
+    printfz1("Booting\n");
     call Resource.request();
   }
 
@@ -145,7 +150,7 @@ implementation{
   }
 
   async event error_t adc.singleDataReady(uint16_t data){
-   //printfz1("sample: %d\n", data);
+    // printfz1("sample: %d\n", data);
     return SUCCESS;
   }   
   
