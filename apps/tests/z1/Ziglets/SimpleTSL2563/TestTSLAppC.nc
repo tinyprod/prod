@@ -43,7 +43,7 @@
 
 configuration TestTSLAppC {}
 implementation {
-  components MainC, TestTSLAppC as App, LedsC;
+  components MainC, TestTSLC as App, LedsC;
   App.Leds -> LedsC;
   App.Boot -> MainC.Boot;
   
