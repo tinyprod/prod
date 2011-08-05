@@ -1,5 +1,19 @@
 
-Welcome to TinyProd (TinyOS Production)
+============================================================================
+
+TinyProd
+   tp-freeforall/prod
+
+msp430-int:     msp430 integration
+msp430-int-pu:  msp430 integration (proposed updates)
+
+msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
+
+If in doubt, branch off from msp430-int-pu.
+
+============================================================================
+
+Welcome to TinyProd
 
 * About TinyProd:
 
@@ -50,8 +64,11 @@ family) its primary focus is on the newer processors which requires the newer
 toolchain.   The intent is that all processors (original, x1 as well as the newer
 x2 and x5 families) should be tested with the newer toolchain.
 
-An interium installation tarball can be found at
-http://tinyprod.net/cire/msp430-20110612.tgz.   It should be installed in root (/).
+An interium tarball of an installed toolchain can be found at
+http://tinyprod.net/downloads/msp430-20110716.tgz.   It should be installed in root (/).
+Additional packages (libmpc-dev libmpc2) need to be installed as they are needed by
+the toolchain to function correctly.
+
 Debian packages are being built for Ubuntu Oneiric (11.10).
 
 Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
@@ -110,7 +127,8 @@ msp430-int-pu: proposed updates to msp430-int (no msp430-int-next).
 
 swreset: potential msp430 swreset implementation.
 
-motenet-rel: replacement for the serialforwarder.
+motenet-rel: replacement for the serialforwarder.   Adds AF_AM sockets and
+  a socket interface to the serial stack.
 
 svn-vhsb: remove bad z1 commit from svn trunk
 
@@ -156,7 +174,7 @@ svn t2 mainline ---|
 
 * Branches:
 
-svn-upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
+svn/upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
 
 svn-vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
 	trunk.  This branch tracks master but has the superfluous Z1 commit

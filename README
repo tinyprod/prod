@@ -1,9 +1,1 @@
-TinyProd
-   tp-freeforall/prod
-
-msp430-int:     msp430 integration
-msp430-int-pu:  msp430 integration (proposed updates)
-
-msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
-
-If in doubt, branch off from msp430-int-pu.
+01_Repo_Notes
