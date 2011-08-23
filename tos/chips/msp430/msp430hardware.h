@@ -492,10 +492,36 @@ void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts);
  * though.
  */
 
+  /*
+   * Entry for atomic.   (__nesc_atomic_start())
+   *
+   * Basically, test for GIE (remember for later), and then disable interrupts.
+   *
+   * old versions of the toolchain needed a nop following the dint to make sure
+   * that the dint took.  Otherwise, there was a race condition where the
+   * instruction following the dint could be executed before interrupts got
+   * disabled.
+   *
+   * Toolchains starting with uniarch (LTS_20110716, mspgcc 4.5.3+) automatically
+   * generate the nop when using the _dint intrinsic (invoked by dint()) and the
+   * extra nop is no longer needed.   The precence of the macro __MSPGCC__ is assumed
+   * to indicate a newer toolchain.
+   *
+   * Why do we care?   Well atomic is used all over the place and the extra nop
+   * burns two extra bytes of ROM.   We don't have that much to throw away so
+   * we deal with it.
+   */
+
 __nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe() {
   __nesc_atomic_t result = (READ_SR & SR_GIE);
+
   dint();
+
+#ifndef __MSPGCC__
+  /* see above */
   nop();
+#endif
+
   asm volatile("" : : : "memory"); /* ensure atomic section effect visibility */
   return result;
 }
