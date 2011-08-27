@@ -20,8 +20,15 @@ for (split(/\n/, <<'EOText'
   %T/chips/msp430/pins
   %T/chips/msp430/timer
 
+  %T/chips/msp430/pmm/pmm-msp430
   %T/chips/msp430/pmm
   %T/chips/msp430/adc12
+
+  %T/chips/msp430/flash/settings
+  %T/chips/msp430/flash/driver
+  %T/chips/msp430/flash/constants
+  %T/chips/msp430/crc16
+  %T/chips/msp430/wdt
 
   %T/platforms/MoteISTx5/chips/cc2420
   %T/chips/cc2420
@@ -43,7 +50,7 @@ for (split(/\n/, <<'EOText'
   %T/lib/power
 
   %T/lib/util/keyvaluerecord
-  %T/lib/serialprintf
+  %T/lib/printf
 
 EOText
 )) {
@@ -55,7 +62,7 @@ EOText
 
 @opts = qw(
   -gcc=msp430-gcc
-  -mmcu=msp430x5438
+  -mmcu=msp430f5438a
   -fnesc-target=msp430
   -fnesc-scheduler=TinySchedulerC,TinySchedulerC.TaskBasic,TaskBasic,TaskBasic,runTask,postTask
 );
