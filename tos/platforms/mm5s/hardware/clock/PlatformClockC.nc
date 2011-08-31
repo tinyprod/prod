@@ -46,7 +46,4 @@ configuration PlatformClockC {
 } implementation {
   components PlatformClockP;
   Init = PlatformClockP;
-
-//  components Msp430XV2ClockControlP;
-  PlatformClockP.Msp430XV2ClockControl -> Msp430XV2ClockC;
 }
