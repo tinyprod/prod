@@ -51,6 +51,7 @@ implementation {
 #if defined(USE_X1) || defined(USE_X2)
     call Port.setModeUart((msp430_uart_union_config_t *) &uart_config);
 #else
+    P5SEL |= BIT7 | BIT6;
     call Port.configure(&uart_config, FALSE);
 #endif
     b = 0;
