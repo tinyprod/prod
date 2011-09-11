@@ -1,3 +1,38 @@
+/*
+ * Copyright (c) 2011 Johns Hopkins University. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holder nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * RPLOF0P.nc
+ * @ author JeongGil Ko (John) <jgko@cs.jhu.edu>
+ */
 
 #include "blip_printf.h"
 
@@ -92,7 +127,7 @@ implementation{
     uint8_t indexset;
     uint8_t min = 0, count = 0;
     uint16_t minDesired;
-    parent_t* parentNode;
+    parent_t* parentNode, *previousParent;
 
     parentNode = call ParentTable.get(min);
 
@@ -112,7 +147,9 @@ implementation{
     }
 
     //printf("Start Compare %d %d: %d %d %d \n", htons(prevParent), htons(parentNode->parentIP.s6_addr16[7]), minDesired, parentNode->etx_hop, parentNode->rank);
+
     parentNode = call ParentTable.get(desiredParent);
+
     if(htons(parentNode->parentIP.s6_addr16[7]) != 0){
       minMetric = parentNode->etx_hop + parentNode->rank*divideRank;
       //printf("Compare %d: %d %d with %d %d\n", htons(parentNode->parentIP.s6_addr16[7]), parentNode->etx_hop, parentNode->rank, minDesired, minMetric);
@@ -127,6 +164,7 @@ implementation{
 
       //if(parentNode->valid)
 	//printf("Compare %d: %d %d with %d %d\n", htons(parentNode->parentIP.s6_addr16[7]), parentNode->etx_hop, parentNode->rank, minDesired, indexset);
+
       if(parentNode->valid && parentNode->etx_hop >= 0 &&
 	 (parentNode->etx_hop + parentNode->rank*divideRank < minDesired) && parentNode->rank < nodeRank && parentNode->rank != INFINITE_RANK){
 	count ++;
@@ -134,7 +172,7 @@ implementation{
 	minDesired = parentNode->etx_hop + parentNode->rank*divideRank;
 	//printf("Compare %d %d \n", minDesired, parentNode->etx_hop/divideRank + parentNode->rank);
 	if(min == desiredParent){
-	  //printf("current parent Checking...\n")
+	  //printf("current parent Checking...\n");
 	  minMetric = minDesired;
 	}
       }else if(min == desiredParent){
@@ -152,7 +190,9 @@ implementation{
       return FAIL;
     }
 
-    if(minDesired*divideRank + STABILITY_BOUND >= minMetric*divideRank && minMetric != 0){
+    previousParent = call ParentTable.get(desiredParent);
+
+    if(minDesired*divideRank + STABILITY_BOUND >= minMetric*divideRank && minMetric != 0 && previousParent->valid){
       // if the min measurement (minDesired) is not significantly better than the previous parent's (minMetric), stay with what we have...
       //printf("SAFETYBOUND %d %d %d\n", minDesired*divideRank, STABILITY_BOUND, minMetric*divideRank);
       min = desiredParent;
@@ -171,11 +211,12 @@ implementation{
 
     if(prevParent != parentNode->parentIP.s6_addr16[7]){
       //printf(">> New Parent %d %x %lu \n", TOS_NODE_ID, htons(parentNode->parentIP.s6_addr16[7]), parentChanges++);
-      printf("#L %u 0\n", (uint8_t)htons(prevParent));
-      printf("#L %u 1 %d\n", (uint8_t)htons(parentNode->parentIP.s6_addr16[7]), TOS_NODE_ID);
+      //printf("#L %u 0\n", (uint8_t)htons(prevParent));
+      //printf("#L %u 1 %d\n", (uint8_t)htons(parentNode->parentIP.s6_addr16[7]), TOS_NODE_ID);
       newParent = TRUE;
       call RPLDAO.newParent();
     }
+
     prevParent = parentNode->parentIP.s6_addr16[7];
 
     return TRUE;
