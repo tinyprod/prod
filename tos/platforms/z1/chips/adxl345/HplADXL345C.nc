@@ -48,7 +48,6 @@ configuration HplADXL345C {
   provides interface GpioInterrupt as GpioInterrupt1;
   provides interface GpioInterrupt as GpioInterrupt2;
 }
-
 implementation {
   components HplMsp430GeneralIOC as GeneralIOC;
   components HplMsp430InterruptC as InterruptC;
