@@ -55,6 +55,7 @@ module RF212DriverLayerP
 		interface PacketField<uint8_t> as PacketRSSI;
 		interface PacketField<uint8_t> as PacketTimeSyncOffset;
 		interface PacketField<uint8_t> as PacketLinkQuality;
+		interface LinkPacketMetadata;
 	}
 
 	uses
@@ -632,6 +633,8 @@ implementation
 				call FastSpiByte.splitReadWrite(0);	// ED
 				crcValid = call FastSpiByte.splitRead() & RF212_RX_CRC_VALID;	// RX_STATUS
 			}
+			else
+				call FastSpiByte.splitRead(); // finish the SPI transfer
 		}
 
 		call SELN.set();
@@ -985,5 +988,12 @@ implementation
 	async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
 	{
 		getMeta(msg)->lqi = value;
+	}
+
+/*----------------- LinkPacketMetadata -----------------*/
+
+	async command bool LinkPacketMetadata.highChannelQuality(message_t* msg)
+	{
+		return call PacketLinkQuality.get(msg) > 200;
 	}
 }

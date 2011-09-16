@@ -291,6 +291,9 @@ module Dhcp6ClientP {
             m_state = DH6_REQUEST;
             if (m_unicast) 
               memcpy(&m_srv_addr, src, sizeof(struct sockaddr_in6));
+            // don't wait a long while before we send our request
+            if (!call Timer.isOneShot ())
+                call Timer.startOneShot(1024L);
           }
         }
       }
@@ -318,21 +321,23 @@ module Dhcp6ClientP {
           return;
 
         // see if there's an error code
-        status = findOption(ia + 1, ntohs(ia->len) - sizeof(struct dh6_ia), 13);
+        status = findOption(ia + 1, ntohs(ia->len) + sizeof(struct dh6_opt_header) - sizeof(struct dh6_ia), 13);
         if (status) {
           if (status->code != htons(0)) {
-            m_state = DH6_SOLICIT;
+            m_state = (m_state == DH6_RENEW) ? DH6_REQUEST : DH6_SOLICIT;
             call IPAddress.removeAddress();
+            call Timer.startOneShot (0); // attempt immediate recovery
             return;
           }
         }
 
         // otherwise, hopefully there's an address
-        addr_opt = findOption(ia + 1, ntohs(ia->len) - sizeof(struct dh6_ia), 5);
+        addr_opt = findOption(ia + 1, ntohs(ia->len) + sizeof(struct dh6_opt_header) - sizeof(struct dh6_ia), 5);
         if (addr_opt) {
-          struct dh6_iaaddr *addr = addr_opt;
           // got an address... save it and wait for it to expire
-          call IPAddress.setAddress(&addr->addr);
+          struct dh6_iaaddr *addr = addr_opt;
+          if (m_state != DH6_RENEW) // only set it if it changed
+            call IPAddress.setAddress(&addr->addr);
           t1 = ia->t1;
           t2 = ia->t2;
           m_time = 1;
