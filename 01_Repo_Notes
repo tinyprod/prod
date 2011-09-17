@@ -1,0 +1,199 @@
+
+============================================================================
+
+TinyProd
+   tp-freeforall/prod
+
+<current feature branch>
+msp430-int:     msp430 integration
+msp430-int-pu:  msp430 integration (proposed updates)
+
+msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
+
+If in doubt, branch off from msp430-int-pu.
+
+============================================================================
+
+Welcome to TinyProd
+
+* About TinyProd:
+
+TinyProd is a GIT based TinyOS repository that is immediately downstream from
+the main SVN based TinyOS repository that is maintained by the academic TinyOS
+community.
+
+TinyProd is intended to be a developer/production orientated repository.
+Some of the features include:
+
+  o organize git based TinyOS development.
+  o More vibrant, higher rate of change for the community.
+  o Encourage collaboration
+  o Optimize developer resources.  (Streamline the development process).
+    Developer centric rather than academic centric.
+  o Peer driven code review, norm rather than the exception.
+  o real issue and bug tracking
+  o tracking changes to TinyProd managed pieces of the source tree
+    and linking to appropriate tracking documents.
+  o stable mainline.
+  o Continuous release cycle.
+
+The intent is to keep the structure as simple as possible while allowing
+for reasonable levels of contribution.   We want a forum where developers
+can make their code easily accessible, mechanisms for real code review and
+feedback, and a reasonable level of stability in the releases.
+
+The assumption is that developer resources are scarce and should be optimized
+while still maintaining good development practices.
+
+If a developer takes the time to put a reasonable piece of code together, gets
+it reviewed, then they should have a place where it can live and contribute
+to the mainline.   The critical resource for getting development done is the
+developers time and effort.   We should be making their life easier and
+providing a mechanism for their code to become part of the whole.
+
+If you have something to contribute we will find a reasonable way to get it
+published and easy to find as part of the TinyOS community.
+
+
+* Msp430 Toolchain:
+
+The initial major feature of the TinyProd repository is the creation of a more
+complete TI Msp430 core.   This requires use of an updated TI msp430 toolchain.
+The new toolchain is being worked on by Peter Bigot and is in active development
+and needs to be verified.   While this repository supports old TI processors (x1
+family) its primary focus is on the newer processors which requires the newer
+toolchain.   The intent is that all processors (original, x1 as well as the newer
+x2 and x5 families) should be tested with the newer toolchain.
+
+The base msp430 toolchain (4.5.3 and later) is available for Ubuntu Oneric
+(11.10).  And an complete interium msp430 toolchain is available from
+http://tinyprod.net/debian-dev.   Just follow the instructions in the README.
+
+Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
+also been done for basic functionality (ie. does it compile).   The old tool
+chain is available as *legacy* in the same tool repo mentioned above.
+
+
+* Repo Structure
+
+github.com/tinyprod/prod: main TinyProd repo.
+  The VeryBlessed repo.  Holds the stable mainline (master).   Releases
+  come off this repo and the master branch.
+
+github.com/tp-freeforall/prod: working fork.
+  Blessed repo.  Holds consolidated integration branches and
+  proposed updates.
+
+github.com/<github_user>/prod: user's tinyprod working fork.
+  branched off tp-freeforall/prod.   working branches
+  should be branched off the tp-freeforall/prod(branch)
+  that the user is working on.  (ie. msp430-int-pu)
+
+The general form for a repository/branch is: <github_context>/<repo>(branch)
+ie. gh:tp-freeforall/prod(msp430-int-pu) is the msp430-int-pu branch in the
+tp-freeforall/prod repository.
+
+Local repositories are referenced using local(branch).   local(remote/branch).
+
+
+Also see 00_Getting_Started and 00a_Contribution_Process for more details on
+getting started and using git to contribute.
+
+
+
+main persistent branches:
+
+svn/upstream: svn tinyos tracking branch.
+svn/upstream-next: the upstream of the repo is being moved.   This is the new
+proposed upstream position.
+
+master: the main tinyprod release line.
+next:   integration branch for next release on master.
+pu:     integration branch for proposed updates.
+
+<feature>-int: integration branch for feature
+<feature>-int-pu: proposed update.
+<feature>-int-next: accepted updates.
+
+(some of these branches may be skipped depending on need).
+
+
+
+
+Other current branches:
+
+msp430-int: msp430 integration (msp430 core, x1, x2, x5) feature branch
+
+msp430-int-pu: proposed updates to msp430-int (no msp430-int-next).
+
+swreset: potential msp430 swreset implementation.
+
+motenet-rel: replacement for the serialforwarder.   Adds AF_AM sockets and
+  a socket interface to the serial stack.
+
+tinyprod-base: base changes forming the base of the tinyprod repo.  Minimal
+changes from the tinyos trunk.  (originally vhsb removed the msp430X commit
+but this has now been reconciled).
+
+(note: tinyprod's master branch will eventually consist of a merge between
+msp430-int, svn-vhsb, swreset, and motenet-rel).
+
+
+
+user branches are working branches in user working forks.  ie.
+
+    local(msp430-int-pu)	refers to the msp430-int-pu branch in a
+				user's local working repository.
+
+    gh:roberthunter/prod(rh)	refers to the branch rh (a developer branch)
+				in the developer repository at github.
+
+
+
+svn t2 mainline ---|
+		   | hourly
+		   |
+		   v         (git)
+------------------ hinrg t2 -----------------------
+       	     | 	       	     | 	       	   |
+	     |		     |		   |
+     prod   svn/upstream ---------------------------------
+             |			|
+             |			|
+              - tinyprod-base -------\
+       	       			      \
+		swreset	    ------------------ master
+		       		      /
+		motenet-rel ---------/
+
+
+
+                tinyprod-base -------------------
+                      |		|	     |
+	  	       --------------------------msp430-int ----------------
+				|		    |           |
+				---- msp430-int-pu ------------------
+
+
+* Branches:
+
+svn/upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
+svn/upstream-next: proposed next version of an upstream snapshot.
+
+tinyprod-base: Minimal base changes for the tinyprod repository.  Current
+	t2 trunk includes the revised Z1 commits which kills the need for
+	the vhsb (remove extraneous Z1 msp430X commits).   Tinyprod-base
+	is the replacement.
+
+msp430-int: main integration branch for the msp430 core.   It represents the
+	current released version of the branch.
+
+	includes all three major families (x1, x2, and x5).  Major cpu dependancies
+	held in tos/chips/msp430/{x1xxx,x2xxx,x5xxx}
+
+msp430-int-pu: new proposed changes to msp430-int are first integrated here.
+	When verified these get merged into msp430-int.
+
+
+
+Please see 00a_Contribution_Process for typical workflows.
