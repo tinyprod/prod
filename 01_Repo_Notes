@@ -12,6 +12,24 @@ msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
 
 If in doubt, branch off from msp430-int-pu.
 
+Status: 2011-09-21
+
+msp430-int-pu merged into msp430-int, includes base x5  (prior to tinyprod-base)
+tinyprod-base: new branch replaces vhsb (nuke old z1 code)
+  tinyprod-base now based on the tinyos-main trunk (2011-09-21) mainline.
+msp430-int-next, vhsb nuked, based on tinyprod-base
+msp430-int-pu-next, new int-pu based on tinyprod-base.
+
+msp430-int <- msp430-int-pu
+msp430-int-pu temporarily reserved (to give folks time to adapt).
+
+upstream-next: new upstream
+tinyprod-base: based off upstream-next.
+msp430-int-next: off tinyprod-base
+msp430-int-pu-next: off msp430-int-next  (at this point should be pristine).
+msp430-int-svn: continues along.   (commits that should come into the
+				    tinyos-main mainline)
+
 ============================================================================
 
 Welcome to TinyProd
@@ -66,12 +84,12 @@ toolchain.   The intent is that all processors (original, x1 as well as the newe
 x2 and x5 families) should be tested with the newer toolchain.
 
 The base msp430 toolchain (4.5.3 and later) is available for Ubuntu Oneric
-(11.10).  And an complete interium msp430 toolchain is available from
+(11.10).  And a complete interium msp430 toolchain is available from
 http://tinyprod.net/debian-dev.   Just follow the instructions in the README.
 
 Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
 also been done for basic functionality (ie. does it compile).   The old tool
-chain is available as *legacy* in the same tool repo mentioned above.
+chain (3.2.3, tinyos) is available as *legacy* in the same tool repo mentioned above.
 
 
 * Repo Structure
