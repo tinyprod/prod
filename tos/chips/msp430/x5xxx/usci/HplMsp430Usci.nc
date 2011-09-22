@@ -250,7 +250,10 @@ interface HplMsp430Usci {
    * This register is present on all USCI modules.
    *
    * ICTL is the 16 bit concatenation of IE (interrupt enable) and IFG
-   * (interrupt flag).
+   * (interrupt flag).   WARNING: Using this to set or clear interrupt
+   * enables and/or IFGs is not recommended.    There are potential
+   * h/w race conditions.   It is much better to use the byte accessors
+   * get/setIe, get/setIfg.
    */
   async command uint16_t setIctl(uint16_t v);
 
