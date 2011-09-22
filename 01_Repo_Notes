@@ -4,12 +4,31 @@
 TinyProd
    tp-freeforall/prod
 
+<current feature branch>
 msp430-int:     msp430 integration
 msp430-int-pu:  msp430 integration (proposed updates)
 
 msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
 
 If in doubt, branch off from msp430-int-pu.
+
+Status: 2011-09-21
+
+msp430-int-pu merged into msp430-int, includes base x5  (prior to tinyprod-base)
+tinyprod-base: new branch replaces vhsb (nuke old z1 code)
+  tinyprod-base now based on the tinyos-main trunk (2011-09-21) mainline.
+msp430-int-next, vhsb nuked, based on tinyprod-base
+msp430-int-pu-next, new int-pu based on tinyprod-base.
+
+msp430-int <- msp430-int-pu
+msp430-int-pu temporarily reserved (to give folks time to adapt).
+
+upstream-next: new upstream
+tinyprod-base: based off upstream-next.
+msp430-int-next: off tinyprod-base
+msp430-int-pu-next: off msp430-int-next  (at this point should be pristine).
+msp430-int-svn: continues along.   (commits that should come into the
+				    tinyos-main mainline)
 
 ============================================================================
 
@@ -21,8 +40,8 @@ TinyProd is a GIT based TinyOS repository that is immediately downstream from
 the main SVN based TinyOS repository that is maintained by the academic TinyOS
 community.
 
-TinyProd is intended to be a more vibrant, developer/production orientated
-repository.  Some of the features include:
+TinyProd is intended to be a developer/production orientated repository.
+Some of the features include:
 
   o organize git based TinyOS development.
   o More vibrant, higher rate of change for the community.
@@ -64,15 +83,13 @@ family) its primary focus is on the newer processors which requires the newer
 toolchain.   The intent is that all processors (original, x1 as well as the newer
 x2 and x5 families) should be tested with the newer toolchain.
 
-An interium tarball of an installed toolchain can be found at
-http://tinyprod.net/downloads/msp430-20110716.tgz.   It should be installed in root (/).
-Additional packages (libmpc-dev libmpc2) need to be installed as they are needed by
-the toolchain to function correctly.
-
-Debian packages are being built for Ubuntu Oneiric (11.10).
+The base msp430 toolchain (4.5.3 and later) is available for Ubuntu Oneric
+(11.10).  And a complete interium msp430 toolchain is available from
+http://tinyprod.net/debian-dev.   Just follow the instructions in the README.
 
 Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
-also been done for basic functionality (ie. does it compile).
+also been done for basic functionality (ie. does it compile).   The old tool
+chain (3.2.3, tinyos) is available as *legacy* in the same tool repo mentioned above.
 
 
 * Repo Structure
@@ -88,10 +105,10 @@ github.com/tp-freeforall/prod: working fork.
 github.com/<github_user>/prod: user's tinyprod working fork.
   branched off tp-freeforall/prod.   working branches
   should be branched off the tp-freeforall/prod(branch)
-  that the user is working on.
+  that the user is working on.  (ie. msp430-int-pu)
 
 The general form for a repository/branch is: <github_context>/<repo>(branch)
-ie. tp-freeforall/prod(msp430-int-pu) is the msp430-int-pu branch in the
+ie. gh:tp-freeforall/prod(msp430-int-pu) is the msp430-int-pu branch in the
 tp-freeforall/prod repository.
 
 Local repositories are referenced using local(branch).   local(remote/branch).
@@ -105,6 +122,8 @@ getting started and using git to contribute.
 main persistent branches:
 
 svn/upstream: svn tinyos tracking branch.
+svn/upstream-next: the upstream of the repo is being moved.   This is the new
+proposed upstream position.
 
 master: the main tinyprod release line.
 next:   integration branch for next release on master.
@@ -130,7 +149,9 @@ swreset: potential msp430 swreset implementation.
 motenet-rel: replacement for the serialforwarder.   Adds AF_AM sockets and
   a socket interface to the serial stack.
 
-svn-vhsb: remove bad z1 commit from svn trunk
+tinyprod-base: base changes forming the base of the tinyprod repo.  Minimal
+changes from the tinyos trunk.  (originally vhsb removed the msp430X commit
+but this has now been reconciled).
 
 (note: tinyprod's master branch will eventually consist of a merge between
 msp430-int, svn-vhsb, swreset, and motenet-rel).
@@ -139,11 +160,11 @@ msp430-int, svn-vhsb, swreset, and motenet-rel).
 
 user branches are working branches in user working forks.  ie.
 
-    local(msp430-int-pu)	refers to the msp430-int-pu branch in the
-				local working repository.
+    local(msp430-int-pu)	refers to the msp430-int-pu branch in a
+				user's local working repository.
 
-    github:roberthunter/prod(rh) refers to the branch rh (a developer branch)
-				 in the developer repository at github.
+    gh:roberthunter/prod(rh)	refers to the branch rh (a developer branch)
+				in the developer repository at github.
 
 
 
@@ -157,7 +178,7 @@ svn t2 mainline ---|
      prod   svn/upstream ---------------------------------
              |			|
              |			|
-              - svn-vhsb ------------\
+              - tinyprod-base -------\
        	       			      \
 		swreset	    ------------------ master
 		       		      /
@@ -165,7 +186,7 @@ svn t2 mainline ---|
 
 
 
-                svn-vhsb ---------------------
+                tinyprod-base -------------------
                       |		|	     |
 	  	       --------------------------msp430-int ----------------
 				|		    |           |
@@ -175,12 +196,12 @@ svn t2 mainline ---|
 * Branches:
 
 svn/upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
+svn/upstream-next: proposed next version of an upstream snapshot.
 
-svn-vhsb: (vogon hyper-spatial bypass)  Bypass the Z1 commits on the main
-	trunk.  This branch tracks master but has the superfluous Z1 commit
-	removed as it conflicts with the collapsed msp430 x2xxx work done in
-	mm_core.  This collapsage forms the majority of the work of merging
-	the trees and there isn't much sense in reinventing the wheel.
+tinyprod-base: Minimal base changes for the tinyprod repository.  Current
+	t2 trunk includes the revised Z1 commits which kills the need for
+	the vhsb (remove extraneous Z1 msp430X commits).   Tinyprod-base
+	is the replacement.
 
 msp430-int: main integration branch for the msp430 core.   It represents the
 	current released version of the branch.
