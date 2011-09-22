@@ -20,12 +20,14 @@ done using the following:
 			changes, 26xx processors.   Does not properly support
 			x5 chips.
   mspgcc4.4.5(20110312) Initial mspgcc4 supports x5 chips.  experimental.
-  mspgcc4.5.2 (mspgcc)  Uniarch varient supports all chips.  experimental.
+  mspgcc4.5.2 (mspgcc)  Uniarch variant supports all chips.  experimental.
   	(20110612)	slated to become new main toolchain.
 
+  mspgcc4.5.3 (LTS 20110716) long term support of uniarch (pre-20bit)
+  mspgcc4.5.3 (20110813) later version of LTS20110716 with patches through 0813.
 
-It is recommended that all verification work be done using the 20110612 toolchain.
-The sooner we get that toolchain squared away the better.
+It is recommended that all verification work be done using the latest toolchain
+available.  The sooner we get that toolchain squared away the better.
 
 
 Families:
@@ -50,8 +52,10 @@ Other notable changes:
   ie. Msp430Uart0 -> Msp430UartA0.  Better matches what will come in with
   the x5 code where there are lots of ports.
 
-* Default clocks 1611 (x1) 4 MiHz, 2617/2618 (x2) 8 MiHz,
-  5137/5438 (x5) 16 MiHz
+* The main cpu clock for the 3 families is defaulted to 4 MiHz.  This is done
+  for a number of reasons.  1) low power and 2) the 5438a starts off in low
+  power mode and doesn't support faster than 8 MHz (note decimal MHz not
+  binary).
 
 * use common clock module for x1 and x2.  msp430/clock_bcs.  Handles
   basic_clock and bc2.

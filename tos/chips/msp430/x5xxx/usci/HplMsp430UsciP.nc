@@ -170,7 +170,7 @@ implementation {
       return;
     }
     call Usci.enterResetMode_();
-    UCmxCTLW0 = config->ctlw0 + UCSWRST;
+    UCmxCTLW0 = config->ctlw0 | UCSWRST; /* use or rather than +, safer */
     UCmxBRW = config->brw;
     UCmxMCTL = config->mctl;
     if (! leave_in_reset) {

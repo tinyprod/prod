@@ -74,7 +74,7 @@ implementation {
     0,                                       // ACTIVE
     SR_CPUOFF,                               // LPM0
     SR_SCG0+SR_CPUOFF,                       // LPM1
-    SR_SCG1+SR_CPUOFF,                       // LPM2
+    SR_SCG1+SR_SCG0+SR_CPUOFF,               // LPM2
     SR_SCG1+SR_SCG0+SR_CPUOFF,               // LPM3
     SR_SCG1+SR_SCG0+SR_OSCOFF+SR_CPUOFF,     // LPM4
   };
