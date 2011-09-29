@@ -43,7 +43,6 @@ module Z1SerialP {
   uses interface Resource;
 }
 implementation {
-  
   const msp430_uart_union_config_t msp430_uart_z1_config = { {
     ubr    : UBR_8MIHZ_115200,
     umctl  : UMCTL_8MIHZ_115200,

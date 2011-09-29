@@ -1,7 +1,6 @@
 /*
+ * Copyright (c) 2011 Zolertia Labs
  * Copyright (c) 2009 DEXMA SENSORS SL
- * All rights reserved.
- *
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
@@ -35,7 +34,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
+/**
  * HalSensirionSht11C is an advanced access component for the
  * Sensirion SHT11 model humidity and temperature sensor, available on
  * the telosb platform. This component provides the SensirionSht11
@@ -45,6 +44,7 @@
  * @author Gilman Tolle <gtolle@archrock.com>
  * @author: Xavier Orduna <xorduna@dexmatech.com>
  * @author: Jordi Soucheiron <jsoucheiron@dexmatech.com>
+ * @author: Antonio Linan <alinan@zolertia.com>
  */
 
 configuration HalSensirionSht11C {

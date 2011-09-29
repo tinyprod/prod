@@ -1,10 +1,6 @@
 /*
  * Copyright (c) 2011 Zolertia Labs
- * All rights reserved.
- *
  * Copyright (c) 2009 DEXMA SENSORS SL
- * All rights reserved.
- *
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
@@ -91,4 +87,3 @@ implementation {
     signal SplitControl.stopDone( SUCCESS );
   }
 }
-

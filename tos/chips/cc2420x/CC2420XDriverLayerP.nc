@@ -43,6 +43,7 @@ module CC2420XDriverLayerP
 		interface PacketField<uint8_t> as PacketRSSI;
 		interface PacketField<uint8_t> as PacketTimeSyncOffset;
 		interface PacketField<uint8_t> as PacketLinkQuality;
+		interface LinkPacketMetadata;
 	}
 
 	uses
@@ -690,7 +691,8 @@ implementation
 
 		if( timesync == 0 ) {
 			// no timesync: write the entire payload to the fifo
-			spi_atomic writeTxFifo(data+header, length - 1);
+			if(length>0)
+				spi_atomic writeTxFifo(data+header, length - 1);
 			state = STATE_BUSY_TX_2_RX_ON;
 		} else {
 			// timesync required: write the payload before the timesync bytes to the fifo
@@ -1305,5 +1307,12 @@ implementation
 	async command void PacketLinkQuality.set(message_t* msg, uint8_t value)
 	{
 		getMeta(msg)->lqi = value;
+	}
+
+/*----------------- LinkPacketMetadata -----------------*/
+
+	async command bool LinkPacketMetadata.highChannelQuality(message_t* msg)
+	{
+		return call PacketLinkQuality.get(msg) > 105;
 	}
 }

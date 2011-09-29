@@ -43,7 +43,6 @@
  */
 
 #include "ADXL345.h"
-#include "PrintfUART.h"
 
 module ADXL345P {
    provides {
@@ -107,9 +106,9 @@ implementation {
   task void sendEvent2();
   
   task void started(){
-    if(call TimeoutAlarm.isRunning()) call TimeoutAlarm.stop();
-    lock = FALSE;
-    signal SplitControl.startDone(error_return);
+	if(call TimeoutAlarm.isRunning()) call TimeoutAlarm.stop();
+	lock = FALSE;
+  	signal SplitControl.startDone(error_return);
   }
   
   task void stopped(){
@@ -217,7 +216,7 @@ implementation {
   }
 
   task void setReadAddressDone() {
-        lock = FALSE;
+    lock = FALSE;
 	signal ADXL345Control.setReadAddressDone(SUCCESS);
   }
 
@@ -231,7 +230,7 @@ implementation {
 	if (e==SUCCESS) {
 	  call TimeoutAlarm.startOneShot(ADXL345_START_TIMEOUT);
 	  return SUCCESS;
-	} 
+	}
 	lock = FALSE;
 	return e;
   }
@@ -253,16 +252,15 @@ implementation {
     if(lock) return EBUSY;
     lock = TRUE;
     if( address >= 0x01 && address <= 0x1C) return EINVAL;		//reserved, do not access
-    if( address >= 0x3A) return EINVAL; 				//to big
+    if( address >= 0x3A) return EINVAL; 				        //too big
     readAddress = address;
-    // lock=FALSE;  // Commented out, as the setReadAddressDone handles this
-    post setReadAddressDone();  // Added
+    post setReadAddressDone();
     return SUCCESS;
   }
   
   command error_t ADXL345Control.setRange(uint8_t range, uint8_t resolution){
 	error_t e;
-	if(lock) return EBUSY;       
+	if(lock) return EBUSY;
 	lock = TRUE;
 	adxlcmd = ADXLCMD_SET_RANGE;
   	e=call Resource.request();
@@ -380,7 +378,7 @@ implementation {
 	adxlcmd = ADXLCMD_READ_BW_RATE;
 	e = call Resource.request();
 	if (e==SUCCESS) {
-	  return SUCCESS;
+      return SUCCESS;
 	}
 	lock = FALSE;
 	return e;
@@ -432,7 +430,7 @@ implementation {
 	adxlcmd = ADXLCMD_READ_REGISTER;
 	e = call Resource.request();
 	if (e==SUCCESS) {
-	  return SUCCESS;
+		return SUCCESS;
 	}
 	lock = FALSE;
 	return e;
@@ -444,12 +442,12 @@ implementation {
 	lock = TRUE;
 	adxlcmd = ADXLCMD_READ_X;
 	if ((power_ctl & ADXL345_MEASURE_MODE) == 0) {
-	  lock=FALSE;
-	  return FAIL;
+		lock=FALSE;
+		return FAIL;
 	}
 	e = call Resource.request();
 	if (e==SUCCESS) {
-	  return SUCCESS;
+		return SUCCESS;
 	}
 	lock = FALSE;
 	return e;
@@ -461,11 +459,13 @@ implementation {
 	lock = TRUE;
 	adxlcmd = ADXLCMD_READ_Y;
 	if ((power_ctl & ADXL345_MEASURE_MODE) == 0) {
-	  lock=FALSE;
-	  return FAIL;
+		lock=FALSE;
+		return FAIL;
 	}
 	e = call Resource.request();
-	if (e==SUCCESS) return SUCCESS;
+	if (e==SUCCESS) {
+		return SUCCESS;
+	}
 	lock = FALSE;
 	return e;
   }
@@ -533,7 +533,7 @@ implementation {
 	adxlcmd = ADXLCMD_READ_WINDOW;
 	e = call Resource.request();
 	if (e==SUCCESS) {
-          return SUCCESS;
+      return SUCCESS;
 	}
 	lock = FALSE;
 	return e;
@@ -542,6 +542,7 @@ implementation {
   event void Resource.granted(){
 	error_t e;
   	switch(adxlcmd){
+
 		case ADXLCMD_READ_XYZ: //NOTE moved to speedup
 		   	pointer = ADXL345_DATAX0;
 		   	e = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 1, &pointer); 
@@ -575,7 +576,6 @@ implementation {
 			e = call I2CBasicAddr.write((I2C_START | I2C_STOP), ADXL345_ADDRESS, 19, databuf);
 			if (e!= SUCCESS) {
 			  error_return = e;
-                          printfUART("dead\n");
 			  post started();
 			}
 			break;
@@ -768,6 +768,7 @@ implementation {
 				post windowDone();
 			}
 			break;
+
   	}
   }
   
@@ -792,10 +793,10 @@ implementation {
 		  tmp = tmp + data[0];
 		}
 		switch(adxlcmd){
-                        case ADXLCMD_READ_XYZ: //NOTE moved to speedup
+            case ADXLCMD_READ_XYZ: //NOTE moved to speedup
 				xyz_axis.x_axis = (data[1] << 8) + data[0];
 				xyz_axis.y_axis = (data[3] << 8) + data[2];
-                                xyz_axis.z_axis = (data[5] << 8) + data[4];
+                xyz_axis.z_axis = (data[5] << 8) + data[4];
 				post calculateXYZ();
 				break;
 			case ADXLCMD_READ_REGISTER:
@@ -854,7 +855,7 @@ implementation {
 	if(call Resource.isOwner()) {
 		error_return=error;
 		if(	adxlcmd != ADXLCMD_READ_XYZ //NOTE moved to speedup
-                        && adxlcmd != ADXLCMD_READ_REGISTER
+            && adxlcmd != ADXLCMD_READ_REGISTER
 			&& adxlcmd != ADXLCMD_READ_DURATION
 			&& adxlcmd != ADXLCMD_READ_LATENT
 			&& adxlcmd != ADXLCMD_READ_WINDOW
@@ -871,7 +872,7 @@ implementation {
 		switch(adxlcmd){
 			case ADXLCMD_READ_XYZ: //NOTE moved to speedup
 				if (error==SUCCESS)
-                                  call I2CBasicAddr.read ((I2C_START | I2C_STOP),  ADXL345_ADDRESS, 6, databuf);	
+                  call I2CBasicAddr.read ((I2C_START | I2C_STOP),  ADXL345_ADDRESS, 6, databuf);	
 				else 
 				  post calculateXYZ();
 				break;
@@ -1071,9 +1072,10 @@ implementation {
   /*defaut handlers end*/
 
   event void TimeoutAlarm.fired() {
-printfUART("timeout\n");
-    if(lock && (adxlcmd == ADXLCMD_START)){
+    if(lock && (adxlcmd == ADXLCMD_START))
+    {
       lock = FALSE;
+      
       signal SplitControl.startDone(EOFF);
     }
   } 

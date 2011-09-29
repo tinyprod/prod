@@ -1,8 +1,10 @@
 
 push( @includes, qw(
   %T/platforms/z1
+  %T/platforms/z1/chips/msp430
   %T/platforms/z1/chips/msp430/adc12
   %T/platforms/z1/chips/msp430/usci
+  %T/platforms/z1/chips/msp430/timer
   %T/platforms/z1/chips/adxl345
   %T/platforms/z1/chips/cc2420
   %T/platforms/z1/chips/sht11
@@ -21,16 +23,17 @@ push( @includes, qw(
   %T/chips/cc2420/spi
   %T/chips/cc2420/transmit
   %T/chips/cc2420/unique
-  %T/chips/msp430/x1x2/timer
-  %T/chips/msp430/x2xxx
-  %T/chips/msp430/x2xxx/usci
+  %T/chips/cc2420/security
   %T/chips/msp430
-  %T/chips/msp430/clock_bcs
   %T/chips/msp430/adc12
+  %T/chips/msp430/clock_bcs
   %T/chips/msp430/dma
   %T/chips/msp430/pins
   %T/chips/msp430/timer
   %T/chips/msp430/sensors
+  %T/chips/msp430/x1x2/timer
+  %T/chips/msp430/x2xxx
+  %T/chips/msp430/x2xxx/usci
   %T/chips/stm25p
   %T/chips/sht11
   %T/chips/tmp102

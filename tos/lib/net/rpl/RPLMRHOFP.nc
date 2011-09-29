@@ -1,3 +1,43 @@
+/*
+ * Copyright (c) 2011 Johns Hopkins University. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * - Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ * - Neither the name of the copyright holder nor the names of
+ *   its contributors may be used to endorse or promote products derived
+ *   from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+ * RPLMRHOFP.nc
+ * @ author JeongGil Ko (John) <jgko@cs.jhu.edu>
+ */
+
+/**
+ * This file implements the IETF draft draft-ietf-roll-minrank-hysteresis-of-02
+ * This file uses the ETX metric container to compute the next hop and rank 
+ **/
 
 #include "blip_printf.h"
 
@@ -80,14 +120,20 @@ implementation{
     uint16_t prevEtx, prevRank;
     parent_t* parentNode = call ParentTable.get(desiredParent);
 
+    if(desiredParent == MAX_PARENT){
+      nodeRank = INFINITE_RANK;
+      return FALSE;
+    }
+
     prevEtx = nodeEtx;
     prevRank = nodeRank;
 
     nodeEtx = parentNode->etx_hop + parentNode -> etx;
-     // -1 because the ext computation will add at least 1
+    // -1 because the ext computation will add at least 1
     nodeRank = (parentNode->etx_hop / divideRank * min_hop_rank_inc) + parentNode->rank;
 
-    //printf("%d %d %d %d %d %d %d\n", desiredParent, parentNode->etx_hop, divideRank, parentNode->rank, (min_hop_rank_inc - 1), nodeRank, prevRank);
+    //printf(">>> %d %d %d %d %d %d %d\n", desiredParent, parentNode->etx_hop, divideRank, parentNode->rank, (min_hop_rank_inc - 1), nodeRank, prevRank);
+    //printfflush();
 
     if (nodeRank <= ROOT_RANK && prevRank > 1) {
       nodeRank = prevRank;
@@ -108,7 +154,7 @@ implementation{
     uint8_t indexset;
     uint8_t min = 0;
     uint16_t minDesired;
-    parent_t* parentNode;
+    parent_t* parentNode, *previousParent;
     //choose the first valid
 
     parentNode = call ParentTable.get(min);
@@ -122,14 +168,16 @@ implementation{
     if (min == MAX_PARENT){ 
       call RPLOF.resetRank();
       call RPLRoute.inconsistency();
-      call ForwardingTable.delRoute(route_key);
+      //call ForwardingTable.delRoute(route_key);
       route_key = ROUTE_INVAL_KEY;
       return FALSE;
     }
 
     //printf("%d %d %d %d \n", parentNode->etx, parentNode->rank, parentNode->etx_hop, min);
 
-    parentNode = call ParentTable.get(minDesired);
+    //parentNode = call ParentTable.get(minDesired);
+    parentNode = call ParentTable.get(desiredParent);
+
     if(htons(parentNode->parentIP.s6_addr16[7]) != 0)
       minMetric = parentNode->etx_hop + parentNode->etx; // update to most recent etx
 
@@ -148,18 +196,16 @@ implementation{
 
     parentNode = call ParentTable.get(min);
 
-    //printf("%d %d %d %d \n", parentNode->etx, parentNode->rank, parentNode->etx_hop, min);
-    
     if(parentNode->rank > nodeRank || parentNode->rank == INFINITE_RANK){
       printf("SELECTED PARENT is FFFF %d\n", TOS_NODE_ID);
-      call ForwardingTable.delRoute(route_key);
+      //call ForwardingTable.delRoute(route_key);
       route_key = ROUTE_INVAL_KEY;
       return FAIL;
     }
 
-    //printf("minD %d SB %d minM %d \n", minDesired, STABILITY_BOUND, minMetric);
+    previousParent = call ParentTable.get(desiredParent);
 
-    if(minDesired + divideRank*STABILITY_BOUND/10 >= minMetric){ 
+    if(minDesired + divideRank*STABILITY_BOUND/10 >= minMetric && minMetric !=0 && previousParent->valid){ 
       // if the min measurement (minDesired) is not significantly better than the previous parent's (minMetric), stay with what we have...
       min = desiredParent;
       minDesired = minMetric;

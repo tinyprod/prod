@@ -1,7 +1,7 @@
-/* $Id: TMP175InternalC.nc,v 1.4 2006/12/12 18:23:45 vlahan Exp $ */
 /*
  * Copyright (c) 2005 Arch Rock Corporation 
- * All rights reserved. 
+ * All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
  * met:
@@ -28,11 +28,12 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  */
+
 /**
- *
  * @author Kaisen Lin
  * @author Phil Buonadonna
  */
+
 //#include "im2sb.h"
 
 configuration TMP102InternalC {
@@ -45,7 +46,7 @@ implementation {
   enum {
     ADV_ID = unique("TMP102.HplAccess"),
   };
-  
+
   components new SimpleFcfsArbiterC( "TMP102.Resource" ) as Arbiter;
   components MainC;
   Resource = Arbiter;
@@ -69,5 +70,4 @@ implementation {
 
   components HalTMP102ControlP;
   HalTMP102ControlP.HplTMP102 -> Logic;
-  
 }

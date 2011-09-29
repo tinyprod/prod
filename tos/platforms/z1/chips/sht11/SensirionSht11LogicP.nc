@@ -1,10 +1,6 @@
 /*
  * Copyright (c) 2011 Zolertia Labs
- * All rights reserved.
- *
  * Copyright (c) 2009 DEXMA SENSORS SL
- * All rights reserved.
- *
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
@@ -64,8 +60,6 @@
 
 #include "Timer.h"
 #include "SensirionSht11.h"
-
-
 
 generic module SensirionSht11LogicP() {
   provides interface SensirionSht11[ uint8_t client ];
@@ -447,4 +441,3 @@ implementation {
   default event void SensirionSht11.readStatusRegDone[uint8_t client]( error_t result, uint8_t val ) { }
   default event void SensirionSht11.writeStatusRegDone[uint8_t client]( error_t result ) { }
 }
-

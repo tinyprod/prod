@@ -212,6 +212,12 @@ enum sampcon_id_enum
   // The big problem with bit fields is endianess and portability (related) but neither
   // of those issues should be a problem here.
   //
+  // It has been verified that the definitions of the ADC12
+  // flags has not changed over the different MSP430 chip variants that have an
+  // ADC12, i.e. using common structs is safe (verified for the header files
+  // installed via package msp430mcu-tinyos version 20110613-20110821).
+  // (http://mail.millennium.berkeley.edu/pipermail/tinyos-2.0wg/2011-August/003861.html)
+  //
   // So it is left as an exercise for the student to reimplement the driver if someone
   // feels it is worth the time to do so.
   //
@@ -229,6 +235,7 @@ typedef struct {
     msc:1,
     sht0:4,
     sht1:4;
+volatile unsigned int : 0; // align to word boundary (saves significant amount of code)
 } __attribute__ ((packed)) adc12ctl0_t;
 
 typedef struct {
@@ -241,6 +248,7 @@ typedef struct {
     shp:1,
     shs:2,
     cstartadd:4;
+volatile unsigned int : 0; // align to word boundary (saves significant amount of code)
 } __attribute__ ((packed)) adc12ctl1_t;
 
 

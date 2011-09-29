@@ -74,12 +74,11 @@
  * @version 2.0, January 5, 2005
  */
 
+
 #ifndef PRINTFZ1_H
 #define PRINTFZ1_H
-
 #ifndef PRINTFUART_H
 #define PRINTFUART_H
-
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -138,7 +137,8 @@ void printfUART_init_private()
         inp(UDR0);
         outp((1 << TXEN) ,UCSR0B);   // Enable uart reciever and transmitter
 
-    #elif defined(PLATFORM_MICA2DOT)  
+    #else
+    #if defined(PLATFORM_MICA2DOT)  
         // 19.2K baud
         outp(0,UBRR0H);            // Set baudrate to 19.2 KBps
         outp(12, UBRR0L);
@@ -147,7 +147,8 @@ void printfUART_init_private()
         inp(UDR0);
         outp((1 << TXEN) ,UCSR0B);
   
-    #elif defined(PLATFORM_IMOTE2)
+    #else
+    #if defined(PLATFORM_IMOTE2)
       //async command result_t UART.init() {
         
         /*** 
@@ -194,13 +195,14 @@ void printfUART_init_private()
         //__REG(0x40D00004) |= (1<<21);
         
         CKEN |= CKEN5_STUART; //enable the UART's clk    
-    #elif defined(PLATFORM_Z1)
-                P3SEL |= 0x30;                            // P3.4,5 = USCI_A0 TXD/RXD
-                UCA0CTL1 |= UCSSEL_2;                     // CLK = SMCLK, 8MiHz
-                UCA0BR0  = 4;				  // set 115200 baud
-                UCA0BR1  = 0;
-                UCA0MCTL = 0x91;
-                UCA0CTL1 &= ~UCSWRST;
+    #else
+    #if defined(PLATFORM_Z1)
+                P3SEL |= 0x30;                             // P3.4,5 = USCI_A1 TXD/RXD
+                UCA0CTL1 |= UCSSEL_2;                     // CLK = ACLK
+                UCA0BR0 = 0x45;                           // 32kHz/9600 = 3.41
+                UCA0BR1 = 0x00;                           //
+                UCA0MCTL = UCBRS1 + UCBRS0;               // Modulation UCBRSx = 3
+                UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
 
     #else  // assume TelosA, TelosB, etc.
         // Variabel baud 
@@ -292,11 +294,16 @@ void printfUART_init_private()
                 //}     
 
     #endif
+    #endif
+    #endif
+    #endif
 }
 
 #if defined(PLATFORM_MICAZ) || defined(PLATFORM_MICA2) || defined(PLATFORM_MICA2DOT)
-#elif defined(PLATFORM_IMOTE2)
-#elif defined(PLATFORM_Z1)
+#else
+#if defined(PLATFORM_IMOTE2)
+#else
+#if defined(PLATFORM_Z1)
 #else // assume AVR architecture (e.g. TelosA, TelosB)
     bool isTxIntrPending()
     {
@@ -305,6 +312,8 @@ void printfUART_init_private()
         }
         return FALSE;
     }
+#endif
+#endif
 #endif
 
 /**
@@ -320,9 +329,11 @@ void UARTPutChar(char c)
         loop_until_bit_is_set(UCSR0A, UDRE);
         outb(UDR0,c);
 
-    #elif defined(PLATFORM_IMOTE2)
+    #else
+    #if defined(PLATFORM_IMOTE2)
         STTHR = c;    
-    #elif defined(PLATFORM_Z1)
+    #else
+    #if defined(PLATFORM_Z1)
         while (!(IFG2&UCA0TXIFG));
                 atomic UCA0TXBUF = c;
 
@@ -330,6 +341,8 @@ void UARTPutChar(char c)
         U1TXBUF = c;  
         while( !isTxIntrPending() )  
             continue;
+    #endif
+    #endif
     #endif
 }
 
@@ -365,6 +378,7 @@ void __assertUART(const char* file, int line)
     TOSH_CLR_YELLOW_LED_PIN();
     TOSH_CLR_GREEN_LED_PIN();
     for (;;);
+    exit(1);
 }
 // --------------------------------------------------------------
 #endif

@@ -1,12 +1,11 @@
 #-*-Makefile-*- vim:syntax=make
-#$Id: telosa.target,v 1.6 2008-03-11 09:34:13 klueska Exp $
 
 PLATFORM ?= telosa
 
 MSP_MCU = msp430x149
 
-# Disable MSP430 hardware multiply because it makes MSPGCC die
-PFLAGS += -mdisable-hwmul
+# Remove MSP430 hardware multiply disable: new msp430-gcc (4.5.3+) fixes
+# PFLAGS += -mdisable-hwmul
 
 # The default msp OPTFLAGS should be -Os, that's what we want
 # if -O is added here it will override the -Os, we really want -Os

@@ -69,23 +69,23 @@ implementation {
       if(tmp > 2047) tmp -= (1<<12);
       atomic tmp *= 0.625;
     #endif
-    signal Read.readDone(SUCCESS, tmp);
+  	signal Read.readDone(SUCCESS, tmp);
   }
   
   command error_t Read.read(){
-    atomic P5DIR |= 0x01;
-    atomic P5OUT |= 0x01;
-    call TimerSensor.startOneShot(100);
-    //call TimerFail.startOneShot(1024);
-    return SUCCESS;
+	atomic P5DIR |= 0x01;
+	atomic P5OUT |= 0x01;
+	call TimerSensor.startOneShot(100);
+	//call TimerFail.startOneShot(1024);
+	return SUCCESS;
   }
 
   event void TimerSensor.fired() {
-    call Resource.request();  
+	call Resource.request();  
   }
   
   event void TimerFail.fired() {
-    signal Read.readDone(SUCCESS, 0xFFFF);
+  	signal Read.readDone(SUCCESS, 0);
   }
 
   event void Resource.granted(){
@@ -101,16 +101,16 @@ implementation {
   
   async event void I2CBasicAddr.readDone(error_t error, uint16_t addr, uint8_t length, uint8_t *data){
     if(call Resource.isOwner()) {
-      uint16_t tmp;
-      for(tmp=0;tmp<0xffff;tmp++);	//delay
-      call Resource.release();
-      tmp = data[0];
-      tmp = tmp << 8;
-      tmp = tmp + data[1];
-      tmp = tmp >> 4;
-      atomic temp = tmp;
-      post calculateTemp();
-    }
+	uint16_t tmp;
+	for(tmp=0;tmp<0xffff;tmp++);	//delay
+	call Resource.release();
+	tmp = data[0];
+	tmp = tmp << 8;
+	tmp = tmp + data[1];
+	tmp = tmp >> 4;
+	atomic temp = tmp;
+	post calculateTemp();
+	}
   }
 
   async event void I2CBasicAddr.writeDone(error_t error, uint16_t addr, uint8_t length, uint8_t *data){

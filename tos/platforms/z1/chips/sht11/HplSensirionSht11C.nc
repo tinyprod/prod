@@ -1,10 +1,6 @@
 /*
  * Copyright (c) 2011 Zolertia Labs
- * All rights reserved.
- *
  * Copyright (c) 2009 DEXMA SENSORS SL
- * All rights reserved.
- *
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
@@ -65,19 +61,16 @@ implementation {
   
   components new Msp430GpioC() as DATAM;
   components new Msp430GpioC() as SCKM;
-  #ifndef IS_ZIGLET
+  #ifdef IS_ZIGLET
+    #warning USING SHT1X SENSOR IN ZIGLET PORT
+    DATAM -> HplMsp430GeneralIOC.Port51;  //10
+    SCKM -> HplMsp430GeneralIOC.Port52; //56
+  #else
     components new Msp430GpioC() as PWRM;
     PWRM -> HplMsp430GeneralIOC.Port21;   
     DATAM -> HplMsp430GeneralIOC.Port10;   
     SCKM -> HplMsp430GeneralIOC.Port16;   
   #endif
-
-  #ifdef IS_ZIGLET
-  #warning USING SHT1X SENSOR IN ZIGLET PORT
-    DATAM -> HplMsp430GeneralIOC.Port51;  //10
-    SCKM -> HplMsp430GeneralIOC.Port52; //56
-  #endif
-
   DATA = DATAM;
   SCK = SCKM;
 

@@ -348,15 +348,9 @@ implementation {
 
   async command void Usci.enableI2C() {
     atomic {
-
-      #ifdef PLATFORM_Z1
-      /* Dirty, needs fixing */
-        P5OUT &= ~0x06;
-        P5REN &= ~0x06;
-        P5OUT |= 0x06;
-        P5REN |= 0x06;
+      #if defined(PLATFORM_Z1)
+        atomic P5DIR |= 0x06;
       #endif
-
       call USDA.selectModuleFunc();
       call USCL.selectModuleFunc();
     }

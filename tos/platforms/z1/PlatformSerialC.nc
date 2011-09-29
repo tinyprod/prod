@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2009 DEXMA SENSORS SL
+ * Copyright (c) 2011 Eric B. Decker
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,25 +36,21 @@
 /*
  * @author: Xavier Orduna <xorduna@dexmatech.com>
  * @author: Jordi Soucheiron <jsoucheiron@dexmatech.com>
+ * @author: Eric B. Decker <cire831@gmail.com>
  */
 
 configuration PlatformSerialC {
-  
   provides interface StdControl;
   provides interface UartStream;
   provides interface UartByte;
-  
 }
-
 implementation {
-  
   components new Msp430UartA0C() as UartC;
   UartStream = UartC;  
   UartByte = UartC;
-  
+
   components Z1SerialP;
   StdControl = Z1SerialP;
   Z1SerialP.Msp430UartConfigure <- UartC.Msp430UartConfigure;
   Z1SerialP.Resource -> UartC.Resource;
-  
 }

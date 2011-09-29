@@ -89,7 +89,7 @@ implementation{
   uint8_t redunCounter = 0xFF;
   uint8_t doubleCounter = 0;
 
-  uint8_t DIOIntDouble = 11;
+  uint8_t DIOIntDouble = 10;
   uint8_t DIOIntMin = 8;
   uint8_t DIORedun = 0xFF;
   uint16_t MinHopRankInc = 1;
@@ -195,10 +195,10 @@ implementation{
     msg.icmpv6.type = 155;//ICMP_TYPE_ROUTER_ADV; // Is this type correct?
     msg.icmpv6.code = ICMPV6_CODE_DIO;
     msg.icmpv6.checksum = 0;
-    msg.flags.flags_chunk = 0;
-    msg.flags.flags_chunk = GROUND_STATE << 7;
-    msg.flags.flags_chunk |= MOP << DIO_MOP_SHIFT;
-    msg.flags.flags_chunk |= DAG_PREF << 0;
+    msg.flags = 0;
+    msg.flags = GROUND_STATE << 7;
+    msg.flags |= MOP << DIO_MOP_SHIFT;
+    msg.flags |= DAG_PREF << 0;
     msg.version = DODAGVersionNumber;
     msg.instance_id.id = RPLInstanceID;
     msg.dtsn = DTSN;
@@ -299,7 +299,9 @@ implementation{
     } else {
       memcpy(&pkt.ip6_hdr.ip6_dst, &MULTICAST_ADDR, 16);
     }
+
     call IPAddress.getLLAddr(&pkt.ip6_hdr.ip6_src);
+
     //call IPAddress.getGlobalAddr(&pkt.ip6_hdr.ip6_src);
     // memcpy(&pkt.ip6_hdr.ip6_src, &ADDR_MY_IP, 16);
 
@@ -644,7 +646,7 @@ implementation{
       /*  I have no parent at this point! */
       //printf("noparent %d %d\n", node_rank, call RPLRankInfo.hasParent());
       hasDODAG = FALSE;
-      GROUND_STATE = dio->flags.flags_chunk & DIO_GROUNDED_MASK;
+      GROUND_STATE = dio->flags & DIO_GROUNDED_MASK;
       //GROUND_STATE = dio->flags.flags_element.grounded;
       call TrickleTimer.stop();
       // new add
@@ -656,12 +658,12 @@ implementation{
     // assume that this DIO is from the DODAG with the
     // highest preference and is the preferred parent's DIO packet?
     hasDODAG = TRUE;
-    MOP = (dio->flags.flags_chunk & DIO_MOP_MASK) >> DIO_MOP_SHIFT;
-    DAG_PREF = dio->flags.flags_chunk & DIO_PREF_MASK;
+    MOP = (dio->flags & DIO_MOP_MASK) >> DIO_MOP_SHIFT;
+    DAG_PREF = dio->flags & DIO_PREF_MASK;
     RPLInstanceID = dio->instance_id.id;
     memcpy(&DODAGID, &dio->dodagID, sizeof(struct in6_addr));
     DODAGVersionNumber = dio->version;
-    GROUND_STATE = dio->flags.flags_chunk & DIO_GROUNDED_MASK;
+    GROUND_STATE = dio->flags & DIO_GROUNDED_MASK;
     //GROUND_STATE = dio->flags.flags_element.grounded;
     call RPLRouteInfo.resetTrickle();
     return;

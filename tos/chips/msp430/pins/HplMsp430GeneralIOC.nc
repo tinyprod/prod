@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2011 João Gonçalves
  * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
@@ -41,7 +41,6 @@
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  * @author Eric B. Decker <cire831@gmail.com>
  * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
- *
  * - Mapped Pins for msp430x543x, msp430x541x.
  *   The duplicate functionality on different pins is not implemented
  *   because of the duplicate names.
@@ -172,8 +171,9 @@ configuration HplMsp430GeneralIOC {
 
   // provides special ports explicitly 
   // this section of HplMsp430GeneralIOC supports the F14x series
-  // x1 family: msp430f149
-#ifdef __msp430x14x
+  // x1 family: msp430f149 and msp430f1611
+
+#if defined(__msp430x14x) || defined(__msp430x16x)
   provides interface HplMsp430GeneralIO as STE0;
   provides interface HplMsp430GeneralIO as SIMO0;
   provides interface HplMsp430GeneralIO as SOMI0;
@@ -196,53 +196,35 @@ configuration HplMsp430GeneralIOC {
   provides interface HplMsp430GeneralIO as ADC5;
   provides interface HplMsp430GeneralIO as ADC6;
   provides interface HplMsp430GeneralIO as ADC7;
-#endif
 
-  // this section of HplMsp430GeneralIOC supports the F16x series
-  // x1 family: msp430f1611
 #ifdef __msp430x16x
-  provides interface HplMsp430GeneralIO as STE0;
-  provides interface HplMsp430GeneralIO as SIMO0;
   provides interface HplMsp430GeneralIO as SDA;
-  provides interface HplMsp430GeneralIO as SOMI0;
-  provides interface HplMsp430GeneralIO as UCLK0;
   provides interface HplMsp430GeneralIO as SCL;
-  provides interface HplMsp430GeneralIO as UTXD0;
-  provides interface HplMsp430GeneralIO as URXD0;
-
-  provides interface HplMsp430GeneralIO as STE1;
-  provides interface HplMsp430GeneralIO as SIMO1;
-  provides interface HplMsp430GeneralIO as SOMI1;
-  provides interface HplMsp430GeneralIO as UCLK1;
-  provides interface HplMsp430GeneralIO as UTXD1;
-  provides interface HplMsp430GeneralIO as URXD1;
-
-  provides interface HplMsp430GeneralIO as ADC0;
-  provides interface HplMsp430GeneralIO as ADC1;
-  provides interface HplMsp430GeneralIO as ADC2;
-  provides interface HplMsp430GeneralIO as ADC3;
-  provides interface HplMsp430GeneralIO as ADC4;
-  provides interface HplMsp430GeneralIO as ADC5;
-  provides interface HplMsp430GeneralIO as ADC6;
-  provides interface HplMsp430GeneralIO as ADC7;
 
   provides interface HplMsp430GeneralIO as DAC0;
   provides interface HplMsp430GeneralIO as DAC1;
 
   provides interface HplMsp430GeneralIO as SVSIN;
   provides interface HplMsp430GeneralIO as SVSOUT;
-#endif
+#endif /* __msp430x16x */
+#endif /* __msp430x14x || __msp430x16x */
+
 
 /*
- * x2 family: msp430f261{6,7,8,9} processors
+ * x2 family: msp430f2{4,6}1{6,7,8,9} processors
  *
  * Old headers: mspgccX (3.2.3) includes msp430x261x.h (-mmcu=msp430x2617)
  * which defines __msp430x261x.
  *
  * New headers: mspgcc4 (4.4.5, uniarch, TI_HEADERS) defines __msp430x26x.  There
  * doesn't look like there is any conflict with any other processor defines.
+ *
+ * WARNING: The 2410 apprears to be different from the 241[6-9] processors.   It
+ * defines __msp430x24x, while the 241[6-9] includes define __msp430x241x which
+ * is what we are interested in.   I haven't looked at what is different.
  */
-#if defined(__msp430x261x) || defined(__msp430x26x)
+
+#if defined(__msp430x241x) || defined(__msp430x261x) || defined(__msp430x26x)
   provides interface HplMsp430GeneralIO as UCA0CLK;
   provides interface HplMsp430GeneralIO as UCA0STE;
   provides interface HplMsp430GeneralIO as UCA0TXD;
@@ -280,16 +262,69 @@ configuration HplMsp430GeneralIOC {
   provides interface HplMsp430GeneralIO as ADC6;
   provides interface HplMsp430GeneralIO as ADC7;
 
-  provides interface HplMsp430GeneralIO as DAC0;
-  provides interface HplMsp430GeneralIO as DAC1;
-
   provides interface HplMsp430GeneralIO as SVSIN;
   provides interface HplMsp430GeneralIO as SVSOUT;
-#endif
+
+#if defined(__msp430x261x) || defined(__msp430x26x)
+  provides interface HplMsp430GeneralIO as DAC0;
+  provides interface HplMsp430GeneralIO as DAC1;
+#endif /* __msp430x261x || __msp430x26x */
+#endif /* __msp430x241x || __msp430x261x || __msp430x26x */
+
 
   // x5 family: cc430f5137, msp430x541x, msp430f5438{,a}
 
-#if defined(__msp430x543x) || defined(__msp430x541x)
+#if defined(__cc430x513x) || defined(__cc430x612x) || defined(__cc430x613x)
+  provides interface HplMsp430GeneralIO as CBOUT0;
+  provides interface HplMsp430GeneralIO as TA0CLK;
+  provides interface HplMsp430GeneralIO as CBOUT1;
+  provides interface HplMsp430GeneralIO as TA1CLK;
+  provides interface HplMsp430GeneralIO as ACLK;
+  provides interface HplMsp430GeneralIO as SMCLK;
+  provides interface HplMsp430GeneralIO as RTCCLK;
+  provides interface HplMsp430GeneralIO as ADC12CLK;
+  provides interface HplMsp430GeneralIO as DMAE0;
+  provides interface HplMsp430GeneralIO as SVMOUT;
+  provides interface HplMsp430GeneralIO as TA0CCR0A;
+  provides interface HplMsp430GeneralIO as TA0CCR1A;
+  provides interface HplMsp430GeneralIO as TA0CCR2A;
+  provides interface HplMsp430GeneralIO as TA0CCR3A;
+  provides interface HplMsp430GeneralIO as TA0CCR4A;
+  provides interface HplMsp430GeneralIO as TA1CCR0A;
+  provides interface HplMsp430GeneralIO as TA1CCR1A;
+  provides interface HplMsp430GeneralIO as TA1CCR2A;
+  provides interface HplMsp430GeneralIO as UCA0RXD;
+  provides interface HplMsp430GeneralIO as UCA0SOMI;
+  provides interface HplMsp430GeneralIO as UCA0TXD;
+  provides interface HplMsp430GeneralIO as UCA0SIMO;
+  provides interface HplMsp430GeneralIO as UCA0CLK;
+  provides interface HplMsp430GeneralIO as UCB0STE;
+  provides interface HplMsp430GeneralIO as UCB0SOMI;
+  provides interface HplMsp430GeneralIO as UCB0SCL;
+  provides interface HplMsp430GeneralIO as UCB0SIMO;
+  provides interface HplMsp430GeneralIO as UCB0SDA;
+  provides interface HplMsp430GeneralIO as UCB0CLK;
+  provides interface HplMsp430GeneralIO as UCA0STE;
+  provides interface HplMsp430GeneralIO as RFGDO0;
+  provides interface HplMsp430GeneralIO as RFGDO1;
+  provides interface HplMsp430GeneralIO as RFGDO2;
+
+#if defined(__cc430x513x) || defined(__cc430x613x)
+  provides interface HplMsp430GeneralIO as ADC0;
+  provides interface HplMsp430GeneralIO as ADC1;
+  provides interface HplMsp430GeneralIO as ADC2;
+  provides interface HplMsp430GeneralIO as ADC3;
+  provides interface HplMsp430GeneralIO as ADC4;
+  provides interface HplMsp430GeneralIO as ADC5;
+#if defined(__cc430x613x)
+  provides interface HplMsp430GeneralIO as ADC6;
+  provides interface HplMsp430GeneralIO as ADC7;
+#endif /* cc430x613x */
+#endif /* cc430x513x || cc430x613x */
+#endif /* cc430x513x || cc430x612x || cc430x613x */
+
+
+#if defined(__msp430x541x) || defined(__msp430x543x)
 
 //duplicate ouputs on different pins from the ones mapped are not defined yet
 
@@ -359,10 +394,16 @@ configuration HplMsp430GeneralIOC {
   provides interface HplMsp430GeneralIO as ADC5;
   provides interface HplMsp430GeneralIO as ADC6;
   provides interface HplMsp430GeneralIO as ADC7;
+
+// A8 and A9 can either be external inputs or connected to Vref/Veref
+// Check your chip for more details.
+
   provides interface HplMsp430GeneralIO as ADC8;
   provides interface HplMsp430GeneralIO as ADC9;
 
-// there are no ADC's 10 and 11 according to datasheet
+// A10 connects internally to Ref_x and A11 (INCHx = 0xB)
+// measures AVcc through a divider network.   There are
+// no external pins associated with ADC10 or ADC11.
 
   provides interface HplMsp430GeneralIO as ADC12;
   provides interface HplMsp430GeneralIO as ADC13;
@@ -370,55 +411,6 @@ configuration HplMsp430GeneralIOC {
   provides interface HplMsp430GeneralIO as ADC15;
 
 #endif
-
-#if defined(__cc430x513x) || defined(__cc430x612x) || defined(__cc430x613x)
-  provides interface HplMsp430GeneralIO as CBOUT0;
-  provides interface HplMsp430GeneralIO as TA0CLK;
-  provides interface HplMsp430GeneralIO as CBOUT1;
-  provides interface HplMsp430GeneralIO as TA1CLK;
-  provides interface HplMsp430GeneralIO as ACLK;
-  provides interface HplMsp430GeneralIO as SMCLK;
-  provides interface HplMsp430GeneralIO as RTCCLK;
-  provides interface HplMsp430GeneralIO as ADC12CLK;
-  provides interface HplMsp430GeneralIO as DMAE0;
-  provides interface HplMsp430GeneralIO as SVMOUT;
-  provides interface HplMsp430GeneralIO as TA0CCR0A;
-  provides interface HplMsp430GeneralIO as TA0CCR1A;
-  provides interface HplMsp430GeneralIO as TA0CCR2A;
-  provides interface HplMsp430GeneralIO as TA0CCR3A;
-  provides interface HplMsp430GeneralIO as TA0CCR4A;
-  provides interface HplMsp430GeneralIO as TA1CCR0A;
-  provides interface HplMsp430GeneralIO as TA1CCR1A;
-  provides interface HplMsp430GeneralIO as TA1CCR2A;
-  provides interface HplMsp430GeneralIO as UCA0RXD;
-  provides interface HplMsp430GeneralIO as UCA0SOMI;
-  provides interface HplMsp430GeneralIO as UCA0TXD;
-  provides interface HplMsp430GeneralIO as UCA0SIMO;
-  provides interface HplMsp430GeneralIO as UCA0CLK;
-  provides interface HplMsp430GeneralIO as UCB0STE;
-  provides interface HplMsp430GeneralIO as UCB0SOMI;
-  provides interface HplMsp430GeneralIO as UCB0SCL;
-  provides interface HplMsp430GeneralIO as UCB0SIMO;
-  provides interface HplMsp430GeneralIO as UCB0SDA;
-  provides interface HplMsp430GeneralIO as UCB0CLK;
-  provides interface HplMsp430GeneralIO as UCA0STE;
-  provides interface HplMsp430GeneralIO as RFGDO0;
-  provides interface HplMsp430GeneralIO as RFGDO1;
-  provides interface HplMsp430GeneralIO as RFGDO2;
-
-#if defined(__cc430x513x) || defined(__cc430x613x)
-  provides interface HplMsp430GeneralIO as ADC0;
-  provides interface HplMsp430GeneralIO as ADC1;
-  provides interface HplMsp430GeneralIO as ADC2;
-  provides interface HplMsp430GeneralIO as ADC3;
-  provides interface HplMsp430GeneralIO as ADC4;
-  provides interface HplMsp430GeneralIO as ADC5;
-#if defined(__cc430x613x)
-  provides interface HplMsp430GeneralIO as ADC6;
-  provides interface HplMsp430GeneralIO as ADC7;
-#endif /* cc430x613x */
-#endif /* cc430x513x || cc430x613x */
-#endif /* cc430x513x || cc430x612x || cc430x613x */
 
 }
 implementation {
@@ -824,7 +816,7 @@ implementation {
   SVSOUT = P57;
 #endif
 
-#if defined(__msp430x261x) || defined(__msp430x26x)
+#if defined(__msp430x241x) || defined(__msp430x261x) || defined(__msp430x26x)
   UCA0CLK = P30;
   UCA0STE = P33;
   UCA0TXD = P34;
@@ -862,13 +854,68 @@ implementation {
   ADC6 = P66;
   ADC7 = P67;
 
+#if defined(__msp430x261x) || defined(__msp430x26x)
   DAC0 = P66;
   DAC1 = P67;
+#endif
 
   SVSIN = P67;
   SVSOUT = P57;
 #endif
 
+#if defined(__cc430x513x) || defined(__cc430x612x) || defined(__cc430x613x)
+  /* Terminal functions mapped to port mapping mnemonics, per data
+   * sheet table 3 */
+  RFGDO0 = P10;                 // default out
+  RFGDO2 = P11;                 // default out
+  UCB0SOMI = P12;               // default in/out
+  UCB0SCL = P12;                // default in/out
+  UCB0SIMO = P13;               // default in/out
+  UCB0SDA = P13;                // default in/out
+  UCB0CLK = P14;                // default in/out
+  UCA0STE = P14;                // default in/out
+  UCA0RXD = P15;                // default in/out
+  UCA0SOMI = P15;               // default in/out
+  UCA0TXD = P16;                // default in/out
+  UCA0SIMO = P16;               // default in/out
+  UCA0CLK = P17;                // default in/out
+  UCB0STE = P17;                // default in/out
+  CBOUT1 = P20;                 // default out
+  TA1CLK = P20;                 // default in
+  TA1CCR0A = P21;               // default in/out
+  TA1CCR1A = P22;               // default in/out
+  TA1CCR2A = P23;               // default in/out
+  RTCCLK = P24;                 // default out
+  SVMOUT = P25;                 // default out
+  ACLK = P26;                   // default out
+  ADC12CLK = P27;               // default out
+  DMAE0 = P27;                  // default in
+  CBOUT0 = P30;                 // default out
+  TA0CLK = P30;                 // default in
+  TA0CCR0A = P31;               // defalut in/out
+  TA0CCR1A = P32;               // defalut in/out
+  TA0CCR2A = P33;               // defalut in/out
+  TA0CCR3A = P34;               // defalut in/out
+  TA0CCR4A = P35;               // defalut in/out
+  RFGDO1 = P36;                 // default out
+  SMCLK = P37;                  // default out
+  // MCLK unassigned
+  // MODCLK undefined
+  // ANALOG unassigned
+
+#if defined(__cc430x513x) || defined(__cc430x613x)
+  ADC0 = P20;                   // secondary
+  ADC1 = P21;                   // secondary
+  ADC2 = P22;                   // secondary
+  ADC3 = P23;                   // secondary
+  ADC4 = P24;                   // secondary
+  ADC5 = P25;                   // secondary
+#if defined(__cc430x613x)
+  ADC6 = P26;                   // secondary
+  ADC7 = P27;                   // secondary
+#endif /* cc430x613x */
+#endif /* cc430x513x || cc430x613x */
+#endif /* cc430x513x || cc430x612x || cc430x613x */
 
 #if defined(__msp430x543x) || defined(__msp430x541x)
 
@@ -948,9 +995,10 @@ implementation {
    ADC14 = P76;
    ADC15 = P77;
 
-//Same outputs but on different pins, need to change the names if to be used
+// Same outputs but on different pins, need to change the names if to be used
 // Not complete yet
-/*
+
+#ifdef notdef
    SMCLK = P47;
    ACLK = P110;
    MCLK = P111;
@@ -964,61 +1012,8 @@ implementation {
 
    TA1CCR0 = P85;
    TA1CCR1 = P86;
-   TA1CCR2 = P73; */
-
+   TA1CCR2 = P73;
 #endif
 
-#if defined(__cc430x513x) || defined(__cc430x612x) || defined(__cc430x613x)
-  /* Terminal functions mapped to port mapping mnemonics, per data
-   * sheet table 3 */
-  RFGDO0 = P10;                 // default out
-  RFGDO2 = P11;                 // default out
-  UCB0SOMI = P12;               // default in/out
-  UCB0SCL = P12;                // default in/out
-  UCB0SIMO = P13;               // default in/out
-  UCB0SDA = P13;                // default in/out
-  UCB0CLK = P14;                // default in/out
-  UCA0STE = P14;                // default in/out
-  UCA0RXD = P15;                // default in/out
-  UCA0SOMI = P15;               // default in/out
-  UCA0TXD = P16;                // default in/out
-  UCA0SIMO = P16;               // default in/out
-  UCA0CLK = P17;                // default in/out
-  UCB0STE = P17;                // default in/out
-  CBOUT1 = P20;                 // default out
-  TA1CLK = P20;                 // default in
-  TA1CCR0A = P21;               // default in/out
-  TA1CCR1A = P22;               // default in/out
-  TA1CCR2A = P23;               // default in/out
-  RTCCLK = P24;                 // default out
-  SVMOUT = P25;                 // default out
-  ACLK = P26;                   // default out
-  ADC12CLK = P27;               // default out
-  DMAE0 = P27;                  // default in
-  CBOUT0 = P30;                 // default out
-  TA0CLK = P30;                 // default in
-  TA0CCR0A = P31;               // defalut in/out
-  TA0CCR1A = P32;               // defalut in/out
-  TA0CCR2A = P33;               // defalut in/out
-  TA0CCR3A = P34;               // defalut in/out
-  TA0CCR4A = P35;               // defalut in/out
-  RFGDO1 = P36;                 // default out
-  SMCLK = P37;                  // default out
-  // MCLK unassigned
-  // MODCLK undefined
-  // ANALOG unassigned
-
-#if defined(__cc430x513x) || defined(__cc430x613x)
-  ADC0 = P20;                   // secondary
-  ADC1 = P21;                   // secondary
-  ADC2 = P22;                   // secondary
-  ADC3 = P23;                   // secondary
-  ADC4 = P24;                   // secondary
-  ADC5 = P25;                   // secondary
-#if defined(__cc430x613x)
-  ADC6 = P26;                   // secondary
-  ADC7 = P27;                   // secondary
-#endif /* cc430x613x */
-#endif /* cc430x513x || cc430x613x */
-#endif /* cc430x513x || cc430x612x || cc430x613x */
+#endif	/* __msp430x543x || __msp430x541x */
 }

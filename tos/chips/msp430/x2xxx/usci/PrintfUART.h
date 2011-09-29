@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Dexma Sensors S.L.
+ * Copyright (c) 2009-2010 Dexma Sensors S.L.
  * Copyright (c) 2008 The Regents of the University  of California.
  * Copyright (c) 2005 The President and Fellows of Harvard College.
  * All rights reserved.

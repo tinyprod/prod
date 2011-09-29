@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2000-2003 The Regents of the University of California.  
@@ -38,6 +38,11 @@
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
+/*
+ * @author Cory Sharp <cssharp@eecs.berkeley.edu>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
+ */
 
 #ifndef _H_msp430regtypes_h
 #define _H_msp430regtypes_h
@@ -132,6 +137,10 @@
  * WARNING: All clocking in TinyOS is done as powers of 2.  Time is done as
  * binary millisecs, binary micro-secs, etc.   binary MHz (MiHz).   However,
  * TI specifies their calibration constants using decimal MHz.  Your mileage will vary.
+ *
+ * Also on newer processors (particularily with variable core voltages) TI specifies
+ * the maximum frequency as a power of ten MHz.   This presents more problems for
+ * TinyOS' insistence that time is binary.
  */
 #define TYPE_CALBC1_1MHZ  uint8_t
 #define TYPE_CALBC1_8MHZ  uint8_t
@@ -299,25 +308,29 @@
 #define TYPE_P2SEL uint8_t
 #define TYPE_P2REN uint8_t
 
-#define TYPE_P3IN  uint8_t
+#define TYPE_P3DIR uint8_t
+#define TYPE_P3IN uint8_t
 #define TYPE_P3OUT uint8_t
 #define TYPE_P3DIR uint8_t
 #define TYPE_P3SEL uint8_t
 #define TYPE_P3REN uint8_t
 
-#define TYPE_P4IN  uint8_t
+#define TYPE_P4DIR uint8_t
+#define TYPE_P4IN uint8_t
 #define TYPE_P4OUT uint8_t
 #define TYPE_P4DIR uint8_t
 #define TYPE_P4SEL uint8_t
 #define TYPE_P4REN uint8_t
 
-#define TYPE_P5IN  uint8_t
+#define TYPE_P5DIR uint8_t
+#define TYPE_P5IN uint8_t
 #define TYPE_P5OUT uint8_t
 #define TYPE_P5DIR uint8_t
 #define TYPE_P5SEL uint8_t
 #define TYPE_P5REN uint8_t
 
-#define TYPE_P6IN  uint8_t
+#define TYPE_P6DIR uint8_t
+#define TYPE_P6IN uint8_t
 #define TYPE_P6OUT uint8_t
 #define TYPE_P6DIR uint8_t
 #define TYPE_P6SEL uint8_t
@@ -365,6 +378,7 @@ paren
 #define TYPE_MPY uint16_t
 #define TYPE_MPYS uint16_t
 #define TYPE_OP2 uint16_t
+
 #define TYPE_RESHI uint16_t
 #define TYPE_RESLO uint16_t
 
@@ -658,4 +672,4 @@ paren
 #define TYPE_UTCTL_1 uint8_t
 #define TYPE_WDTCTL uint16_t
 
-#endif	//_H_msp430regtypes_h
+#endif  //_H_msp430regtypes_h

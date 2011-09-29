@@ -40,8 +40,8 @@
  */
 
 #include "hardware.h"
- 
-module PlatformP{
+
+module PlatformP {
   provides interface Init;
   uses interface Init as Msp430ClockInit;
   uses interface Init as LedsInit;
@@ -105,5 +105,4 @@ implementation {
   }
 
   default command error_t LedsInit.init() { return SUCCESS; }
-
 }
