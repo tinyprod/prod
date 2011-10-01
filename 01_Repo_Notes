@@ -4,6 +4,8 @@
 TinyProd
    tp-freeforall/prod
 
+Main Branch: (2011-09-30)   msp430-int-pu
+
 <current feature branch>
 msp430-int:     msp430 integration
 msp430-int-pu:  msp430 integration (proposed updates)
@@ -12,8 +14,15 @@ msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
 
 If in doubt, branch off from msp430-int-pu.
 
-Status: 2011-09-21
+Status: 2011-09-30
 
+tinyprod-base integrated with the tip of tinyos-main trunk (82dab04, r5767)
+msp430-int-next: integrated with updated tinyprod-base.
+
+Merge with Z1 (x2) tinyos-main code complete.
+
+
+2011-09-21
 msp430-int-pu merged into msp430-int, includes base x5  (prior to tinyprod-base)
 tinyprod-base: new branch replaces vhsb (nuke old z1 code)
   tinyprod-base now based on the tinyos-main trunk (2011-09-21) mainline.
@@ -29,6 +38,19 @@ msp430-int-next: off tinyprod-base
 msp430-int-pu-next: off msp430-int-next  (at this point should be pristine).
 msp430-int-svn: continues along.   (commits that should come into the
 				    tinyos-main mainline)
+
+============================================================================
+
+Where to look for stuff:
+
+01_Repo_Notes: For a general overview of what this Repo is about.  Note
+  this repository is uses GIT as its DVCS.
+ 
+00_Getting_Started: Overview of getting started using the Repo and GIT.
+
+00a_Contribution_Process: Contributing back to the central Repository.
+
+00b_Development_Environment: Setting up a development environment.
 
 ============================================================================
 
@@ -198,6 +220,8 @@ svn t2 mainline ---|
 svn/upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
 svn/upstream-next: proposed next version of an upstream snapshot.
 
+svn/current: tracks the main svn t2 mainline but is updated more often then svn/upstream.
+
 tinyprod-base: Minimal base changes for the tinyprod repository.  Current
 	t2 trunk includes the revised Z1 commits which kills the need for
 	the vhsb (remove extraneous Z1 msp430X commits).   Tinyprod-base
@@ -211,7 +235,3 @@ msp430-int: main integration branch for the msp430 core.   It represents the
 
 msp430-int-pu: new proposed changes to msp430-int are first integrated here.
 	When verified these get merged into msp430-int.
-
-
-
-Please see 00a_Contribution_Process for typical workflows.
