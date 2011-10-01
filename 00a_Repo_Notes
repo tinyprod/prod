@@ -1,14 +1,21 @@
 
+WARNING:  Default branch has been switched to *** msp430-int-next ***
+
+============================================================================
+
+See "Where to begin" (next section) for where to start.
+
 ============================================================================
 
 TinyProd
    tp-freeforall/prod
 
-Main Branch: (2011-09-30)   msp430-int-pu
+Default (Main working) Branch: (2011-09-30)   msp430-int-next
+  Integration cycle.  Merging tinyos-main (SVN) -> msp430-int
 
 <current feature branch>
 msp430-int:     msp430 integration
-msp430-int-pu:  msp430 integration (proposed updates)
+msp430-int-pu:  msp430 integration (proposed updates)  (currently collapsed)
 
 msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
 
@@ -32,7 +39,7 @@ msp430-int-pu-next, new int-pu based on tinyprod-base.
 msp430-int <- msp430-int-pu
 msp430-int-pu temporarily reserved (to give folks time to adapt).
 
-upstream-next: new upstream
+upstream-next: new upstream, present during an update cycle.
 tinyprod-base: based off upstream-next.
 msp430-int-next: off tinyprod-base
 msp430-int-pu-next: off msp430-int-next  (at this point should be pristine).
@@ -41,16 +48,18 @@ msp430-int-svn: continues along.   (commits that should come into the
 
 ============================================================================
 
-Where to look for stuff:
+Where to begin:
 
-01_Repo_Notes: For a general overview of what this Repo is about.  Note
-  this repository is uses GIT as its DVCS.
+00a_Repo_Notes: (this file).  For a general overview of what this Repo is
+  about.  Note this repository uses GIT as its DVCS.
  
-00_Getting_Started: Overview of getting started using the Repo and GIT.
-
-00a_Contribution_Process: Contributing back to the central Repository.
-
 00b_Development_Environment: Setting up a development environment.
+
+00c_Getting_Started_Git: Overview of getting started using git, github, and
+  this repo.
+
+00d_Contribution_Process: Contributing back to the central Repository.
+
 
 ============================================================================
 
@@ -217,10 +226,13 @@ svn t2 mainline ---|
 
 * Branches:
 
-svn/upstream: is the main branch coming from the svn t2 mainline.  Updated manually.
-svn/upstream-next: proposed next version of an upstream snapshot.
+svn/upstream: is the main branch coming from the svn t2 mainline.  Updated
+	manually. It denotes a merge point taken for tinyprod.
+svn/upstream-next: proposed next version of an upstream snapshot.  Indicates a
+	merge cycle in underway.
 
-svn/current: tracks the main svn t2 mainline but is updated more often then svn/upstream.
+svn/current: tracks the main svn t2 mainline but is updated more often then
+	svn/upstream.
 
 tinyprod-base: Minimal base changes for the tinyprod repository.  Current
 	t2 trunk includes the revised Z1 commits which kills the need for

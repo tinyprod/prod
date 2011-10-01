@@ -169,10 +169,10 @@ redacted)...
 
 * Set up your working repository
 
-  See 00_Repo_Notes for the structure of the repositories and their
+  See 00a_Repo_Notes for the structure of the repositories and their
   relationships.
 
-  Also see 00a_Contribution_Process for examples of how to interacte with the
+  Also see 00d_Contribution_Process for examples of how to interacte with the
   various branches and repositories.
 
   The main repo is https://github.com/tinyprod/prod with an integration repo
@@ -190,7 +190,7 @@ redacted)...
   github fork and a request for a pull is made between the contributor's
   branch and the main integration branch.
 
-  Please refer to 00a_Contribution_Process for details on how to set up
+  Please refer to 00d_Contribution_Process for details on how to set up
   your working repository.
 
 
