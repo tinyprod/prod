@@ -1,0 +1,77 @@
+
+Socket Interface for TinyOS Network Communications
+===============================================================================
+
+MoteNet implements a socket interface for communications with a wireless
+sensor network.   Any network stack supported by both the mote and base
+station can be supported.  Currently, IPv6 and TinyOS Active Messaging (AM)
+sockets are supported.
+
+Motivation: Many network cognizant programs are implemented using a socket
+interface.  This isolates most of the details of network communications behind
+the sockets abstraction barrier.
+
+There is work in progress to implement an IPv6/6lowpan stack on the motes.
+Interfacing to this network from the base station consists of a socket
+interface to a IPv6 network.  This has many benefits.
+
+MoteNet provides the same interface for programs built on top of the AM
+protocol stack.  The AM stack provides a significantly lighter weight network
+transport than the ipv6/6lowpan stack.
+
+Normally just the payload crosses the socket interface (specified via
+SOCK_DGRAM), however the whole AM packet can be requested by using SOCK_RAW.
+
+See mnlisten.c and mnsend.c for working examples.
+
+
+Usage of the interface looks like the following:
+
+
+struct sockaddr_am local_addr, remote_addr;
+
+mn_parse_motecom(&mcs_conn, "serial@/dev/ttyUSB0:115200");
+sock_fd = mn_socket(&mcs_conn, AF_AM, SOCK_DGRAM, 0);
+memset(&local_addr,  0, sizeof(local_addr);
+memset(&remote_addr, 0, sizeof(remote_addr);
+local_addr.am_family   = AF_AM;
+local_addr.am_am_addr  = htons(0x0001);
+local_addr.am_type     = 0xa1;		 /* only receive for type A1 (161) */
+
+remote_addr.am_family  = AF_AM;
+remote_addr.am_am_addr = htons(0xffff);	/* broadcast */
+remote_addr.am_type    = 0xa1;
+
+/* set local address, also opens the serial port */
+err = mn_bind(sock_fd, &local_sockaddr, sizeof(local_sockaddr));
+
+/* set remote end's address, we will broadcast */
+err = mn_connect(sock_fd, &remote_sockaddr, sizeof(remote_sockaddr));
+
+/* will receive any packets addressed to 0x0001 or 0xffff */
+num_recvd = mn_recv(sock_fd, buf, 1024, 0);
+
+
+Each mn_recv() will receive the next complete packet.   Each mn_send() will
+send one complete packet.  mn_recvfrom() will receive the next packet but also
+returns the address of the sender (this is the AM address in the src field).
+Similarily, a different destination address can be specified for the send
+using mn_sendto().
+
+
+The directory contains all files to build the library (libmotenet.a) that
+provides the socket interface and lower layer code that implements direct
+access to the serial port as well as the interconnect to the remote server.
+
+Two example programs are also included that demonstrate usage of the library
+and the socket interface.
+
+The Active Message stack in TinyOS 2.1 implements a light weight
+network protocol for a wireless sensor network.  Its header follows:
+
+      +--------+------+-----+-----+-----+------+---------
+      | encap  | dest | src | len | grp | type | payload
+      +--------+------+-----+-----+-----+------+---------
+bytes     1       2      2     1     1     1       len
+
+encap == 0x00
