@@ -71,13 +71,13 @@ You want to follow the instructions at: http://tinyprod.net/debian-dev.
 
 The following should be equivilent.  With some additions...
 
-sudo -s
-
 #
 # add the keys for Razvan, the package signer
 #
 gpg --keyserver subkeys.pgp.net --recv-keys F99BE531
 gpg -a --export F99BE531 | sudo apt-key add -
+
+sudo -s
 
 #
 # add a repo pointer into sources.list
