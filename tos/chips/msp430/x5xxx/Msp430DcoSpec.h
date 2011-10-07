@@ -53,13 +53,13 @@
 #ifndef MS430DCOSPEC_H
 #define MS430DCOSPEC_H
 
-/* 16 MiHZ */
-#define TARGET_DCO_HZ   16777216UL
+/* 4 MiHZ, low power */
+#define TARGET_DCO_HZ   4194304UL
 #define ACLK_HZ         32768UL
 #define DIV_UIS		16
 
 #ifdef notdef
-#define TARGET_DCO_KHZ	16384	// the target DCO clock rate in binary kHz
+#define TARGET_DCO_KHZ	4096	// the target DCO clock rate in binary kHz
 #define ACLK_KHZ	32	// the ACLK rate in binary kHz
 #endif
 
