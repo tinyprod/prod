@@ -64,16 +64,16 @@ module Msp430XV2ClockP @safe() {
  * If somebody hasn't told us the preferred target DCO, look for it in
  * the legacy location
  */
-#ifndef TARGET_DCO_KHZ
+#ifndef TARGET_DCO_HZ
 #include "Msp430DcoSpec.h"
-#endif /* TARGET_DCO_KHZ */
+#endif /* TARGET_DCO_HZ */
 
 /* Pick something based on target DCO */
-#if 4096 == TARGET_DCO_KHZ
+#if 4194304 == TARGET_DCO_HZ
 #define MSP430XV2_DCO_CONFIG MSP430XV2_DCO_8MHz_RSEL3
-#else /* TARGET_DCO_KHZ value */
+#else /* TARGET_DCO_HZ value */
 #define MSP430XV2_DCO_CONFIG MSP430XV2_DCO_8MHz_RSEL3
-#endif /* TARGET_DCO_KHZ value */
+#endif /* TARGET_DCO_HZ value */
 #endif /* MSP430XV2_DCO_CONFIG */
 
   command error_t Init.init() {

@@ -44,7 +44,7 @@
  * DCO configuration is normally performed in Msp430XV2ClockControlP.
  * DCO rates below are in binary megahertz (viz., 4MiHz == 2^24Hz).  In
  * the default implementation ACLK is always at 2^15 Hz (32KiHz), MCLK
- * is always half the DCO rate, and SMCLK is scaled to be 1MHz
+ * is always half the DCO rate, and SMCLK is scaled to be 1MiHz
  * (2^20Hz).  The frequency range selection value is taken from the
  * "DCO Frequency" table in the chip-specific electrical
  * characteristics datasheet.  Where one DCO frequency is available as
@@ -52,6 +52,17 @@
  * with two different configurations, which may have different
  * stability characteristics.  It is the developer's responsibility to
  * select the correct DCO/RSEL pairing for the target chip.
+ *
+ * Warning: TinyOS likes timers/clocks to be powers of 2.   This probably
+ * was to make syncing the DCO to the 32KiHz time base easier.  But this
+ * presents problems in juxtaposition with TI's chips.  The x5 chips can
+ * have a variable Vcore which also determines what the maximum frequency
+ * supported is.  All of the specs are given in terms of powers of ten.
+ *
+ * Relaxing the binary time constraint makes life easier for the h/w and
+ * makes it easier to run the cpu at the full speed for a given Vcore.
+ * This however makes TinyOS time a power of ten rather than binary.  This
+ * probably isn't an issue as long as it is documented.
  */
 
 /** Constants used to configure specific DCO rates on MSP430 chips. */
