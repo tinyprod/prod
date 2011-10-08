@@ -9,6 +9,29 @@ running TinyOS 2.0. To build this SDK, run
 in the current directory and, if you wish, "make install" to install the
 C-based serial forwarder in <somewhere>/bin.
 
+To install using stow:
+
+      ./bootstrap
+      ./configure --prefix=/opt/stow/sf_c
+      make
+
+      sudo -s
+      make install
+
+      ("sudo make install" for some reason doesn't pick up the value of $TOSROOT properly so
+      the make install doesn't work write unless you are root first)
+
+      This will install bin/{sf, sflisten, sfsend, seriallisten, serialsend}, include/{message.h,
+      serialsource.h, sfsource.h}, and lib/libmote.a.  These will be installed into /opt/stow/sf_c.
+
+
+   Install into /opt/{bin,include,lib} using stow.  (still root)
+
+      cd /opt/stow
+      stow sf_c
+
+
+
 This directory contains one utility:
 - sf: a C-based serial forwarder:
     sf <port> <device> <baudrate>
