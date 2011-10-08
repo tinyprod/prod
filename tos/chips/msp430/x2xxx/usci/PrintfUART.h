@@ -84,7 +84,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#warning including printfZ1
+#warning including x2xxx/usci/PrintfUART.h
 
 // -------------------------------------------------------------------
 #ifdef PRINTFUART_ENABLED

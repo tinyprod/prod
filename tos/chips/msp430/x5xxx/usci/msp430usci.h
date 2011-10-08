@@ -3,6 +3,7 @@
 
 #include "msp430hardware.h"
 
+/* when would this ever get used? */
 #define MSP430_USCI_RESOURCE "Msp430Usci.Resource"
 
 #define MSP430_USCI_A0_RESOURCE "Msp430Usci.A0.Resource"
@@ -35,6 +36,11 @@ typedef struct msp430_usci_config_t {
 #ifndef TOS_DEFAULT_BAUDRATE
 #define TOS_DEFAULT_BAUDRATE 115200
 #endif /* TOS_DEFAULT_BAUDRATE */
+
+
+/*
+ * This table assumes UART clock input (SMCLK) is 1MiHz (2^20Hz).
+ */
 
 msp430_usci_config_t msp430_usci_uart_default_config = {
   /* N81 UART mode driven by SMCLK */
