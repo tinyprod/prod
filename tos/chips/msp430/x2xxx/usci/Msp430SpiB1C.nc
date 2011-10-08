@@ -40,7 +40,8 @@
  * On the x2xxx processors, USCI_B1 does not have any DMA triggers available
  * on the DMA engine so SPI1 does not support DMA.  Note....  This only
  * applies for the x2xxx processors.  x5xxx processors have more triggers so
- * can support DMA.  How to handle.
+ * can support DMA.   But the control files for this are in a completely different
+ * directory (x5xxx/usci).
  *
  * This argues for this being a platform thing.  The platform indicates
  * what cpu is being used so also denotes what ports are available.
