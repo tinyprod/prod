@@ -68,7 +68,4 @@ implementation {
 
   components Counter32khz16C as CounterC;
   UartP.Counter -> CounterC;
-
-  components LedsC as Leds;
-  UartP.Leds -> Leds;
 }

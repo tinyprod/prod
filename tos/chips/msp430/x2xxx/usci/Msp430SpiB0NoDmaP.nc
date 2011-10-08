@@ -66,7 +66,4 @@ implementation {
 
   components HplMsp430UsciB0C as UsciC;
   SpiP.Usci -> UsciC;
-
-  components LedsC as Leds;
-  SpiP.Leds -> Leds;
 }

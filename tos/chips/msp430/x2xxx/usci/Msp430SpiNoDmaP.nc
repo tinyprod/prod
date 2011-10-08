@@ -51,7 +51,6 @@ generic module Msp430SpiNoDmaP() {
     interface Msp430SpiConfigure[ uint8_t id ];
     interface HplMsp430UsciB as Usci;
     interface HplMsp430UsciInterrupts as UsciInterrupts;
-    interface Leds;
   }
 }
 

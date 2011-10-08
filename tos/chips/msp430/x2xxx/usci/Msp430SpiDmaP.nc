@@ -63,7 +63,6 @@ generic module Msp430SpiDmaP( uint16_t      IFG_addr,
     interface Msp430SpiConfigure[uint8_t id ];
     interface HplMsp430UsciB as Usci;
     interface HplMsp430UsciInterrupts as UsciInterrupts;
-    interface Leds;
   }
 }
 

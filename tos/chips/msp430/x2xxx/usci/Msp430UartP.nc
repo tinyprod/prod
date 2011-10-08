@@ -54,7 +54,6 @@ generic module Msp430UartP() {
     interface HplMsp430UsciA as Usci;
     interface HplMsp430UsciInterrupts as UsciInterrupts[ uint8_t id ];
     interface Counter<T32khz,uint16_t>;
-    interface Leds;
   }
 }
 

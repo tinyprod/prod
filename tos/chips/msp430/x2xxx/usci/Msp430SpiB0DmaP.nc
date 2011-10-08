@@ -84,7 +84,4 @@ implementation {
 #ifdef DMA_VERBOSE
 #warning Msp430SpiB0DmaP: using dma channels 1 and 2
 #endif
-
-  components LedsC as Leds;
-  SpiP.Leds -> Leds;
 }
