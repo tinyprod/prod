@@ -1,6 +1,4 @@
-/*
- * Copyright (c) 2011 Redslate Ltd.
- * Copyright (c) 2009-2010 People Power Co.
+/* Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,24 +37,18 @@
  * Connect the appropriate pins for USCI support on a CC430.
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
- * @author Derek Baker <derek@red-slate.co.uk>
  */
 
-configuration PlatformUsciInitC {
-}
-implementation {
+configuration PlatformUsciMapC {
+} implementation {
   components HplMsp430GeneralIOC as GIO;
 
   components Msp430UsciUartA0P as UartA0C;
   UartA0C.URXD -> GIO.UCA0RXD;
   UartA0C.UTXD -> GIO.UCA0TXD;
 
-//  components Msp430UsciSpiB0P as SpiB0C;
-//  SpiB0C.SIMO -> GIO.UCB0SIMO;
-//  SpiB0C.SOMI -> GIO.UCB0SOMI;
-//  SpiB0C.CLK -> GIO.UCB0CLK;
-
-  components Msp430UsciI2CB0P as I2CB0C;
-    I2CB0C.SCL -> GIO.UCB0SCL;
-    I2CB0C.SDA -> GIO.UCB0SDA;
+  components Msp430UsciSpiB0P as SpiB0C;
+  SpiB0C.SIMO -> GIO.UCB0SIMO;
+  SpiB0C.SOMI -> GIO.UCB0SOMI;
+  SpiB0C.CLK -> GIO.UCB0CLK;
 }

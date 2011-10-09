@@ -67,7 +67,7 @@ implementation {
   components PlatformLedC;
   PlatformP.PlatformLed -> PlatformLedC;
 
-  components PlatformUsciInitC;
+  components PlatformUsciMapC;
   // No code initialization required; just connect the pins
 
   components Msp430PmmC;

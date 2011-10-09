@@ -58,6 +58,9 @@ implementation {
   components PlatformLedsC;
   PlatformP.PlatformLeds -> PlatformLedsC;
 
+  components PlatformUsciMapC;
+  // No code initialization required; just connect the pins
+
   components PlatformClockC;
   PlatformP.PlatformClock -> PlatformClockC;
 }

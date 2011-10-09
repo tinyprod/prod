@@ -59,7 +59,6 @@ generic module Msp430UsciSpiP () @safe() {
 
     interface Msp430UsciConfigure[ uint8_t client ];
     interface ArbiterInfo;
-    interface Leds;
   }
 }
 implementation {

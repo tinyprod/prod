@@ -59,7 +59,7 @@ implementation {
   components PlatformLedC;					//Surf Led System
   PlatformP.PlatformLed -> PlatformLedC;
 
-  components PlatformUsciInitC;
+  components PlatformUsciMapC;
   // No code initialization required; just connect the pins
 
   components Msp430PmmC;

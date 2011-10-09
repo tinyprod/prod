@@ -1,4 +1,5 @@
-/* Copyright (c) 2009-2010 People Power Co.
+/*
+ * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,16 +40,16 @@
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  */
 
-configuration PlatformUsciInitC {
+configuration PlatformUsciMapC {
 } implementation {
   components HplMsp430GeneralIOC as GIO;
 
-  components Msp430UsciUartA0P as UartA0C;
-  UartA0C.URXD -> GIO.UCA0RXD;
-  UartA0C.UTXD -> GIO.UCA0TXD;
+ // components Msp430UsciUartA0P as UartA0C;
+//  UartA0C.URXD -> GIO.UCA0RXD;
+//  UartA0C.UTXD -> GIO.UCA0TXD;
 
   components Msp430UsciSpiB0P as SpiB0C;
-  SpiB0C.SIMO -> GIO.UCB0SIMO;
-  SpiB0C.SOMI -> GIO.UCB0SOMI;
-  SpiB0C.CLK -> GIO.UCB0CLK;
+   SpiB0C.SIMO -> GIO.UCB0SIMO;
+   SpiB0C.SOMI -> GIO.UCB0SOMI;
+   SpiB0C.CLK -> GIO.UCB0CLK;
 }
