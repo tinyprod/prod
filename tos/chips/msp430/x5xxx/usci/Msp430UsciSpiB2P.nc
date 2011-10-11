@@ -3,6 +3,7 @@
 configuration Msp430UsciSpiB2P {
   provides {
     interface SpiPacket[ uint8_t client ];
+    interface SpiBlock;
     interface SpiByte;
     interface Msp430UsciError;
     interface ResourceConfigure[ uint8_t client ];
@@ -26,7 +27,8 @@ implementation {
   Msp430UsciConfigure = SpiC;
   ResourceConfigure = SpiC;
   SpiPacket = SpiC;
-  SpiByte = SpiC;
+  SpiBlock  = SpiC;
+  SpiByte   = SpiC;
   Msp430UsciError = SpiC;
   SIMO = SpiC.SIMO;
   SOMI = SpiC.SOMI;

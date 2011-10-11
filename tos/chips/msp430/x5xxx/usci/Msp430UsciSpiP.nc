@@ -46,6 +46,7 @@
 generic module Msp430UsciSpiP () @safe() {
   provides {
     interface SpiPacket[ uint8_t client ];
+    interface SpiBlock;
     interface SpiByte;
     interface Msp430UsciError;
     interface ResourceConfigure[ uint8_t client ];
@@ -91,12 +92,12 @@ implementation {
    *
    * Assumes the USCI is currently in SPI mode.  This will busy-wait
    * until any characters being actively transmitted or received are
-   * out of their shift register.  It disables the interrupts, puts
-   * the USCI into software resent, and returns the SPI-related pins
-   * to their IO rather than module role.
+   * out of their shift register.  The USCI is reset (which also
+   * disables interrupts) and returns the SPI-related pins to their
+   * IO function rather than module role.
    *
-   * The USCI is left in software reset mode to avoid power drain per
-   * CC430 errata UCS6.
+   * The USCI is left in software reset mode to avoid power drain.
+   * Errata UCS6 doesn't apply.
    */
   void unconfigure_ () {
     while (UCBUSY & (call Usci.getStat())) {
@@ -128,7 +129,8 @@ implementation {
 
     /*
      * Do basic configuration, leaving USCI in reset mode.  Configure
-     * the SPI pins, enable the USCI, and turn on the interrupts.
+     * the SPI pins, enable the USCI, and leave interrupts off.  Note
+     * reseting the USCI will kill the IEs so no need to do so explicitly.
      */
     call Usci.configure(config, TRUE);
     call SIMO.makeOutput();
@@ -146,6 +148,7 @@ implementation {
 
   async command uint8_t SpiByte.write (uint8_t data) {
     uint8_t stat;
+
     while (! (UCTXIFG & call Usci.getIfg())) {
       ; /* busywait */
     }
@@ -163,35 +166,40 @@ implementation {
     return data;
   }
 
-  async command error_t SpiPacket.send[uint8_t client] (uint8_t* txBuf, uint8_t* rxBuf, uint16_t len) {
 
-    uint16_t bytesLeft = len;
+  async command void SpiBlock.transfer(uint8_t* txBuf, uint8_t* rxBuf, uint16_t len) {
+    uint8_t byt;
 
-    while (bytesLeft) {
-      while (! (UCTXIFG & call Usci.getIfg())) {
-        ; /* busywait */
-      }
-      call Usci.setTxbuf(txBuf[len-bytesLeft]);
-
-      while (! (UCRXIFG & call Usci.getIfg())) {
-        ; /* busywait */
-      }
-
-      rxBuf[len-bytesLeft] = call Usci.getRxbuf();
-      bytesLeft=bytesLeft-1;
-    }
-
-    /*
-     * WARNING: interrupts are disabled for this signal handler (event).   This
-     * in general is a bad idea.   We are doing it here because this is wired
-     * into the CC2420 stack which yields lots of non-atomic accesses.  A redesign
-     * of some flavor would be needed to fix this unless we put an atomic here.
-     */
-    atomic signal SpiPacket.sendDone[client](txBuf, rxBuf, len, SUCCESS);
-    return SUCCESS;
+    while (len) {
+      while (!call Usci.isTxIntrPending())
+	;				/* busy wait */
+      byt = 0;
+      if (txBuf)
+	byt = *txBuf++;
+      call Usci.setTxbuf(byt);
+      while (!call Usci.isRxIntrPending())
+	;				/* busy wait */
+      byt = call Usci.getRxbuf();
+      if (rxBuf)
+	*rxBuf++ = byt;
+      len--;
+    }      
   }
 
-  default async event void SpiPacket.sendDone[uint8_t client] (uint8_t* txBuf, uint8_t* rxBuf, uint16_t len, error_t error ) { }
+
+  /*
+   * SpiPacket.send is improperly implemented.   It should be split phase.  Other msp430 families
+   * implement it using interrupts and/or dma.
+   *
+   * For the time being, the functionality implemented originally by the x5 SpiPacket, is now
+   * available in SpiBlock.transfer.   This routine now returns FAIL.
+   */
+  async command error_t SpiPacket.send[uint8_t client] (uint8_t* txBuf, uint8_t* rxBuf, uint16_t len) {
+    return FAIL;
+  }
+
+  default async event void SpiPacket.sendDone[uint8_t client] (uint8_t* txBuf,
+			uint8_t* rxBuf, uint16_t len, error_t error ) { }
 
   async event void Interrupts.interrupted (uint8_t iv) {
     if (! call ArbiterInfo.inUse()) {
