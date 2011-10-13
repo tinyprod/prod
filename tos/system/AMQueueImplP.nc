@@ -1,7 +1,7 @@
-// $Id: AMQueueImplP.nc,v 1.11 2010-06-29 22:07:56 scipio Exp $
 /*
-* Copyright (c) 2005 Stanford University. All rights reserved.
-*
+ * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2005 Stanford University. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -37,13 +37,16 @@
  * clients.
  *
  * @author Philip Levis
- * @date   Jan 16 2006
+ * @author Eric B. Decker (cire831@gmail.com)
  */ 
 
 #include "AM.h"
 
 generic module AMQueueImplP(int numClients) @safe() {
-    provides interface Send[uint8_t client];
+    provides {
+      interface Send[uint8_t client];
+      interface SendBusy[uint8_t client];
+    }
     uses{
         interface AMSend[am_id_t id];
         interface AMPacket;
@@ -60,12 +63,19 @@ implementation {
     queue_entry_t queue[numClients];
     uint8_t cancelMask[numClients/8 + 1];
 
+    command bool SendBusy.busy[uint8_t clientId]() {
+      if (clientId >= numClients) return TRUE;
+      if (queue[clientId].msg)    return TRUE;
+      return FALSE;
+    }
+
     void tryToSend();
   
     void nextPacket() {
         uint8_t i;
-        current = (current + 1) % numClients;
-        for(i = 0; i < numClients; i++) {
+
+	current = (current + 1) % numClients;
+	for(i = 0; i < numClients; i++) {
             if((queue[current].msg == NULL) ||
                (cancelMask[current/8] & (1 << current%8)))
             {
@@ -96,10 +106,10 @@ implementation {
             return EBUSY;
         }
         dbg("AMQueue", "AMQueue: request to send from %hhu (%p): passed checks\n", clientId, msg);
-        
+
         queue[clientId].msg = msg;
         call Packet.setPayloadLength(msg, len);
-    
+
         if (current >= numClients) { // queue empty
             error_t err;
             am_id_t amId = call AMPacket.type(msg);
@@ -107,7 +117,7 @@ implementation {
       
             dbg("AMQueue", "%s: request to send from %hhu (%p): queue empty\n", __FUNCTION__, clientId, msg);
             current = clientId;
-            
+
             err = call AMSend.send[amId](dest, msg, len);
             if (err != SUCCESS) {
                 dbg("AMQueue", "%s: underlying send failed.\n", __FUNCTION__);
@@ -141,7 +151,7 @@ implementation {
             }
         }
     }
-    
+
     command error_t Send.cancel[uint8_t clientId](message_t* msg) {
         if (clientId >= numClients ||         // Not a valid client    
             queue[clientId].msg == NULL ||    // No packet pending
@@ -215,6 +225,7 @@ implementation {
     default event void Send.sendDone[uint8_t id](message_t* msg, error_t err) {
         // Do nothing
     }
+
     default command error_t AMSend.send[uint8_t id](am_addr_t am_id, message_t* msg, uint8_t len) {
         return FAIL;
     }
