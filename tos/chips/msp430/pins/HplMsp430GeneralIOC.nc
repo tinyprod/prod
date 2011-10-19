@@ -320,7 +320,7 @@ configuration HplMsp430GeneralIOC {
 #endif /* cc430x513x || cc430x612x || cc430x613x */
 
 
-#if defined(__msp430x541x) || defined(__msp430x543x)
+#if defined(__msp430x54x) || defined(__msp430x54xA)
 
   provides interface HplMsp430GeneralIO as TA0CCR0;
   provides interface HplMsp430GeneralIO as TA0CCR1;
@@ -937,7 +937,7 @@ implementation {
 #endif /* cc430x513x || cc430x613x */
 #endif /* cc430x513x || cc430x612x || cc430x613x */
 
-#if defined(__msp430x543x) || defined(__msp430x541x)
+#if defined(__msp430x54x) || defined(__msp430x54xA)
 
    TA0CCR0 = P11;
    TA0CCR1 = P12;
@@ -1061,5 +1061,5 @@ implementation {
    TA1CCR2 = P73;
 #endif
 
-#endif	/* __msp430x543x || __msp430x541x */
+#endif	/* __msp430x54x || __msp430x54xA */
 }

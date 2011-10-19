@@ -45,9 +45,6 @@ enum {
   TOS_SLEEP_NONE = MSP430_POWER_ACTIVE,
 };
 
-#define __msp430x543x
-//Unlock for Special funcionality of PINS such as SPI
-
 /* Use the PlatformAdcC component, and enable 8 pins */
 //#define ADC12_USE_PLATFORM_ADC 1
 //#define ADC12_PIN_AUTO_CONFIGURE 1
