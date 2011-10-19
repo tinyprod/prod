@@ -46,7 +46,10 @@ configuration Msp430UsciArbB0P {
     interface ArbiterInfo;
     interface HplMsp430UsciInterrupts as Interrupts[ uint8_t id ];
   }
-  uses interface ResourceConfigure[ uint8_t id ];
+  uses {
+    interface ResourceConfigure[ uint8_t id ];
+    interface ResourceDefaultOwnerInfo;
+  }
 }
 
 implementation {
@@ -61,6 +64,7 @@ implementation {
   ResourceRequested        = ArbiterC;
   ResourceDefaultOwner     = ArbiterC;
   ResourceConfigure        = ArbiterC;
+  ResourceDefaultOwnerInfo = ArbiterC;
   ArbiterInfo              = ArbiterC;
   UsciIntP.ArbiterInfo    -> ArbiterC;
 }

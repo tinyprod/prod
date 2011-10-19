@@ -299,7 +299,7 @@ implementation {
     will be 0xFF
   */
   async command uint8_t ArbiterInfo.userId() {
-    atomic return resId;
+    return resId;
   }
 
   /**

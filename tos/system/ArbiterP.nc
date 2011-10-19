@@ -101,6 +101,7 @@ generic module ArbiterP(uint8_t default_owner_id) @safe() {
     interface ArbiterInfo;
   }
   uses {
+    interface ResourceDefaultOwnerInfo;
     interface ResourceConfigure[uint8_t id];
     interface ResourceQueue as Queue;
     interface Leds;
@@ -277,9 +278,15 @@ implementation {
     
   /**
     Check if the Resource is currently in use
+
+    DefaultOwner maybe busy using the resourse.  Need extra level of check.
   */    
   async command bool ArbiterInfo.inUse() {
-    atomic return (state != RES_DEF_OWNED);
+    atomic {
+      if (state == RES_DEF_OWNED)
+	return call ResourceDefaultOwnerInfo.inUse();
+      return TRUE;
+    }
   }
 
   /**
@@ -340,5 +347,9 @@ implementation {
 
   default async event void ResourceDefaultOwner.immediateRequested() {
     call ResourceDefaultOwner.release();
+  }
+
+  default async command bool ResourceDefaultOwnerInfo.inUse() {
+    return FALSE;
   }
 }
