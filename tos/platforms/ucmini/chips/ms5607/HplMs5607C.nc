@@ -35,6 +35,7 @@
 configuration HplMs5607C {
   provides interface I2CPacket<TI2CBasicAddr> ;
   provides interface Resource;
+  provides interface BusPowerManager;
 }
 implementation {
   
@@ -42,4 +43,6 @@ implementation {
   
   I2CPacket = I2CBus.I2CPacket;
   Resource  = I2CBus.Resource;
+  components I2CBusPowerManagerC; //new DummyBusPowerManagerC();
+  BusPowerManager = I2CBusPowerManagerC;
 }

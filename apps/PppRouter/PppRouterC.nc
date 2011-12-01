@@ -10,19 +10,21 @@ configuration PppRouterC {
   components MainC;
   PppRouterP.Boot -> MainC;
 
-  components LedC;
-  PppRouterP.MultiLed -> LedC;
+  components LedsC as LedsC;
+  PppRouterP.Leds -> LedsC;
 
   components PppDaemonC;
-  PppRouterP.Ppp -> PppDaemonC;
+  PppRouterP.PppControl -> PppDaemonC;
 
   components PppIpv6C;
   PppDaemonC.PppProtocol[PppIpv6C.ControlProtocol] -> PppIpv6C.PppControlProtocol;
   PppDaemonC.PppProtocol[PppIpv6C.Protocol] -> PppIpv6C.PppProtocol;
   PppIpv6C.Ppp -> PppDaemonC;
   PppIpv6C.LowerLcpAutomaton -> PppDaemonC;
+
   PppRouterP.Ipv6LcpAutomaton -> PppIpv6C;
   PppRouterP.PppIpv6 -> PppIpv6C;
+  PppRouterP.Ppp -> PppDaemonC;
 
 #if defined(PLATFORM_TELOSB) || defined(PLATFORM_EPIC)
   components PlatformHdlcUartC as HdlcUartC;
@@ -55,7 +57,7 @@ configuration PppRouterC {
   components UDPShellC;
 
   // prints the routing table
-  // components RouteCmdC;
+  components RouteCmdC;
 
 #ifndef IN6_PREFIX
   components Dhcp6ClientC;
