@@ -5,10 +5,11 @@ Installing a development environment for TinyOS (TinyProd).
 
 State:
 
-2011-09-30:
+2011-12-01:
     Ubuntu 10.04 or 11.04.   Debian Squeeze works as well.
-    T2 (TinyProd) github:tp-freeforall/prod(msp430-int-pu),
+    T2 (TinyProd) github:tp-freeforall/prod(msp430-int-next),
     mspdebug JTAG debugging.   mspgcc-LTS20110716 toolchain with patches
+    Toolchain from http://tinyprod.net/repos/debian-dev
 
 **************************************************************************************
 
@@ -58,6 +59,7 @@ is more up to date.
 
 We want the following packages:
 
+           nesc
            msp430-binutils-tinyos
            msp430-gcc-tinyos
 	   msp430-gdb-tinyos
@@ -65,7 +67,7 @@ We want the following packages:
            msp430-tinyos
 	   msp430mcu-tinyos
 	   mspdebug-tinyos
-           nesc
+	   tinyos-tools
 
 You want to follow the instructions at: http://tinyprod.net/debian-dev.
 
@@ -80,24 +82,12 @@ gpg -a --export F99BE531 | sudo apt-key add -
 sudo -s
 
 #
-# add a repo pointer into sources.list
+# add the repo pointer into sources.list
 #
-echo "deb http://tinyprod.net/debian-dev squeeze main" >> /etc/apt/sources.list
+echo "deb http://tinyprod.net/repos/debian-dev squeeze main" >> /etc/apt/sources.list
 apt-get update
-apt-get install nesc msp430-tinyos mspdebug-tinyos
+apt-get install nesc msp430-tinyos mspdebug-tinyos tinyos-tools
 exit
-
-You will also need to install the tinyos-tools.tgz tarball.   These tools haven't
-been packaged yet, so will need to be manually installed.  The tools live in
-/usr/local.
-
-sudo -s
-cd /usr/local
-wget http://tinyprod.net/downloads/tinyos-tools.tgz
-tar xfz tinyos-tools.tgz
-exit
-
-Make sure your PATH environment variable includes /usr/local/bin.
 
 **************************************************************************************
 
@@ -109,8 +99,6 @@ for development.   It has modifications to support newer TI MSP430 processors.
 
 This basic checkout gives you a read-only copy of the msp430-int-next branch.   It
 is a fully functional local repository that can be commited into (locally only).
-To set up for contibuting to the main repository, the instructions in
-00c_Getting_Started_Git and 00d_Contribution_Process should be followed.
 
     cd ~/top
     mkdir t2_cur
@@ -127,6 +115,9 @@ This will keep your changes locally grouped.   You will have a remote named 'ori
 that points at the repository that you cloned from namely,
 git://github.com/tp-freeforall/prod.git.   Your branch <your_initials> will be rooted
 at the default branch of tp-freeforall/prod, msp430-int-next.
+
+To set up for contibuting to the main repository, the instructions in
+00c_Getting_Started_Git and 00d_Contribution_Process should be followed.
 
 **************************************************************************************
 
@@ -174,7 +165,8 @@ The following environment variables must be set to build.
 6) Build SerialForwarder and libmote library.   (optional)
 
 WARNING:  This should get replaced with libmotenet.   Superset of the SF but also
-allows using AM sockets or IPv6 sockets for connections.
+allows using AM sockets or IPv6 sockets for connections.  Note: currently libmotenet
+is a work in progress and should be considered experimental.
 
 
     Build the serial forwarder and associated library (also includes direct serial access)
