@@ -145,6 +145,7 @@ int lowpan_extern_match_context(struct in6_addr *addr, uint8_t *ctx_id) {
     ret->failed = FALSE;
     ret->link_transmissions = 0;
     ret->link_fragments = 0;
+    ret->link_fragment_attempts = 0;
     return ret;
   }
 #define SENDINFO_INCR(X) ((X)->_refcount)++
@@ -199,9 +200,6 @@ void SENDINFO_DECR(struct send_info *si) {
   event void Boot.booted() {
     call BlipStatistics.clear();
 
-    //commented out since already done in Init.init()
-    //ip_malloc_init();
-
     /* set up our reconstruction cache */
     table_init(&recon_cache, recon_data, sizeof(struct lowpan_reconstruct), N_RECONSTRUCTIONS);
     table_map(&recon_cache, reconstruct_clear);
@@ -220,10 +218,10 @@ void SENDINFO_DECR(struct send_info *si) {
 
     /* the payload length field is always compressed, have to put it back here */
     iph->ip6_plen = htons(recon->r_bytes_rcvd - sizeof(struct ip6_hdr));
-    signal IPLower.recv(iph, (void *)(iph + 1), NULL);
+    signal IPLower.recv(iph, (void *)(iph + 1), &recon->r_meta);
 
-    // printf("free(%p)\n", recon->r_buf); 
-    free(recon->r_buf);
+    // printf("ip_free(%p)\n", recon->r_buf);
+    ip_free(recon->r_buf);
     recon->r_timeout = T_UNUSED;
     recon->r_buf = NULL;
   }
@@ -266,8 +264,8 @@ void SENDINFO_DECR(struct send_info *si) {
       // deallocate the space for reconstruction
       printf("timing out buffer: src: %i tag: %i\n", recon->r_source_key, recon->r_tag);
       if (recon->r_buf != NULL) {
-        printf("free(%p)\n", recon->r_buf); 
-        free(recon->r_buf);
+        printf("ip_free(%p)\n", recon->r_buf);
+        ip_free(recon->r_buf);
       }
       recon->r_timeout = T_UNUSED;
       recon->r_buf = NULL;
@@ -368,6 +366,13 @@ void SENDINFO_DECR(struct send_info *si) {
         goto fail;
       }
 
+      /* fill in metadata: on fragmented packets, it applies to the
+         first fragment only  */
+      memcpy(&recon->r_meta.sender, &frame_address.ieee_src,
+             sizeof(ieee154_addr_t));
+      recon->r_meta.lqi = call ReadLqi.readLqi(msg);
+      recon->r_meta.rssi = call ReadLqi.readRssi(msg);
+
       if (hasFrag1Header(&lowmsg)) {
         if (recon->r_buf != NULL) goto fail;
         rv = lowpan_recon_start(&frame_address, recon, buf, len);
@@ -394,6 +399,12 @@ void SENDINFO_DECR(struct send_info *si) {
       int rv;
       struct lowpan_reconstruct recon;
 
+      /* fill in metadata */
+      memcpy(&recon.r_meta.sender, &frame_address.ieee_src, 
+             sizeof(ieee154_addr_t));
+      recon.r_meta.lqi = call ReadLqi.readLqi(msg);
+      recon.r_meta.rssi = call ReadLqi.readRssi(msg);
+
       buf = getLowpanPayload(&lowmsg);
       if ((rv = lowpan_recon_start(&frame_address, &recon, buf, len)) < 0) {
         goto fail;
@@ -402,8 +413,8 @@ void SENDINFO_DECR(struct send_info *si) {
       if (recon.r_size == recon.r_bytes_rcvd) {
         deliver(&recon);
       } else {
-        // printf("free(%p)\n", recon.r_buf); 
-        free(recon.r_buf);
+        // printf("ip_free(%p)\n", recon.r_buf);
+        ip_free(recon.r_buf);
       }
     }
     goto done;
@@ -427,10 +438,10 @@ void SENDINFO_DECR(struct send_info *si) {
     // this does not dequeue
     s_entry = call SendQueue.head();
 
-/* #ifdef LPL_SLEEP_INTERVAL */
-/*     call LowPowerListening.setRemoteWakeupInterval(s_entry->msg,  */
-/*             call LowPowerListening.getLocalWakeupInterval()); */
-/* #endif */
+#ifdef LPL_SLEEP_INTERVAL
+    call LowPowerListening.setRemoteWakeupInterval(s_entry->msg,
+            call LowPowerListening.getLocalWakeupInterval());
+#endif
 
     if (s_entry->info->failed) {
       dbg("Drops", "drops: sendTask: dropping failed fragment\n");
@@ -582,16 +593,20 @@ void SENDINFO_DECR(struct send_info *si) {
     }
     
     s_entry->info->link_transmissions += (call PacketLink.getRetries(msg));
-    signal IPLower.sendDone(s_entry->info);
+    s_entry->info->link_fragment_attempts++;
 
     if (!call PacketLink.wasDelivered(msg)) {
       printf("sendDone: was not delivered! (%i tries)\n", 
                  call PacketLink.getRetries(msg));
       s_entry->info->failed = TRUE;
+      signal IPLower.sendDone(s_entry->info);
 /*       if (s_entry->info->policy.dest[0] != 0xffff) */
 /*         dbg("Drops", "drops: sendDone: frag was not delivered\n"); */
       // need to check for broadcast frames
       // BLIP_STATS_INCR(stats.tx_drop);
+    } else if (s_entry->info->link_fragment_attempts == 
+               s_entry->info->link_fragments) {
+      signal IPLower.sendDone(s_entry->info);
     }
 
   done:

@@ -1,5 +1,3 @@
-/// $Id: HplAtm128I2CBusC.nc,v 1.5 2010-06-29 22:07:43 scipio Exp $
-
 /*
  *  Copyright (c) 2004-2006 Crossbow Technology, Inc.
  *  All rights reserved.
@@ -39,8 +37,6 @@
  *
  * @author Martin Turon <mturon@xbow.com>
  * @author Philip Levis
- *
- * @version    $Id: HplAtm128I2CBusC.nc,v 1.5 2010-06-29 22:07:43 scipio Exp $
  */
 
 configuration HplAtm128I2CBusC {
@@ -48,13 +44,12 @@ configuration HplAtm128I2CBusC {
 }
 implementation {
 
-  components HplAtm128GeneralIOC as IO, HplAtm128I2CBusP as Bus;
-	components McuSleepC;
+  components AtmegaGeneralIOC as IO, HplAtm128I2CBusP as Bus, McuSleepC;
   
   I2C         = Bus.I2C;
   Bus.I2CClk  -> IO.PortD0;
   Bus.I2CData -> IO.PortD1;
 
-	Bus.McuPowerState -> McuSleepC;
-	Bus.McuPowerOverride <- McuSleepC;
+  Bus.McuPowerState -> McuSleepC;
+  Bus.McuPowerOverride <- McuSleepC;
 }

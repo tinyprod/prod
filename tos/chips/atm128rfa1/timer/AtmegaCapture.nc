@@ -55,10 +55,10 @@ interface AtmegaCapture<size_type>
 
 // ----- timer interrupt mask register (TIMSK), input capture interrupt enable (ICIE)
 
-	/* Enables the overflow interrupt */
+	/* Enables the capture interrupt */
 	async command void start();
 
-	/* Disables the overflow interrupt */
+	/* Disables the capture interrupt */
 	async command void stop();
 
 	/* Checks is the overflow interrupt is enabled */

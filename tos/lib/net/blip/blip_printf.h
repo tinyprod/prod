@@ -14,10 +14,10 @@
 #include <lib6lowpan/iovec.h>
 #include <lib6lowpan/ip.h>
 
-void printf_buf(char *buf, int len) {
+void printf_buf(uint8_t *buf, int len) {
   int i;
   for (i = 0; i < len; i++) {
-    printf("%02hhx ", buf[i]);
+    printf("%02x ", buf[i]);
   }
   printf("\n");
 }
@@ -29,7 +29,7 @@ void iov_print(struct ip_iovec *iov) {
     int i;
     printf("iovec (%p, %i) ", cur, cur->iov_len);
     for (i = 0; i < cur->iov_len; i++) {
-      printf("%02hhx ", (uint8_t)cur->iov_base[i]);
+      printf("%02x ", (uint8_t)cur->iov_base[i]);
     }
     printf("\n");
     cur = cur->iov_next;
@@ -43,14 +43,27 @@ void printf_in6addr(struct in6_addr *a) {
   printf(print_buf);
 }
 
+int printf_ieee154addr(ieee154_addr_t *in) {
+  int i;
+  switch (in->ieee_mode) {
+  case IEEE154_ADDR_SHORT:
+    printf("IEEE154_ADDR_SHORT: 0x%x", in->i_saddr);
+    break;
+  case IEEE154_ADDR_EXT:
+    printf("IEEE154_ADDR_EXT: ");
+
+    for (i = 7; i >= 0; i--) {
+      printf("%02x", in->i_laddr.data[i]);
+      if (i > 0)
+        printf(":");
+    }
+    break;
+  }
+  return 0;
+}
+
 
 #else  /* PRINTFUART_ENABLED */
-#define printf(fmt, args ...) ;
-#define printfflush() ;
-#define printf_in6addr(a) ;
-#define printf_buf(buf, len) ;
-#define iov_print(iov) ;
-
 #if defined (_H_msp430hardware_h) || defined (_H_atmega128hardware_H)
   #include <stdio.h>
 #else
@@ -61,6 +74,14 @@ void printf_in6addr(struct in6_addr *a) {
 #endif 
 #endif
 #undef putchar
+
+/* disable all printfs by removing them in the preprocessor */
+#define printf(fmt, args ...) ;
+#define printfflush() ;
+#define printf_in6addr(a) ;
+#define printf_buf(buf, len) ;
+#define iov_print(iov) ;
+
 #endif /* PRINTFUART_ENABLED */
 
 #endif
