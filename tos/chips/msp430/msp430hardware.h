@@ -434,7 +434,7 @@ MSP430REG_NORACE2(I2CDCTLnr,I2CDCTL);
 
 // TOSH_ASSIGN_PIN creates functions that are effectively marked as
 // "norace".  This means race conditions that result from their use will not
-// be detectde by nesc.
+// be detected by nesc.
 
 #define TOSH_ASSIGN_PIN_HEX(name, port, hex) \
 void TOSH_SET_##name##_PIN() @safe() { MSP430REG_NORACE2(r,P##port##OUT); r |= hex; } \
@@ -463,12 +463,12 @@ enum {
   MSP430_POWER_LPM4   = 5
 };
 
-inline void __nesc_disable_interrupt(void) @safe() {
+inline void __nesc_disable_interrupt(void) __attribute__((always_inline)) @safe() {
   dint();
   nop();
 }
 
-inline void __nesc_enable_interrupt(void) @safe() {
+inline void __nesc_enable_interrupt(void) __attribute__((always_inline)) @safe() {
   eint();
 }
 
@@ -481,8 +481,8 @@ inline void __nesc_enable_interrupt(void) @safe() {
  * This should be checked to verify that it generates minimal code.  It does.
  */
 typedef uint16_t __nesc_atomic_t;
-__nesc_atomic_t  __nesc_atomic_start(void);
-void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts);
+inline __nesc_atomic_t  __nesc_atomic_start(void) __attribute__((always_inline));
+inline void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts) __attribute__((always_inline));
 
 #ifndef NESC_BUILD_BINARY
 /*
@@ -512,7 +512,7 @@ void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts);
    * we deal with it.
    */
 
-__nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe() {
+inline __nesc_atomic_t __nesc_atomic_start(void) @spontaneous() __attribute__((always_inline)) @safe() {
   __nesc_atomic_t result = (READ_SR & SR_GIE);
 
   dint();
@@ -526,7 +526,7 @@ __nesc_atomic_t __nesc_atomic_start(void) @spontaneous() @safe() {
   return result;
 }
 
-void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts) @spontaneous() @safe() {
+inline void __nesc_atomic_end(__nesc_atomic_t reenable_interrupts) @spontaneous() __attribute__((always_inline)) @safe() {
   asm volatile("" : : : "memory"); /* ensure atomic section effect visibility */
   if( reenable_interrupts )
     eint();
