@@ -1,9 +1,9 @@
 
 Major Changes to the msp430 core software:
 (branch: gh:tp-freeforall/prod(msp430-int-next)
-    will migrate to msp430-int (~ 2011-10-07))
+    will migrate to msp430-int (~ 2011-11-15))
 
-Last Update: 2011-09-30, cire
+Last Update: 2011-12-10, cire
 
 Msp430-Int (msp430 integration branch) is a major rework of the core tinyos
 msp430 files.  Originally, tinyos msp430 support was for the first generation
@@ -29,8 +29,8 @@ done using the following:
   	(20110612)	slated to become new main toolchain.
 
   mspgcc4.5.3 (LTS 20110716) long term support of uniarch (pre-20bit)
-  mspgcc4.5.3 (20110905) later version of LTS20110716 with patches through 0905.
-			see http://tinyprod.net/debian-dev.
+  mspgcc4.5.3 (20111008) later version of LTS20110716 with patches through 1008.
+			see http://tinyprod.net/repos/debian-dev.
 
 It is recommended that all verification work be done using the latest toolchain
 available.  The sooner we get that toolchain squared away the better.
@@ -52,6 +52,9 @@ x5: 3rd generation MSP430X.  Modified instruction timings.  Peripheral modificat
 
 
 Other notable changes:
+
+* Revise nesc_{en,dis}able_interrupt to generate better code.   Also force
+  these routines to be inline regardless of the optimization level.
 
 * Remove duplicate files between original x1 and Z1 (x2).  Msp430-int has
   been fully integrated with the tinyos-main trunk as of 2011-09-30 which
@@ -87,9 +90,7 @@ Other notable changes:
   limits for the various processors is in decimal (ie. 8MHz).   It is generally
   dangerous to overclock the TI parts and is asking for flakey behaviour.
 
-* Revised DCO calibrator to work with both 1611 and Z1 2617/1618.   Z1 uses dco
-  calibrator to sync up to 8MiHz.   The Z1 uses the 2617 which can be clocked
-  to 16MHz so 8MiHz is safe.
+* Revised DCO calibrator to work with both 1611 and Z1 2617/1618.
 
 * Device configuration blocks by default moved to ROM.   This saves start up cpu
   cycles and space in RAM.   Config blocks can still be placed in RAM and modified
@@ -122,11 +123,6 @@ Other notable changes:
   - force src/dst addresses to be 16 bits (was void *).  Be blatant.
   - make interrupts be parameterized.  This routes dma interrupts to the appropriate
     channel handler.
-
-  ***   The old dma handler has been brought back in for backward compatibility and
-    the new dma handler (supports x5) is now in tos/chips/msp430/dma_unified.  How
-    to migrate existing code is a bit of a pain.   Should revert existing code
-    back to old dma handler.
 
 
 * X5 additions:
