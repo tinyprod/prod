@@ -1,0 +1,14 @@
+chips/msp430/McuSleepC.nc
+chips/msp430/msp430regtypes.h
+chips/msp430/msp430hardware.h
+
+chips/msp430/timer/Msp430ClockP.nc
+chips/msp430/timer/Msp430TimerC.nc
+
+chips/msp430/pins/HplMsp430GeneralIO.nc
+chips/msp430/pins/HplMsp430GeneralIOP.nc
+chips/msp430/pins/HplMsp430GeneralIOC.nc
+chips/msp430/pins/HplMsp430InterruptP.nc
+chips/msp430/pins/HplMsp430InterruptC.nc
+
+chips/msp430/usci

@@ -1,0 +1,45 @@
+PLATFORM = gnode
+MCU_FAMILY = msp430
+MCU = msp430f2418
+
+# pass MCU to gcc
+CFLAGS += -mmcu=$(MCU)
+
+# this is resolved relative to the msp directory, see msp/msp.rules
+DEFAULT_PROGRAM ?= bsl
+
+# use our bootloader; the default assumes a telos node 
+MSP_BSL = lnode-bsl
+
+# if not set, default to the G-Node v1.3 configuration
+# alternatively, explicitly clear it, or msp.rules adds "--telos"
+ifeq ($(MSP_BSL_FLAGS),)
+MSP_BSL_FLAGS = --invert-sda --invert-scl
+#MSP_BSL_FLAGS = 
+endif
+
+# turn bsl.n into /dev/ttyUSBn, which is what bsl.extra expects
+ifneq ($(BSL),)
+BSL := /dev/ttyUSB$(BSL)
+endif
+
+# pass AM group and network mask to preprocessor
+ifneq ($(GROUP),)
+DEFAULT_LOCAL_GROUP=$(GROUP)
+else
+# use default set in AM.h
+DEFAULT_LOCAL_GROUP=
+endif
+
+ifneq ($(NETMASK),)
+CFLAGS+=-DDEFINED_AM_NETWORK_MASK=$(NETMASK)
+endif
+
+# AT45db flash memory support
+VOLUME_ALLOCATOR = tos-storage-at45db
+VOLUME_FILE = volumes-at45db.xml
+
+$(call TOSMake_include_platform,msp)
+
+gnode: $(BUILD_DEPS)
+	@:

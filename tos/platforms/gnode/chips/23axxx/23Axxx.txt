@@ -1,0 +1,12 @@
+Component: 23Axxx
+Description: Microchip Technology Inc. 23Axxx Serial SRAM devices with an SPI interface.
+
+Usage:
+This provides a read/write interface to the serial SRAM, as well as a BigQueue implementation backed by SRAM.
+
+Dependencies:
+- Assert
+- SoftwareSpiC
+
+Known bugs:
+None
