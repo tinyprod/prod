@@ -1,5 +1,5 @@
 
-WARNING:  Default branch has been switched to *** msp430-int-next ***
+WARNING:  Default branch has been switched to *** msp430-int ***
 
 ============================================================================
 
@@ -10,24 +10,27 @@ See "Where to begin" (next section) for where to start.
 TinyProd
    tp-freeforall/prod
 
-Default (Main working) Branch: (2011-09-30)   msp430-int-next
+Default (Main working) Branch: (2011-12-16)   msp430-int
   Integration cycle.  Merging tinyos-main (SVN) -> msp430-int
 
 <current feature branch>
 msp430-int:     msp430 integration
 msp430-int-pu:  msp430 integration (proposed updates)  (currently collapsed)
 
-msp430-int-svn: msp430 integration slated for inclusion into T2 SVN trunk.
+If in doubt, branch off from msp430-int.
 
-If in doubt, branch off from msp430-int-pu.
+Status: 2011-12-16
 
-Status: 2011-09-30
-
-tinyprod-base integrated with the tip of tinyos-main trunk (82dab04, r5767)
-msp430-int-next: integrated with updated tinyprod-base.
+tinyprod-base: integrated with the tip of tinyos-main trunk (82dab04, r5767)
+msp430-int:    integrated with updated tinyprod-base.
 
 Merge with Z1 (x2) tinyos-main code complete.
 
+
+2011-12-16: msp430-int-next promoted to msp430-int
+    integration with Z1 x2 tinyos-main (svn) complete.
+
+    bring gnode (sownet) into msp430-int.
 
 2011-09-21
 msp430-int-pu merged into msp430-int, includes base x5  (prior to tinyprod-base)
@@ -136,7 +139,7 @@ github.com/tp-freeforall/prod: working fork.
 github.com/<github_user>/prod: user's tinyprod working fork.
   branched off tp-freeforall/prod.   working branches
   should be branched off the tp-freeforall/prod(branch)
-  that the user is working on.  (ie. msp430-int-pu)
+  that the user is working on.  (ie. msp430-int or msp430-int-pu)
 
 The general form for a repository/branch is: <github_context>/<repo>(branch)
 ie. gh:tp-freeforall/prod(msp430-int-pu) is the msp430-int-pu branch in the
@@ -173,7 +176,10 @@ Other current branches:
 
 msp430-int: msp430 integration (msp430 core, x1, x2, x5) feature branch
 
-msp430-int-pu: proposed updates to msp430-int (no msp430-int-next).
+msp430-int-next: code accepted from int-pu and in process of merging into
+    msp430-int.
+
+msp430-int-pu: proposed updates to msp430-int.
 
 swreset: potential msp430 swreset implementation.
 

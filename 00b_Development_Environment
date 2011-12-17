@@ -5,9 +5,9 @@ Installing a development environment for TinyOS (TinyProd).
 
 State:
 
-2011-12-01:
+2011-12-16:
     Ubuntu 10.04 or 11.04.   Debian Squeeze works as well.
-    T2 (TinyProd) github:tp-freeforall/prod(msp430-int-next),
+    T2 (TinyProd) github:tp-freeforall/prod(msp430-int),
     mspdebug JTAG debugging.   mspgcc-LTS20110716 toolchain with patches
     Toolchain from http://tinyprod.net/repos/debian-dev
 
@@ -93,11 +93,11 @@ exit
 
 3) TinyOS 2.x tree checkout
 
-This is a basic check out of the msp430-int-next branch of the github repository
+This is a basic check out of the msp430-int branch of the github repository
 tp-freeforall/prod.git.   This repo tracks the main tinyos SVN repository used
 for development.   It has modifications to support newer TI MSP430 processors.
 
-This basic checkout gives you a read-only copy of the msp430-int-next branch.   It
+This basic checkout gives you a read-only copy of the msp430-int branch.   It
 is a fully functional local repository that can be commited into (locally only).
 
     cd ~/top
@@ -109,12 +109,12 @@ is a fully functional local repository that can be commited into (locally only).
 
 This will create a new branch named <your_intials> and will check you into that branch.
 It will be branched off of the main branch from the remote, gh:tp-freeforall/prod
-(msp430-int-next).  
+(msp430-int).
 
 This will keep your changes locally grouped.   You will have a remote named 'origin'
 that points at the repository that you cloned from namely,
 git://github.com/tp-freeforall/prod.git.   Your branch <your_initials> will be rooted
-at the default branch of tp-freeforall/prod, msp430-int-next.
+at the default branch of tp-freeforall/prod, msp430-int.
 
 To set up for contibuting to the main repository, the instructions in
 00c_Getting_Started_Git and 00d_Contribution_Process should be followed.
