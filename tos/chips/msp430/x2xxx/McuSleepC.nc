@@ -100,15 +100,32 @@ implementation {
       }
     }
 #endif
-    
+
+#if defined(__msp430_have_adc10) || defined(__MSP430_HAS_ADC10__)
+    // ADC10 check, pre-condition: pState != MSP430_POWER_ACTIVE
+    if (ADC10CTL0 & ADC10ON){
+      if (ADC10CTL1 & ADC10SSEL_2){
+        // sample or conversion operation with MCLK or SMCLK
+        if (ADC10CTL1 & ADC10SSEL_1)
+          pState = MSP430_POWER_LPM1;
+        else
+          pState = MSP430_POWER_ACTIVE;
+      } else if ((ADC10CTL1 & SHS_3) && ((TACTL & TASSEL_3) == TASSEL_2)){
+        // Timer A is used as sample-and-hold source and SMCLK sources Timer A
+        // (Timer A interrupts are always disabled when it is used by the
+        // ADC subsystem, that's why the Timer check above is not enough)
+	      pState = MSP430_POWER_LPM1;
+      }
+    }
+#endif
     return pState;
   }
-  
+
   void computePowerState() {
     powerState = mcombine(getPowerState(),
 			  call McuPowerOverride.lowestState());
   }
-  
+
   async command void McuSleep.sleep() {
     uint16_t temp;
     if (dirty) {

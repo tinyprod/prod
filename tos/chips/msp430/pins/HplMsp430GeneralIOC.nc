@@ -207,7 +207,15 @@ configuration HplMsp430GeneralIOC {
 
 
 /*
- * x2 family: msp430f2{4,6}1{6,7,8,9} processors
+ * x2 family: msp430f2{4,6}1[6-9] processors
+ *
+ *	__msp430x24x:	msp430f24[7-9], msp430f2410
+ *	__msp430x241x:	msp430f241[6-9]
+ *	__msp430x26x:	msp430f261[6-9]
+ *	__msp430x261x:	new headers none, 3.2.3 headers: msp430x261x.h
+ *
+ * Note: 247, 248, 249, and 2410 aren't currently used for a tinyos platform.
+ * 241[6-9] and 261[6-9] are used by tinyos platforms.
  *
  * Old headers: mspgccX (3.2.3) includes msp430x261x.h (-mmcu=msp430x2617)
  * which defines __msp430x261x.
@@ -215,11 +223,10 @@ configuration HplMsp430GeneralIOC {
  * New headers: mspgcc4 (4.4.5, uniarch, TI_HEADERS) defines __msp430x26x.  There
  * doesn't look like there is any conflict with any other processor defines.
  *
- * WARNING: The 2410 apprears to be different from the 241[6-9] processors.   It
- * defines __msp430x24x, while the 241[6-9] includes define __msp430x241x which
- * is what we are interested in.   I haven't looked at what is different.
+ * Differences between 2410 and 241x:
+ *	241x processors MSP430X_CPU
+ *	241x include ports 7 and 8.
  */
-
 #if defined(__msp430x241x) || defined(__msp430x261x) || defined(__msp430x26x)
   provides interface HplMsp430GeneralIO as UCA0CLK;
   provides interface HplMsp430GeneralIO as UCA0STE;
