@@ -2,7 +2,7 @@
 
 PLATFORM ?= telosa
 
-MSP_MCU = msp430x149
+MSP_MCU = msp430f149
 
 OPTFLAGS ?= -Os
 

@@ -2,7 +2,7 @@
 
 PLATFORM ?= telosb
 
-#MSP_MCU = msp430x1611
+MSP_MCU = msp430f1611
 
 OPTFLAGS ?= -Os
 

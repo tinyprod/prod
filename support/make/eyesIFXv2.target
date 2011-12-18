@@ -3,7 +3,7 @@
 
 PLATFORM = eyesIFXv2
 
-MSP_MCU = msp430x1611
+MSP_MCU = msp430f1611
 
 #Flash Config
 VOLUME_FILE = volumes-at45db.xml
