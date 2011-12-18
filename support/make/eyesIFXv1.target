@@ -5,8 +5,6 @@ PLATFORM = eyesIFXv1
 
 MSP_MCU = msp430x149
 
-# Remove MSP430 hardware multiply disable: new msp430-gcc fixes
-# PFLAGS += -mdisable-hwmul
 OPTFLAGS += -O
 
 ifndef DEFAULT_PROGRAM
