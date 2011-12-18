@@ -9,7 +9,7 @@ MSP_MCU = msp430x1611
 VOLUME_FILE = volumes-at45db.xml
 VOLUME_ALLOCATOR ?= tos-storage-at45db
 
-OPTFLAGS += -O
+OPTFLAGS ?= -Os
 
 ifndef DEFAULT_PROGRAM
 DEFAULT_PROGRAM = bsl
