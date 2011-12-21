@@ -48,7 +48,7 @@
 #ifndef MSP430DCOSPEC_H
 #define MSP430DCOSPEC_H
 
-#define ACLK_HZ 32768U
+#define ACLK_HZ 32768UL
 
 #ifndef MCLK_MHZ
 #define MCLK_MHZ 8
@@ -56,12 +56,14 @@
 
 #if MCLK_MHZ == 4
 	#define TARGET_DCO_HZ 4194304UL
-	#define DIV_UIS 4
-	#define SMCLK_MHZ 4
+	#define SMCLK_MHZ  4
+        #define SMCLK_DIV  1
+        #define TIMERA_DIV 4
 #elif MCLK_MHZ == 8
 	#define TARGET_DCO_HZ 8388608UL
-	#define DIV_UIS 8
-	#define SMCLK_MHZ 8
+	#define SMCLK_MHZ  8
+        #define SMCLK_DIV  1
+        #define TIMERA_DIV 8
 #else
 	#error "Unsupported MCLK_MHZ setting"
 #endif
