@@ -1,5 +1,4 @@
 
-
 Installing a development environment for TinyOS (TinyProd).
 
 
@@ -69,7 +68,7 @@ We want the following packages:
 	   mspdebug-tinyos
 	   tinyos-tools
 
-You want to follow the instructions at: http://tinyprod.net/debian-dev.
+You want to follow the instructions at: http://tinyprod.net/repos/debian-dev.
 
 The following should be equivilent.  With some additions...
 
