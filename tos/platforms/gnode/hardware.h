@@ -34,6 +34,8 @@
 #define RADIO_G0	24
 #define RADIO_G2	25
 
+#define USER_BUTTON	26
+
 #define LED_GREEN	17
 #define LED_YELLOW	20
 #define LED_RED		21
