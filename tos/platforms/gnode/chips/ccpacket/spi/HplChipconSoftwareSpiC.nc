@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "platform.h"
+
 /**
  * Provides a software implementation of the SPI protocol for use on MSP430 processors
  * that do not have a hardware SPI bus.
@@ -48,6 +50,6 @@ implementation {
 	Spi.MOSI -> Hpl.SI;
 	Spi.MISO -> Hpl.SO;
 	Spi.Clock -> Hpl.Clock;
-	Spi.Init <- PlatformP.InitLevel[2];
+	Spi.Init <- PlatformP.InitLevel[PLATFORM_INIT_GPIO + 1];
 	
 }

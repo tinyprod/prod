@@ -28,6 +28,7 @@ configuration PlatformPinsC {
 }
 
 implementation {
-	components Msp430GeneralIOC;
-	Init = Msp430GeneralIOC;
+	components Msp430GeneralIOC, PlatformPinsP;
+	Init = PlatformPinsP;
+	PlatformPinsP.DefaultInit -> Msp430GeneralIOC;
 }

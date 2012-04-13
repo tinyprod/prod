@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "platform.h"
+
 configuration PlatformLedsC {
 	provides interface GeneralIO as Led0;
 	provides interface GeneralIO as Led1;
@@ -33,7 +35,7 @@ implementation
 {
 	components GeneralIOC, PlatformP;
 
-	Init = PlatformP.InitLevel[2];
+	Init = PlatformP.InitLevel[PLATFORM_INIT_GPIO + 1];
 
 	Led0 = GeneralIOC.GeneralIO[LED_GREEN];
 	Led1 = GeneralIOC.GeneralIO[LED_YELLOW];

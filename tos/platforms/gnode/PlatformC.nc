@@ -24,6 +24,7 @@
 */
 
 #include "hardware.h"
+#include "platform.h"
 
  // some TinyOS apps don't include this,
 // instead depending on the platform to do it for them
@@ -42,8 +43,8 @@ implementation {
 	components PlatformP, PlatformClockC, PlatformPinsC, StackGuardWatchDogC;
 
 	Init = PlatformP;
-	PlatformP.InitLevel[0] -> PlatformClockC;		// setup clocks
-	PlatformP.InitLevel[1] -> PlatformPinsC;		// configure I/O pins
-	PlatformP.InitLevel[2] -> StackGuardWatchDogC;	// init stack protection and start watchdog
+	PlatformP.InitLevel[PLATFORM_INIT_CLOCKS] -> PlatformClockC;		// setup clocks
+	PlatformP.InitLevel[PLATFORM_INIT_GPIO] -> PlatformPinsC;		// configure I/O pins
+	PlatformP.InitLevel[PLATFORM_INIT_WDT] -> StackGuardWatchDogC;	// init stack protection and start watchdog
 
 }

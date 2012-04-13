@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include "platform.h"
+
 /**
  * Use USCI B0 as SPI for the radio.
  */
@@ -38,7 +40,7 @@ implementation {
 	components HplChipconSpiB0P as Spi, DedicatedResourceC, PlatformP;
 	Resource = DedicatedResourceC;
 	HplChipconSpi = Spi;
-	Spi.Init <- PlatformP.InitLevel[2];
+	Spi.Init <- PlatformP.InitLevel[PLATFORM_INIT_GPIO + 1];
 	
 	components HplMsp430GeneralIOC as IO;
 	Spi.SIMO -> IO.UCB0SIMO;
