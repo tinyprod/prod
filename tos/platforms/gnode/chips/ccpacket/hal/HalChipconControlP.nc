@@ -230,9 +230,11 @@ implementation {
 	 * to be set (which indicates the radio has a valid RSSI measurement).
 	 */
 	void waitForRssiValid() {
-		// wait until either CS (bit 6) or CCA (bit 4) is asserted in PKTSTATUS
-		uint8_t valid = (1<< 6) | (1 << 4);
-		while (!(readRegister(PKTSTATUS) & valid));
+		// Wait until either CS (bit 6) or CCA (bit 4) is asserted in PKTSTATUS,
+		// but drop out of the loop if we're no longer in RX, which can happen
+		// if (something that looks like) a packet is received while we wait.
+		uint8_t valid = (1 << 6) | (1 << 4);
+		while (!(readRegister(PKTSTATUS) & valid) && getChipState() == STATE_RX);
 	}
 	
 	/**
@@ -568,13 +570,36 @@ implementation {
 			// wait and see if we actually made the transition
 			call BusyWait.wait(RX_TO_TX_TIME);
 			
-			// check against STATE_RX instead of STATE_TX, just in case we're still in STATE_SETTLING or somesuch
-			if (getChipState() == STATE_RX) {
-				return FAIL;
+//			// check against STATE_RX instead of STATE_TX, just in case we're still in STATE_SETTLING or somesuch
+//			if (getChipState() == STATE_RX) {
+//				return FAIL;
+//			}
+//
+//			// set the flag - next interrupt indicates end of sent packet 
+//			transmitting = TRUE;
+			
+			switch (getChipState()) {
+				case STATE_RX:
+					// still in RX, so CCA prevented us from switching
+					return FAIL;
+				
+				case STATE_IDLE:
+				case STATE_CALIBRATE:
+				case STATE_RXFIFO_OVERFLOW:
+					// we received a packet just as we tried to switch
+					return EBUSY;
+				
+				case STATE_TX:
+				case STATE_SETTLING:
+					transmitting = TRUE;
+					break;
+				
+				default:
+					// OK, now I'm curious - which is it?
+					// compare to one we know it isn't so assertEquals will print it out
+					assertEquals(state, STATE_IDLE, ASSERT_CC_HAL_NO_TX);
+					return FAIL;
 			}
-
-			// set the flag - next interrupt indicates end of sent packet 
-			transmitting = TRUE;
 			
 			// set a timer to guard against losing the end-of-packet interrupt
 			if (call TxTimer.isRunning()) {

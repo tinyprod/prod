@@ -32,6 +32,7 @@ module LowPowerListeningP {
 		interface Send;
 		interface Receive;
 		interface LowPowerListening;
+		interface SendNotify;
 	}
 	
 	uses {
@@ -58,7 +59,8 @@ implementation {
 	bool radioOn = FALSE;		// is the actual radio on, i.e. in its active duty cycle?
 	bool sending = FALSE;		// outgoing packet pending?
 	uint16_t wakeupInterval = LPL_DEFAULT_INTERVAL;	// time between receive checks; 0 means always on
-	uint16_t calibrationCounter = 0;	// when duty cycling, calibrate the radio when this hits zero
+	uint16_t calibrationCounter;	// when duty cycling, calibrate the radio when this hits zero
+	uint8_t ccaCounter;		// counts channel-not-clear detections
 	
 	void on() {
 		error_t error = call SubControl.start();
@@ -139,6 +141,10 @@ implementation {
 		// if the radio is not on already, turn it on now
 		if (!radioOn) on();
 		
+		// hook for others to make last minute adjustments,
+		// especially to the preamble duration
+		signal SendNotify.sending(m);
+
 		// lower layers should never fail at this point,
 		// since we are not busy (we checked) and we just
 		// turned the radio on
@@ -192,6 +198,7 @@ implementation {
 			calibrationCounter--;
 		}
 		
+		ccaCounter = 0;
 		call CcaSampleTimer.startOneShot(CCA_SETTLING_TIME);
 	}
 	
@@ -208,12 +215,11 @@ implementation {
 			off();
 		} else {
 			// 1 ms may be just a bit too fast for reliable CCA and can give us a false positive,
-			// so check again after another 0.5 ms before deciding to stay awake
-			call BusyWait.wait(500);
-			
-			if (clear()) {
-				// false alarm
-				off();
+			// so check again after the first "hit"
+			ccaCounter++;
+			if (ccaCounter < 2) {
+				// check again in another millisecond
+				call CcaSampleTimer.startOneShot(1);
 			} else {
 				// stay awake
 				call ReceiveTimer.startOneShot(wakeupInterval + LPL_PREAMBLE_OVERLAP);
@@ -222,12 +228,15 @@ implementation {
 	}
 	
 	/**
-	 * We've waited long enough to pick up a packet if one was coming.
-	 * If it did, stay awake; else go back to sleep.
+	 * If something is being received, or there is still a carrier,
+	 * stay awake and check again after another interval.
+	 * Else, go back to sleep.
 	 */
 	event void ReceiveTimer.fired() {
-		if (!call HalChipconControl.isBusy()) {
+		if (clear()) {
 			off();
+		} else {
+			call ReceiveTimer.startOneShot(wakeupInterval + LPL_PREAMBLE_OVERLAP);
 		}
 	}
 	
@@ -302,4 +311,6 @@ implementation {
 	event void HalChipconControl.rxWaiting(uint32_t timestamp) {}
 	event void HalChipconControl.txStart(uint32_t timestamp) {}
 	event void HalChipconControl.txDone(uint32_t timestamp, error_t error) {}
+
+	default event void SendNotify.sending(message_t* msg) {}
 }

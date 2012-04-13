@@ -46,6 +46,7 @@ enum {
 enum OutputPower {
 	POWER_DEFAULT = 0xC6,	// 8.5 dBm
 	POWER_MINUS_30 = 0x03,
+	POWER_MINUS_20 = 0x0F,
 	POWER_MINUS_10 = 0x27,
 	POWER_MINUS_5 = 0x67,
 	POWER_0 = 0x50,

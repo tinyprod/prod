@@ -38,7 +38,10 @@ module NoLowPowerListeningP {
 
 implementation {
 	
-	command void LowPowerListening.setLocalWakeupInterval(uint16_t sleepIntervalMs) {}
+	command void LowPowerListening.setLocalWakeupInterval(uint16_t sleepIntervalMs) {
+		// the only valid value is 0
+		assertEquals(sleepIntervalMs, 0, ASSERT_CC_LPL_OFF);
+	}
 	
 	/**
 	 * @return the local node's sleep interval, in milliseconds

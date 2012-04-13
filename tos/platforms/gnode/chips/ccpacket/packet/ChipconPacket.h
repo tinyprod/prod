@@ -71,10 +71,10 @@ typedef nx_struct chipcon_metadata_t {
 } chipcon_metadata_t;
 
 #ifndef TOSH_DATA_LENGTH
-#define TOSH_DATA_LENGTH 28
+#define TOSH_DATA_LENGTH 28U
 #endif
 
 // maximum packet length (including the length byte and excluding the appended status bytes)
-#define MAX_PACKET_LENGTH (sizeof(chipcon_header_t) + TOSH_DATA_LENGTH + sizeof(chipcon_footer_t))
+#define MAX_PACKET_LENGTH ((uint8_t) (sizeof(chipcon_header_t) + TOSH_DATA_LENGTH + sizeof(chipcon_footer_t)))
 
 #endif
