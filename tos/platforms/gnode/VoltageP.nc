@@ -38,7 +38,7 @@ implementation {
 	}
 	
 	event void SubRead.readDone(error_t error, uint16_t val) {
-		// measured voltage is VCC/3, 12 bit ADC
+		// measured voltage is VCC/2, 1.5V reference, 12 bit ADC
 		uint32_t millivolts = (val * 3000UL)/4096;
 		signal Read.readDone(error, (uint16_t) millivolts);
 	}
