@@ -1,4 +1,5 @@
 /**
+ * Copyright (c) 2012 Eric B. Decker
  * Copyright (c) 2011 João Gonçalves
  * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
@@ -163,6 +164,13 @@ configuration HplMsp430GeneralIOC {
   provides interface HplMsp430GeneralIO as Port115;
   provides interface HplMsp430GeneralIO as Port116;
   provides interface HplMsp430GeneralIO as Port117;
+#endif
+
+#if defined (__msp430_have_portj) || defined(__MSP430_HAS_PORTJ__) || defined(__MSP430_HAS_PORTJ_R__)
+  provides interface HplMsp430GeneralIO as PortJ0;
+  provides interface HplMsp430GeneralIO as PortJ1;
+  provides interface HplMsp430GeneralIO as PortJ2;
+  provides interface HplMsp430GeneralIO as PortJ3;
 #endif
 
   // provides special ports explicitly
@@ -668,6 +676,13 @@ implementation {
     new HplMsp430GeneralIOP(P11IN_, P11OUT_, P11DIR_, P11SEL_, 7) as P117,
 #endif
 
+#if defined(__MSP430_HAS_PORTJ_R__)
+    new HplMsp430GeneralIORenDsP(PJIN_, PJOUT_, PJDIR_, PJREN_, PJDS_, 0) as PJ0,
+    new HplMsp430GeneralIORenDsP(PJIN_, PJOUT_, PJDIR_, PJREN_, PJDS_, 1) as PJ1,
+    new HplMsp430GeneralIORenDsP(PJIN_, PJOUT_, PJDIR_, PJREN_, PJDS_, 2) as PJ2,
+    new HplMsp430GeneralIORenDsP(PJIN_, PJOUT_, PJDIR_, PJREN_, PJDS_, 3) as PJ3,
+#endif
+
     PlatformC; // dummy to end unknown sequence
 
 #if defined(__msp430_have_port1) || defined(__MSP430_HAS_PORT1__) || defined(__MSP430_HAS_PORT1_R__)
@@ -789,6 +804,13 @@ implementation {
   Port115 = P115;
   Port116 = P116;
   Port117 = P117;
+#endif
+
+#if defined(__msp430_have_portJ) || defined(__MSP430_HAS_PORTJ__) || defined(__MSP430_HAS_PORTJ_R__)
+  PortJ0 = PJ0;
+  PortJ1 = PJ1;
+  PortJ2 = PJ2;
+  PortJ3 = PJ3;
 #endif
 
 #ifdef __msp430x14x
