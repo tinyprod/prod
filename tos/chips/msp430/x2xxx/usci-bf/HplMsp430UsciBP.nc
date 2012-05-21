@@ -58,16 +58,16 @@ generic module HplMsp430UsciBP(
   }
 }
 implementation {
-#define UCmxI2CIE (*TCAST(volatile uint8_t* ONE, UCmxCTL0_ + 0x04))
+#define UCmxI2CIE (*TCAST(volatile uint8_t*  ONE, UCmxCTL0_  + 0x04))
 #define UCmxI2COA (*TCAST(volatile uint16_t* ONE, UCmxI2COA_ + 0x00))
 #define UCmxI2CSA (*TCAST(volatile uint16_t* ONE, UCmxI2COA_ + 0x02))
 
-  async command uint16_t UsciB.getI2coa() { return UCmxI2COA; }
-  async command void UsciB.setI2coa(uint16_t v) { UCmxI2COA = v; }
-  async command uint16_t UsciB.getI2csa() { return UCmxI2CSA; }
-  async command void UsciB.setI2csa(uint16_t v) { UCmxI2CSA = v; }
-  async command uint8_t UsciB.getI2cie() { return UCmxI2CIE; }
-  async command void UsciB.setI2cie(uint8_t v) { UCmxI2CIE = v; }
+  async command uint16_t UsciB.getI2Coa()           { return UCmxI2COA; }
+  async command void     UsciB.setI2Coa(uint16_t v) { UCmxI2COA = v; }
+  async command uint16_t UsciB.getI2Csa()           { return UCmxI2CSA; }
+  async command void     UsciB.setI2Csa(uint16_t v) { UCmxI2CSA = v; }
+  async command uint8_t  UsciB.getI2Cie()           { return UCmxI2CIE; }
+  async command void     UsciB.setI2Cie(uint8_t v)  { UCmxI2CIE = v; }
 
 #undef UCmxI2CSA
 #undef UCmxI2COA

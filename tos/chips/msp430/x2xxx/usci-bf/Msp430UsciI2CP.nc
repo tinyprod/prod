@@ -89,18 +89,22 @@ implementation {
     if(! config){
       return FAIL;
     }
-    //basic config (leave in reset)
+    // basic config (leave in reset)
     call Usci.configure(config, TRUE);
-    //direction is don't-care in datasheet
+
+    /*
+     * direction is don't-care in datasheet
+     * That is because the pins are assigned to the Module
+     */
     call SCL.selectModuleFunc();
     call SDA.selectModuleFunc();
 
     //i2c-specific config
-    call UsciB.setI2coa(config->i2coa);
+    call UsciB.setI2Coa(config->i2coa);
     call Usci.leaveResetMode_();
 
     //enable slave-start interrupt
-    call UsciB.setI2cie(UCSTTIE);
+    call UsciB.setI2Cie(UCSTTIE);
     return SUCCESS;
   }
 
@@ -113,7 +117,7 @@ implementation {
       call Usci.setCtl0(call Usci.getCtl0() & ~UCMST);
       call Usci.leaveResetMode_();
     }
-    call UsciB.setI2cie(UCSTTIE);
+    call UsciB.setI2Cie(UCSTTIE);
     m_action = SLAVE;
     return SUCCESS;
   }
@@ -167,7 +171,7 @@ implementation {
       call Usci.setCtl0(call Usci.getCtl0() | UCMST);
       call Usci.leaveResetMode_();
       // set slave address 
-      call UsciB.setI2csa(addr);
+      call UsciB.setI2Csa(addr);
       //check bus status at the latest point possible.
       if ( call Usci.getStat() & UCBBUSY ){
         //if the bus is busy, bail out real quick
@@ -178,7 +182,7 @@ implementation {
       call Usci.setCtl1( (call Usci.getCtl1()&(~UCTR))  | UCTXSTT);
 
       //enable i2c arbitration interrupts, rx 
-      call UsciB.setI2cie((call UsciB.getI2cie() & 0xf0) | UCNACKIE | UCALIE);
+      call UsciB.setI2Cie((call UsciB.getI2Cie() & 0xf0) | UCNACKIE | UCALIE);
       call Usci.setIe( call Usci.getIe() | RXIE_MASK );
 
       /* if only reading 1 byte, STOP bit must be set right after
@@ -195,8 +199,7 @@ implementation {
       }
     } else if (m_flags & I2C_RESTART) {
       /* set slave address */
-      //UCB0I2CSA = addr;
-      call UsciB.setI2csa(addr);
+      call UsciB.setI2Csa(addr);
 
       //clear TR bit, start
       /* UCTXSTT - generate START condition */
@@ -204,7 +207,7 @@ implementation {
       call Usci.setCtl1((call Usci.getCtl1() & ~UCTR) | UCTXSTT);
 
       //enable i2c arbitration interrupts, rx 
-      call UsciB.setI2cie((call UsciB.getI2cie() & 0xf0) | UCNACKIE | UCALIE);
+      call UsciB.setI2Cie((call UsciB.getI2Cie() & 0xf0) | UCNACKIE | UCALIE);
       call Usci.setIe( call Usci.getIe() | RXIE_MASK );
 
       /* if only reading 1 byte, STOP bit must be set right after START bit */
@@ -214,7 +217,6 @@ implementation {
           counter--;
         }
         /* set stop bit */
-        //UCB0CTL1 |= UCTXSTP;
         call Usci.setCtl1(call Usci.getCtl1() | UCTXSTP);
       }
     } else {
@@ -264,9 +266,9 @@ implementation {
       //disable the rx interrupt 
       call Usci.setIe(call Usci.getIe() & ~RXIE_MASK);
       if (counter > 0x01){
-        signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( SUCCESS, call UsciB.getI2csa(), m_pos, m_buf );
+        signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( SUCCESS, call UsciB.getI2Csa(), m_pos, m_buf );
       } else {
-        signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( FAIL, call UsciB.getI2csa() , m_pos, m_buf );
+        signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( FAIL, call UsciB.getI2Csa() , m_pos, m_buf );
       }
     }
   }
@@ -306,7 +308,7 @@ implementation {
       call Usci.leaveResetMode_();
 
       // set slave address 
-      call UsciB.setI2csa(addr);
+      call UsciB.setI2Csa(addr);
 
       //check bus status at the latest point possible.
       if ( call Usci.getStat() & UCBBUSY ){
@@ -317,14 +319,14 @@ implementation {
       // UCTXSTT - generate START condition 
       call Usci.setCtl1(call Usci.getCtl1() | UCTR | UCTXSTT);
       //enable relevant state interrupts
-      call UsciB.setI2cie((call UsciB.getI2cie() & 0xf0) | UCNACKIE | UCALIE);
+      call UsciB.setI2Cie((call UsciB.getI2Cie() & 0xf0) | UCNACKIE | UCALIE);
       //enable tx interrupts 
       call Usci.setIe( call Usci.getIe() | TXIE_MASK);
     } 
     /* is this a restart or a direct continuation */
     else if (m_flags & I2C_RESTART) {
       // set slave address 
-      call UsciB.setI2csa(addr);
+      call UsciB.setI2Csa(addr);
 
       /* UCTR - set transmit */
       /* UCTXSTT - generate START condition */
@@ -376,9 +378,9 @@ implementation {
       call Usci.setIe(call Usci.getIe() & ~TXIE_MASK );
       /* fail gracefully */      
       if (counter > 0x01){
-        signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( SUCCESS, call UsciB.getI2csa(), m_len, m_buf );
+        signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( SUCCESS, call UsciB.getI2Csa(), m_len, m_buf );
       } else{
-        signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( FAIL, call UsciB.getI2csa(), m_len, m_buf );
+        signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( FAIL, call UsciB.getI2Csa(), m_len, m_buf );
       }
     } else {
       //send the next char
@@ -466,9 +468,9 @@ implementation {
         //another master addressed us as a slave. However, this should
         //manifest as an AL interrupt, not a NACK interrupt.
         if (call Usci.getCtl1() & UCTR) {
-          signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( ENOACK, call UsciB.getI2csa(), m_len, m_buf );
+          signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( ENOACK, call UsciB.getI2Csa(), m_len, m_buf );
         } else {
-          signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( ENOACK, call UsciB.getI2csa(), m_len, m_buf );
+          signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( ENOACK, call UsciB.getI2Csa(), m_len, m_buf );
         }
       } 
     } else {
@@ -482,9 +484,9 @@ implementation {
         call Usci.setStat(call Usci.getStat() & ~(UCALIFG));
         //TODO: more descriptive error? I guess EBUSY is fair.
         if(lastAction == MASTER_WRITE) {
-          signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( EBUSY, call UsciB.getI2csa(), m_len, m_buf );
+          signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( EBUSY, call UsciB.getI2Csa(), m_len, m_buf );
         } else if(lastAction == MASTER_READ) {
-          signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( EBUSY, call UsciB.getI2csa(), m_len, m_buf);
+          signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( EBUSY, call UsciB.getI2Csa(), m_len, m_buf);
         }
         //once this returns, we should get another interrupt for STT
         //if we are addressed. Otherwise, we're just chillin' in idle
@@ -493,7 +495,7 @@ implementation {
       /* STOP condition */
       else if (call Usci.getStat() & UCSTPIFG) {
         /* disable STOP interrupt, enable START interrupt */
-        call UsciB.setI2cie((call UsciB.getI2cie() | UCSTTIE) & ~UCSTPIE);
+        call UsciB.setI2Cie((call UsciB.getI2Cie() | UCSTTIE) & ~UCSTPIE);
         signal I2CSlave.slaveStop[call ArbiterInfo.userId()]();
         //TODO: should this not just call slaveIdle?
       }
@@ -503,7 +505,7 @@ implementation {
         //clear start flag, but leave enabled (repeated start)
         //enable stop interrupt
         call Usci.setStat(call Usci.getStat() &~ UCSTTIFG);
-        call UsciB.setI2cie(call UsciB.getI2cie() | UCSTPIE);
+        call UsciB.setI2Cie(call UsciB.getI2Cie() | UCSTPIE);
         //enable RX/TX interrupts
         call Usci.setIe(call Usci.getIe() | RXIE_MASK | TXIE_MASK);
         signal I2CSlave.slaveStart[call ArbiterInfo.userId()]( call Usci.getStat() & UCGC);
@@ -526,25 +528,25 @@ implementation {
       return EINVAL;
     } else {
       //retain UCGCEN bit
-      call UsciB.setI2coa( (call UsciB.getI2coa() & UCGCEN) | addr);
+      call UsciB.setI2Coa( (call UsciB.getI2Coa() & UCGCEN) | addr);
       return SUCCESS;
     }
   }
 
   command error_t I2CSlave.enableGeneralCall[uint8_t client]() {
-    if (UCGCEN & (call UsciB.getI2coa())){
+    if (UCGCEN & (call UsciB.getI2Coa())){
       return EALREADY;
     } else {
-      call UsciB.setI2coa(UCGCEN | (call UsciB.getI2coa()));
+      call UsciB.setI2Coa(UCGCEN | (call UsciB.getI2Coa()));
       return SUCCESS;
     }
   }
 
   command error_t I2CSlave.disableGeneralCall[uint8_t client]() {
-    if (UCGCEN & ~(call UsciB.getI2coa())) {
+    if (UCGCEN & ~(call UsciB.getI2Coa())) {
       return EALREADY;
     } else {
-      call UsciB.setI2coa(~UCGCEN & (call UsciB.getI2coa()));
+      call UsciB.setI2Coa(~UCGCEN & (call UsciB.getI2Coa()));
       return SUCCESS;
     }
   }

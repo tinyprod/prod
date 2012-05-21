@@ -94,13 +94,13 @@ interface HplMsp430Usci {
 //   * Reads the UCmxI2CIE register.
 //   * This register is present on only USCI modules with I2C.
 //   */
-//  async command uint8_t getI2cie();
+//  async command uint8_t getI2Cie();
 //  
 //  /**
 //   * Write the UCmxI2CIE register.
 //   * This register is present on all USCI modules with I2C.
 //   */
-//  async command void setI2cie(uint8_t v);
+//  async command void setI2Cie(uint8_t v);
 //   
 
   /**
@@ -155,13 +155,13 @@ interface HplMsp430Usci {
 //   * Read the UCmxI2COA I2C Own Address register.
 //   * This register is present only on USCI_B modules in I2C mode.
 //   */
-//  async command uint8_t getI2coa();
+//  async command uint8_t getI2Coa();
 //  
 //  /**
 //   * Write the UCmxI2COA I2C Own Address register.
 //   * This register is present only on USCI_B modules in I2C mode.
 //   */
-//  async command void setI2coa(uint8_t v);
+//  async command void setI2Coa(uint8_t v);
 //
 //  /**
 //   * Read the UCmxIRCTL IrDA Control register.
@@ -203,13 +203,13 @@ interface HplMsp430Usci {
 //   * Read the UCmxI2CSA I2C Slave Address register.
 //   * This register is present only on USCI_B modules in I2C mode.
 //   */
-//  async command uint8_t getI2csa();
+//  async command uint8_t getI2Csa();
 //  
 //  /**
 //   * Write the UCmxI2CSA I2C Slave Address register.
 //   * This register is present only on USCI_B modules in I2C mode.
 //   */
-//  async command void setI2csa(uint8_t v);
+//  async command void setI2Csa(uint8_t v);
 //
 //  /**
 //   * Reads the UCmxICTL Interrupt Control register.
