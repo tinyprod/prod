@@ -1,5 +1,6 @@
 /**
- * Copyright (c) 2011 Eric B. Decker
+ * Copyright (c) 2011-2012 Eric B. Decker
+ * Copyright (c) 2011 John Hopkins University
  * Copyright (c) 2011 Redslate Ltd.
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
@@ -46,14 +47,20 @@
  * Where the same memory location reflects different registers
  * depending on USCI mode, independent functions are provided.
  *
- * Access to individual halves of a 16-bit register is not supported
- * except where the halves have independent functions, as with IRTCTL
- * and IRRCTL.  For example, UCmxCTLW0 is not made available as
- * UCmxCTL1 and UCmxCTL0 halves, as it is unlikely that one would be
- * set without simultaneously setting the other.
+ * Access to UCmxCTLW0 and UCmxBRW is available as both 16 bits as well
+ * 8 bits.  Originally, only 16 bit access was supported and this is
+ * reflected in the initial x5 implementations.  Doug and Marcus started
+ * from the same original place that the tinyprod fork started from.
+ * However, they changed the low level interface to expose the byte
+ * interfaces to the 16 bit registers.  This was to make the code between
+ * the x2 usci and the x5 usci more similar.
+ *
+ * So we expose both 16 bit and 8 bit interfaces.
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  * @author Derek Baker <derek@red-slate.co.uk>
+ * @author Doug Carlson <carlson@cs.jhu.edu>
+ * @author Marcus Chang <marcus.chang@gmail.com>
  * @author Eric B. Decker <cire831@gmail.com>
  */
 
@@ -111,12 +118,16 @@ interface HplMsp430Usci {
    * This register is present on all USCI modules.
    */
   async command uint16_t getBrw();
+  async command uint8_t  getBr0();
+  async command uint8_t  getBr1();
 
   /**
    * Writes the UCmxBRW Baud Rate Control registers.
    * This register is present on all USCI modules.
    */
   async command void setBrw(uint16_t v);
+  async command void setBr0(uint8_t v);
+  async command void setBr1(uint8_t v);
 
   /**
    * Reads the USCmBxMCTL Modulation Control register.

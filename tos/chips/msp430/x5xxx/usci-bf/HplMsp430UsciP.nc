@@ -1,4 +1,6 @@
 /*
+ * Copyright (c) 2012 Eric B. Decker
+ * Copyright (c) 2011 John Hopkins University
  * Copyright (c) 2011 Redslate Ltd.
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
@@ -47,6 +49,9 @@
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  * @author Derek Baker <derek@red-slate.co.uk>
+ * @author Doug Carlson <carlson@cs.jhu.edu>
+ * @author Marcus Chang <marcus.chang@gmail.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 generic module HplMsp430UsciP(
@@ -67,24 +72,26 @@ generic module HplMsp430UsciP(
 }
 implementation {
 
-#define UCmxCTLW0 (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_))
-#define UCmxCTL1 (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x00)) // yes, ctl1 is at offset zero
-#define UCmxCTL0 (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x01)) // and, ctl0 is at offset one
-#define UCmxBRW (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x06))
-#define UCmxMCTL (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x08))
-#define UCmxSTAT (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x0a))
-#define UCmxRXBUF (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x0c))
-#define UCmxTXBUF (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x0e))
-#define UCmxABCTL (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x10))
-#define UCmxI2COA (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x10))
-#define UCmxIRCTL (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x12))
-#define UCmxIRTCTL (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x12))
-#define UCmxIRRCTL (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x13))
-#define UCmxI2CSA (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x12))
-#define UCmxICTL (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x1c))
-#define UCmxIE (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x1c))
-#define UCmxIFG (*TCAST(volatile uint8_t* ONE, UCmxCTLW0_ + 0x1d))
-#define UCmxIV (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x1e))
+#define UCmxCTLW0  (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_))
+#define UCmxCTL1   (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x00)) // yes, ctl1 is at offset zero
+#define UCmxCTL0   (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x01)) // and, ctl0 is at offset one
+#define UCmxBRW    (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x06))
+#define UCmxBR0    (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x06))
+#define UCmxBR1    (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x07))
+#define UCmxMCTL   (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x08))
+#define UCmxSTAT   (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x0a))
+#define UCmxRXBUF  (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x0c))
+#define UCmxTXBUF  (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x0e))
+#define UCmxABCTL  (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x10))
+#define UCmxI2COA  (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x10))
+#define UCmxIRCTL  (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x12))
+#define UCmxIRTCTL (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x12))
+#define UCmxIRRCTL (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x13))
+#define UCmxI2CSA  (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x12))
+#define UCmxICTL   (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x1c))
+#define UCmxIE     (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x1c))
+#define UCmxIFG    (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x1d))
+#define UCmxIV     (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x1e))
 
   async command uint8_t Usci.getModuleIdentifier() { return USCI_ID; }
 
@@ -93,11 +100,17 @@ implementation {
   async command uint8_t  Usci.getCtl1()             { return UCmxCTL1; }
 
   async command void     Usci.setCtlw0(uint16_t v)  { UCmxCTLW0 = v; }
-  async command void     Usci.setCtl0(uint8_t v)    { UCmxCTL0 = v; }
-  async command void     Usci.setCtl1(uint8_t v)    { UCmxCTL1 = v; }
+  async command void     Usci.setCtl0(uint8_t v)    { UCmxCTL0  = v; }
+  async command void     Usci.setCtl1(uint8_t v)    { UCmxCTL1  = v; }
 
-  async command uint16_t Usci.getBrw() { return UCmxBRW; }
-  async command void Usci.setBrw(uint16_t v) { UCmxBRW = v; }
+  async command uint16_t Usci.getBrw()		    { return UCmxBRW; }
+  async command uint8_t  Usci.getBR0()		    { return UCmxBR0; }
+  async command uint8_t  Usci.getBR1()		    { return UCmxBR1; }
+
+  async command void     Usci.setBrw(uint16_t v)    { UCmxBRW = v; }
+  async command void     Usci.setBr0(uint8_t v)     { UCmxBR0 = v; }
+  async command void     Usci.setBr1(uint8_t v)     { UCmxBR1 = v; }
+
   async command uint8_t Usci.getMctl() { return UCmxMCTL; }
   async command void Usci.setMctl(uint8_t v) { UCmxMCTL = v; }
   async command uint8_t Usci.getStat() { return UCmxSTAT; }
@@ -168,11 +181,13 @@ implementation {
     if (! config) {
       return;
     }
-    call Usci.enterResetMode_();
-    UCmxCTLW0 = config->ctlw0 | UCSWRST; /* use or rather than +, safer */
-    UCmxBRW = config->brw;
-    UCmxMCTL = config->mctl;
-    if (! leave_in_reset) {
+    UCMxCTL1  = config->ctl1 | UCSWRST;
+    UCMxCTL0  = config->ctl0;
+    UCMxBR1   = config->br1;
+    UCMxBR0   = config->br0;
+    UCmxMCTL  = config->mctl;
+    UCmxI2COA = config->i2coa;
+    if (!leave_in_reset) {
       call Usci.leaveResetMode_();
     }
   }
