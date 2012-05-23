@@ -3,6 +3,19 @@
 
 #include "msp430hardware.h"
 
+#ifndef UCSSEL__SMCLK
+/*
+ * Both the x2 and x5 families have UCSIs and need a clock source.
+ * The x5 cpu header files define UCSSEL__SMCLK but the x2 headers
+ * don't  (please TI, can you be more consistent?...   nah.  that's
+ * fine, we'll deal)
+ *
+ * Note: this is x2xxx/usci/msp430usci.h and is inherently a
+ * x2 file.
+ */
+#define UCSSEL__SMCLK       (0x80)    /* USCI 0 Clock Source: SMCLK */
+#endif
+
 /* MSP430_USCI_RESOURCE is used for USCI_IDs */
 #define MSP430_USCI_RESOURCE "Msp430Usci.Resource"
 
@@ -28,18 +41,17 @@ enum {
  * Mode-specific configuration data should be provided elsewise.
  */
 typedef struct msp430_usci_config_t {
-  uint8_t  ctl0;		/* most significant, order swapped */
-  uint8_t  ctl1;
-  uint8_t  br1;			/* most significant */
-  uint8_t  br0;
-  uint8_t  mctl;
+  uint8_t ctl0;				/* various control bits, msb */
+  uint8_t ctl1;				/* clock select and swreset, lsb */
+  uint8_t br0;				/* lsb divider */
+  uint8_t br1;				/* msb divider */
+  uint8_t mctl;
   uint16_t i2coa;
 } msp430_usci_config_t;
 
-
-//see note in Msp430UsciI2CP.nc I2CBasicAddr.read
-#define I2C_ONE_BYTE_READ_COUNTER 0x500
-
+// see note in Msp430UsciI2CP.nc I2CBasicAddr.read
+// x5 uses 0x500, x2 uses 0xe00 can they be the same?
+#define I2C_ONE_BYTE_READ_COUNTER 0x0500
 
 #ifndef TOS_DEFAULT_BAUDRATE
 #define TOS_DEFAULT_BAUDRATE 115200
@@ -47,57 +59,70 @@ typedef struct msp430_usci_config_t {
 
 
 /*
- * This table assumes UART clock input (SMCLK) is 1MiHz (2^20Hz).
+ * The following default configurations assume SMCLK clock is 1MiHz (2^20Hz).
  */
 
 msp430_usci_config_t msp430_usci_uart_default_config = {
   /* N81 UART mode driven by SMCLK */
-  ctl0 : 0,				/* note order flipped */
-  ctl1 : UCSSEL_SMCLK,
+  ctl0 : 0,
+  ctl1 : UCSSEL__SMCLK,
 
 #if 9600 == TOS_DEFAULT_BAUDRATE
   /* SLAU259 Table 16-4 2^20Hz 9600: UBR=109, BRS=2, BRF=0 */
+  br0  : 109,
   br1  : 0,
-  br0  : 109, // 9600
-  mctl : UCBRF_0 + UCBRS_2,
+  mctl : UCBRF_0 | UCBRS_2,
 #elif 19200 == TOS_DEFAULT_BAUDRATE
   /* SLAU259 Table 16-4 2^20Hz 19200: UBR=54, BRS=2, BRF=0 */
+  br0  : 54,
   br1  : 0,
-  br0  : 54, // 19200
-  mctl : UCBRF_0 + UCBRS_2,
+  mctl : UCBRF_0 | UCBRS_2,
 #elif 38400 == TOS_DEFAULT_BAUDRATE
   /* SLAU259 Table 16-4 2^20Hz 38400: UBR=27, BRS=2, BRF=0 */
+  br0 : 27,
   br1 : 0,
-  br0 : 27, // 38400
-  mctl : UCBRF_0 + UCBRS_2,
+  mctl : UCBRF_0 | UCBRS_2,
 #elif 57600 == TOS_DEFAULT_BAUDRATE
   /* SLAU259 Table 16-4 2^20Hz 57600: UBR=18, BRS=1, BRF=0 */
+  br0  : 18,
   br1  : 0,
-  br0  : 18, // 57600
-  mctl : UCBRF_0 + UCBRS_1,
+  mctl : UCBRF_0 | UCBRS_1,
 #elif 115200 == TOS_DEFAULT_BAUDRATE
   /* SLAU259 Table 16-4 2^20Hz 115200: UBR=9, BRS=1, BRF=0 */
+  br0  : 9,
   br1  : 0,
-  br0  : 9, // 115200
-  mctl : UCBRF_0 + UCBRS_1,
+  mctl : UCBRF_0 | UCBRS_1,
 #else
 #warning Unrecognized value for TOS_DEFAULT_BAUDRATE, using 115200
+  br0  : 9,
   br1  : 0,
-  br0  : 9, // 115200
-  mctl : UCBRF_0 + UCBRS_1,
+  mctl : UCBRF_0 | UCBRS_1,
 #endif
-  i2c0a : 0
+  i2coa: 0
 };
 
 msp430_usci_config_t msp430_usci_spi_default_config = {
   /* Inactive high MSB-first 8-bit 3-pin master driven by SMCLK */
-  ctl0  : (UCCKPL + UCMSB + UCMST + UCSYNC),
-  ctl1  : UCSSEL__SMCLK,
-  /* 2x Prescale */
-  br1   : 0,
-  br0   : 2,
-  mctl  : 0,				/* Always 0 in SPI mode */
-  i2coa : 0
+  ctl0 : UCCKPL | UCMSB | UCMST | UCSYNC,
+  ctl1 : UCSSEL__SMCLK,
+  br0  : 2,			/* 2x Prescale */
+  br1  : 0,
+  mctl : 0,
+  i2coa: 0
+};
+
+// Should the default be the following?  MM (multi-master) seems
+// like it should be a platform specific thing.
+// ctl0 : (UCMST | UCMODE_3 | UCSYNC),
+
+msp430_usci_config_t msp430_usci_i2c_default_config = {
+  /* 7 bit addressing single I2C master driven by SMCLK */
+  ctl0 : UCSYNC | UCMODE_3 | UCMM,
+  ctl1 : UCSSEL__SMCLK,
+  br0  : 10,		/* 104857 hz, slow for slow devices. */
+  br1  : 0,
+  mctl : 0,
+  i2coa: 0x41,
 };
 
 enum {
@@ -114,21 +139,6 @@ enum {
   MSP430_USCI_ERR_Parity = UCPE,
   /** Mask for all UCxySTAT bits that represent reportable errors. */
   MSP430_USCI_ERR_UCxySTAT = MSP430_USCI_ERR_Framing | MSP430_USCI_ERR_Overrun | MSP430_USCI_ERR_Parity,
-};
-
-
-/*
- * I2C default config, added by Derek Baker (derek@red-slate.com)
- */
-
-msp430_usci_config_t msp430_usci_i2c_default_config = {
-  /* 7 bit addressing single I2C master driven by SMCLK */
-  ctl0  : (UCMST | UCMODE_3 | UCSYNC),
-  ctl1  : UCSSEL__SMCLK,
-  br1   : 0,
-  br0   : 10,					/* gives us 103680 hz, slow speed but will work with all devices.*/
-  mctl  : 0,					/* Not used in I2C mode*/
-  i2coa : 'a'
 };
 
 #endif // _H_Msp430Usci_h
