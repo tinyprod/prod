@@ -26,6 +26,9 @@
 /**
  * Do-nothing GeneralIO/GpioInterrupt implementation.
  */
+
+#include "msp430regtypes.h"
+
 generic module DummyGeneralIOC(bool high) {
 	provides {
 		interface GeneralIO;
@@ -112,5 +115,8 @@ implementation {
 	
 	async command error_t HplMsp430GeneralIO.setResistor(uint8_t mode) { return SUCCESS; }
 	async command uint8_t HplMsp430GeneralIO.getResistor() { return MSP430_PORT_RESISTOR_OFF; }
+
+	async command error_t HplMsp430GeneralIO.setDriveStrength(uint8_t mode){ return EINVAL;}
+	async command uint8_t HplMsp430GeneralIO.getDriveStrength(){ return MSP430_PORT_DRIVE_STRENGTH_INVALID;}
 	
 }
