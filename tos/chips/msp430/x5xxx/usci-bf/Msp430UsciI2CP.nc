@@ -495,10 +495,10 @@ implementation {
         STP_interrupt();
         break;
       case USCI_I2C_UCRXIFG:
-        RXInterrupts_interrupted(call Usci.getIfg());
+        RXInterrupts_interrupted(iv);
         break;
       case USCI_I2C_UCTXIFG:
-        TXInterrupts_interrupted(call Usci.getIfg());
+        TXInterrupts_interrupted(iv);
         break;
       default:
         //error
