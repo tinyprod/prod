@@ -145,8 +145,7 @@ implementation {
 
     /*
      * Do basic configuration, leaving USCI in reset mode.  Configure
-     * the SPI pins, enable the USCI, and leave interrupts off.  Note
-     * reseting the USCI will kill the IEs so no need to do so explicitly.
+     * the SPI pins, enable the USCI, and leave interrupts off.
      */
     call Usci.configure(config, TRUE);
     call SIMO.makeOutput();
@@ -156,9 +155,11 @@ implementation {
     call CLK.makeOutput();
     call CLK.selectModuleFunc();
 
+    /*
+     * The IE bits are cleared when the USCI is reset, so there is no need
+     * to clear the IE bits.
+     */
     call Usci.leaveResetMode_();
-    call Usci.setIe(call Usci.getIe() & ~ (UCTXIE | UCRXIE));
-
     return SUCCESS;
   }
 
@@ -199,7 +200,7 @@ implementation {
       if (rxBuf)
 	*rxBuf++ = byt;
       len--;
-    }      
+    }
   }
 
   void continueOp() {
