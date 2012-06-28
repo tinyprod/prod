@@ -299,18 +299,33 @@ implementation {
 
     /* check if this is a new connection or a continuation */
     if (m_flags & I2C_START) {
-      //sequence as described in 17.3.4.2.1 of slau144h is:
-      // - set sa
-      // - set UCTR
-      // - set UCTXSTT
-      // (start/address written, then we get an interrupt)
-      // no reset should be necessary for this process. however, when
-      // I did it in a different sequence, the first write worked OK
-      // but the second one began with the UCSTPIFG set, and the first
-      // character was dropped. I have no explanation for why this
-      // would be the case.
+      /*
+       * Original "gen 1" driver was written for the x2 and implements
+       * i2c as described in x2 User_Manual (slau144, rev H).
+       *
+       * x5 i2c master is described in slau208, section 34.3.4.2.1.
+       *
+       * Sequence:
+       *
+       * - set sa
+       * - set UCTR
+       * - set UCTXSTT
+       *
+       * (start/address written, then we get an interrupt), for TXIFG
+       *
+       */
 
-      //need to enter master mode
+      /*
+       * Enter Master mode.
+       *
+       * Reset to make sure it takes properly.
+       *
+       * It would be nice if one didn't have to reset the module.  When
+       * not doing the reset, it was observed that the first bus transaction
+       * worked but subsequent didn't (Saw UCSTPIFG, stop condition, and first
+       * byte was dropped).   Adding the reset/leavereset sequence fixed this.
+       */
+
       call Usci.enterResetMode_();
       call Usci.setCtl0(call Usci.getCtl0() | UCMST);
       call Usci.leaveResetMode_();
