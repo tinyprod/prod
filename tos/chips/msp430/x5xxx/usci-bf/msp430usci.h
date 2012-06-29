@@ -72,7 +72,7 @@ typedef struct msp430_usci_config_t {
  * (8 MHz).
  */
 
-msp430_usci_config_t msp430_usci_uart_default_config = {
+const msp430_usci_config_t msp430_usci_uart_default_config = {
   /* N81 UART mode driven by SMCLK */
   ctl0 : 0,
   ctl1 : UCSSEL__SMCLK,
@@ -111,7 +111,7 @@ msp430_usci_config_t msp430_usci_uart_default_config = {
   i2coa: 0
 };
 
-msp430_usci_config_t msp430_usci_spi_default_config = {
+const msp430_usci_config_t msp430_usci_spi_default_config = {
   /* Inactive high MSB-first 8-bit 3-pin master driven by SMCLK */
   ctl0 : UCCKPL | UCMSB | UCMST | UCSYNC,
   ctl1 : UCSSEL__SMCLK,
