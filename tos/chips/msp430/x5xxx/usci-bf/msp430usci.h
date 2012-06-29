@@ -121,22 +121,39 @@ msp430_usci_config_t msp430_usci_spi_default_config = {
   i2coa: 0
 };
 
-// Should the default be the following?  MM (multi-master) seems
-// like it should be a platform specific thing.
-// ctl0 : (UCMST | UCMODE_3 | UCSYNC),
-//
-// clock divisor is definitely a platform specific thing.   The
-// default should probably be SMCLK/div ~= 100kbps.
+/*
+ * Should the default be the following?  MM (multi-master) seems
+ * like it should be a platform specific thing.
+ * ctl0 : (UCMST | UCMODE_3 | UCSYNC),
+ *
+ * clock divisor is definitely a platform specific thing.   The
+ * default should probably be SMCLK/div ~= 100kbps.
+ *
+ * MM vs. SM is also a platform thing.   But for now we let the
+ * application or platform override it.
+ */
+
+#ifndef MSP430_I2C_MASTER_MODE
+/*
+ * default to multi-master, because the usci-bf code
+ * was originally written as a multi-master.
+ */
+#define MSP430_I2C_MASTER_MODE UCMM
+#endif
 
 
-msp430_usci_config_t msp430_usci_i2c_default_config = {
+#ifndef MSP430_I2C_DEFAULT_DIVISOR
+#define MSP430_I2C_DEFAULT_DIVISOR 10
+#endif
+
+const msp430_usci_config_t msp430_usci_i2c_default_config = {
   /* 7 bit addressing, multi-master, driven by SMCLK
    * note: UCMST must be set each time
    */
-  ctl0 : UCSYNC | UCMODE_3 | UCMM,
+  ctl0 : UCSYNC | UCMODE_3 | MSP430_I2C_MASTER_MODE,
   ctl1 : UCSSEL__SMCLK,
-  br0  : 10,		/* SMCLK/div */
-  br1  : 0,		/* 1*2^20/div -> 104,858 Hz */
+  br0  : MSP430_I2C_DEFAULT_DIVISOR,	/* SMCLK/div */
+  br1  : 0,				/* 1*2^20/div -> 104,858 Hz */
   mctl : 0,
   i2coa: 0x41,
 };

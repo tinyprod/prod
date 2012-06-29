@@ -5,6 +5,8 @@
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
+ * Multi-Master driver.
+ *
  * This open source code was developed with funding from People Power Company
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,7 +40,7 @@
  *
  *
  * Implement the I2C-related interfaces for a MSP430 USCI module
- * instance.
+ * instance.  Multi-Master driver.
  *
  * port of usci gen 1 (john hopkins) implementation of i2c
  *
@@ -474,7 +476,6 @@ implementation {
 
   void TXInterrupts_interrupted(uint8_t iv);
   void RXInterrupts_interrupted(uint8_t iv);
-  void StateInterrupts_interrupted(uint8_t iv);
   void NACK_interrupt();
   void AL_interrupt();
   void STP_interrupt();
