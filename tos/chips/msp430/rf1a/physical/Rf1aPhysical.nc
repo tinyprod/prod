@@ -34,7 +34,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Rf1aConfigure.h"
+#include <Rf1aConfigure.h>
 
 /** The physical-layer interface for the RF1A radio.
  *
