@@ -34,7 +34,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Rf1aConfigure.h"
+#include <Rf1aConfigure.h>
 
 /** Dump internal radio configuration information to the console for
  * debugging purposes.

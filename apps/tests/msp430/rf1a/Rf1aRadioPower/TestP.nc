@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "Rf1aConfigure.h"
-#include "Rf1aRadioPower.h"
+#include <Rf1aConfigure.h>
+#include <Rf1aRadioPower.h>
 
 module TestP {
   uses interface Boot;
