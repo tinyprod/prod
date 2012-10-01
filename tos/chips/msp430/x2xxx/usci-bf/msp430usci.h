@@ -4,15 +4,16 @@
 #include "msp430hardware.h"
 
 #ifndef UCSSEL__SMCLK
+
 /*
  * Both the x2 and x5 families have UCSIs and need a clock source.
  * The x5 cpu header files define UCSSEL__SMCLK but the x2 headers
  * don't  (please TI, can you be more consistent?...   nah.  that's
  * fine, we'll deal)
  *
- * Note: this is x2xxx/usci/msp430usci.h and is inherently a
- * x2 file.
+ * Note: this is x2xxx/usci/msp430usci.h and is inherently an x2 file.
  */
+
 #define UCSSEL__SMCLK       (0x80)    /* USCI 0 Clock Source: SMCLK */
 #endif
 
@@ -49,8 +50,21 @@ typedef struct msp430_usci_config_t {
   uint16_t i2coa;
 } msp430_usci_config_t;
 
-// see note in Msp430UsciI2CP.nc I2CBasicAddr.read
-// x5 uses 0x500, x2 uses 0xe00 can they be the same?
+/*
+ * see Msp430UsciI2CP.nc, I2CBasicAddr.read.
+ *
+ * I2C_ONE_BYTE_READ_COUNTER is used as a limit to keep
+ * the routine from going infinite when things go wrong.
+ *
+ * DEPRECATED.   It is going away!!!!
+ *
+ * The x5 code has been converted to use time via Platform raw time
+ * interfaces.   The x2 code currently uses the counters.   This
+ * should be changed by the x2 folks.
+ *
+ * x5 uses 0x500, x2 uses 0xe00 can they be the same?
+ */
+
 #define I2C_ONE_BYTE_READ_COUNTER 0x0E00
 
 #ifndef TOS_DEFAULT_BAUDRATE
@@ -60,6 +74,16 @@ typedef struct msp430_usci_config_t {
 
 /*
  * The following default configurations assume SMCLK clock is 1MiHz (2^20Hz).
+ *
+ * WARNING: This is not necessarily a good assumption.    Choice of clocks is
+ * really a platform thing and should be provided in some fashion by the platform.
+ *
+ * The common definition here is a carry over from the old initial way that T2 dealt
+ * with this issue.
+ *
+ * In addition, there are issues with assuming binary vs. decimal clocks.  For example
+ * the msp430f5438a with out tweak the PMM wants to be clocked no faster than 8,000,000
+ * (8 MHz).
  */
 
 msp430_usci_config_t msp430_usci_uart_default_config = {
@@ -84,16 +108,36 @@ msp430_usci_config_t msp430_usci_spi_default_config = {
   i2coa: 0
 };
 
-// Should the default be the following?  MM (multi-master) seems
-// like it should be a platform specific thing.
-// ctl0 : (UCMST | UCMODE_3 | UCSYNC),
+/*
+ * Should the default be the following?  MM (multi-master) seems
+ * like it should be a platform specific thing.
+ * ctl0 : (UCMST | UCMODE_3 | UCSYNC),
+ *
+ * clock divisor is definitely a platform specific thing.   The
+ * default should probably be SMCLK/div ~= 100kbps.
+ *
+ * MM vs. SM is also a platform thing.   But for now we let the
+ * application or platform override it.
+ */
+
+#ifndef MSP430_I2C_MASTER_MODE
+/*
+ * default to multi-master, because the usci-bf code
+ * was originally written as a multi-master.
+ */
+#define MSP430_I2C_MASTER_MODE UCMM
+#endif
+
+
+#ifndef MSP430_I2C_DIVISOR
+#define MSP430_I2C_DIVISOR 10
+#endif
 
 msp430_usci_config_t msp430_usci_i2c_default_config = {
-  /* 7 bit addressing single I2C master driven by SMCLK */
-  ctl0 : UCSYNC | UCMODE_3 | UCMM,
+  ctl0 : UCSYNC | UCMODE_3 | MSP430_I2C_MASTER_MODE,
   ctl1 : UCSSEL__SMCLK,
-  br0  : 10,		/* 104857 hz, slow for slow devices. */
-  br1  : 0,
+  br0  : MSP430_I2C_DIVISOR,		/* SMCLK/div */
+  br1  : 0,				/* 1*2^20/div -> 104,858 Hz */
   mctl : 0,
   i2coa: 0x41,
 };

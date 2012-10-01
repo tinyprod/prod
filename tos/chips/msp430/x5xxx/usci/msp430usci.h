@@ -104,7 +104,7 @@ enum {
 msp430_usci_config_t msp430_usci_i2c_default_config = {
   /* 7 bit addressing single I2C master driven by SMCLK */
   ctlw0 : ((UCMST + UCMODE_3 + UCSYNC) << 8) | UCSSEL__SMCLK,
-  brw : 10,					/* gives us 103680 hz, slow speed but will work with all devices.*/
+  brw : 80,					/* gives us 103680 hz, slow speed but will work with all devices.*/
   mctl : 0					/* Not used in I2C mode*/
 };
 

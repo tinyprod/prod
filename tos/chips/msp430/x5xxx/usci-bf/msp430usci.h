@@ -4,15 +4,16 @@
 #include "msp430hardware.h"
 
 #ifndef UCSSEL__SMCLK
+
 /*
  * Both the x2 and x5 families have UCSIs and need a clock source.
  * The x5 cpu header files define UCSSEL__SMCLK but the x2 headers
  * don't  (please TI, can you be more consistent?...   nah.  that's
  * fine, we'll deal)
  *
- * Note: this is x2xxx/usci/msp430usci.h and is inherently a
- * x2 file.
+ * Note: this is x5xxx/usci/msp430usci.h and is inherently a x5 file.
  */
+
 #define UCSSEL__SMCLK       (0x80)    /* USCI 0 Clock Source: SMCLK */
 #endif
 
@@ -49,8 +50,21 @@ typedef struct msp430_usci_config_t {
   uint16_t i2coa;
 } msp430_usci_config_t;
 
-// see note in Msp430UsciI2CP.nc I2CBasicAddr.read
-// x5 uses 0x500, x2 uses 0xe00 can they be the same?
+/*
+ * see Msp430UsciI2CP.nc, I2CBasicAddr.read.
+ *
+ * I2C_ONE_BYTE_READ_COUNTER is used as a limit to keep
+ * the routine from going infinite when things go wrong.
+ *
+ * DEPRECATED.   It is going away!!!!
+ *
+ * The x5 code has been converted to use time via Platform raw time
+ * interfaces.   The x2 code currently uses the counters.   This
+ * should be changed by the x2 folks.
+ *
+ * x5 uses 0x500, x2 uses 0xe00 can they be the same?
+ */
+
 #define I2C_ONE_BYTE_READ_COUNTER 0x0500
 
 #ifndef TOS_DEFAULT_BAUDRATE
@@ -142,17 +156,14 @@ const msp430_usci_config_t msp430_usci_spi_default_config = {
 #endif
 
 
-#ifndef MSP430_I2C_DEFAULT_DIVISOR
-#define MSP430_I2C_DEFAULT_DIVISOR 10
+#ifndef MSP430_I2C_DIVISOR
+#define MSP430_I2C_DIVISOR 10
 #endif
 
 const msp430_usci_config_t msp430_usci_i2c_default_config = {
-  /* 7 bit addressing, multi-master, driven by SMCLK
-   * note: UCMST must be set each time
-   */
   ctl0 : UCSYNC | UCMODE_3 | MSP430_I2C_MASTER_MODE,
   ctl1 : UCSSEL__SMCLK,
-  br0  : MSP430_I2C_DEFAULT_DIVISOR,	/* SMCLK/div */
+  br0  : MSP430_I2C_DIVISOR,		/* SMCLK/div */
   br1  : 0,				/* 1*2^20/div -> 104,858 Hz */
   mctl : 0,
   i2coa: 0x41,
