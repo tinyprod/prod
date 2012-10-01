@@ -113,6 +113,14 @@ interface HplMsp430Usci {
   async command void setCtl0(uint8_t v);
   async command void setCtl1(uint8_t v);
 
+  async command void orCtlw0(uint16_t v);
+  async command void orCtl0(uint8_t v);
+  async command void orCtl1(uint8_t v);
+
+  async command void andCtlw0(uint16_t v);
+  async command void andCtl0(uint8_t v);
+  async command void andCtl1(uint8_t v);
+
   /**
    * Reads the UCmxBRW Baud Rate Control registers.
    * This register is present on all USCI modules.
@@ -359,17 +367,18 @@ interface HplMsp430Usci {
    */
   async command void setTransmitMode();
   async command void setReceiveMode();
-
-  /* Various I2C bits */
-  async command bool getStopBit();
-  async command bool getStartBit();
-  async command bool getNackBit();
   async command bool getTransmitReceiveMode();
 
   /* transmit NACK, Stop, or Start condition, automatically cleared */
-  async command void setTXNACK();
-  async command void setTXStop();
-  async command void setTXStart();
+  async command void setTxNack();
+  async command void setTxStop();
+  async command void setTxStart();
+
+  async command bool getTxNack();
+  async command bool getTxStop();
+  async command bool getTxStart();
+
+  async command bool isBusBusy();
 
   async command bool isNackIntrPending();
   async command void clrNackIntr();

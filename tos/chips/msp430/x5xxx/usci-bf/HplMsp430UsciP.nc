@@ -52,6 +52,12 @@
  * @author Doug Carlson <carlson@cs.jhu.edu>
  * @author Marcus Chang <marcus.chang@gmail.com>
  * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * WARNING: This code makes the assumption that access to the various
+ * registers occurs with single instructions and thus is atomic.  It
+ * has been verified that with -Os optimization, that indeed register
+ * access is via single instructions.  Other optimizations may not
+ * result in single instructions.
  */
 
 generic module HplMsp430UsciP(
@@ -93,7 +99,7 @@ implementation {
 #define UCmxIFG    (*TCAST(volatile uint8_t*  ONE, UCmxCTLW0_ + 0x1d))
 #define UCmxIV     (*TCAST(volatile uint16_t* ONE, UCmxCTLW0_ + 0x1e))
 
-  async command uint8_t Usci.getModuleIdentifier() { return USCI_ID; }
+  async command uint8_t Usci.getModuleIdentifier()  { return USCI_ID; }
 
   async command uint16_t Usci.getCtlw0()            { return UCmxCTLW0; }
   async command uint8_t  Usci.getCtl0()             { return UCmxCTL0; }
@@ -103,6 +109,14 @@ implementation {
   async command void     Usci.setCtl0(uint8_t v)    { UCmxCTL0  = v; }
   async command void     Usci.setCtl1(uint8_t v)    { UCmxCTL1  = v; }
 
+  async command void     Usci.orCtlw0(uint16_t v)   { UCmxCTLW0 |= v; }
+  async command void     Usci.orCtl0(uint8_t v)     { UCmxCTL0  |= v; }
+  async command void     Usci.orCtl1(uint8_t v)	    { UCmxCTL1  |= v; }
+
+  async command void     Usci.andCtlw0(uint16_t v)  { UCmxCTLW0 &= v; }
+  async command void     Usci.andCtl0(uint8_t v)    { UCmxCTL0  &= v; }
+  async command void     Usci.andCtl1(uint8_t v)    { UCmxCTL1  &= v; }
+
   async command uint16_t Usci.getBrw()		    { return UCmxBRW; }
   async command uint8_t  Usci.getBr0()		    { return UCmxBR0; }
   async command uint8_t  Usci.getBr1()		    { return UCmxBR1; }
@@ -111,70 +125,72 @@ implementation {
   async command void     Usci.setBr0(uint8_t v)     { UCmxBR0 = v; }
   async command void     Usci.setBr1(uint8_t v)     { UCmxBR1 = v; }
 
-  async command uint8_t Usci.getMctl() { return UCmxMCTL; }
-  async command void Usci.setMctl(uint8_t v) { UCmxMCTL = v; }
-  async command uint8_t Usci.getStat() { return UCmxSTAT; }
-  async command void Usci.setStat(uint8_t v) { UCmxSTAT = v; }
-  async command uint8_t Usci.getRxbuf() { return UCmxRXBUF; }
-  async command void Usci.setRxbuf(uint8_t v) { UCmxRXBUF = v; }
-  async command uint8_t Usci.getTxbuf() { return UCmxTXBUF; }
-  async command void Usci.setTxbuf(uint8_t v) { UCmxTXBUF = v; }
-  async command uint8_t Usci.getAbctl() { return UCmxABCTL; }
-  async command void Usci.setAbctl(uint8_t v) { UCmxABCTL = v; }
-  async command uint16_t Usci.getIrctl() { return UCmxIRCTL; }
-  async command void Usci.setIrctl(uint16_t v) { UCmxIRCTL = v; }
-  async command uint8_t Usci.getIrtctl() { return UCmxIRTCTL; }
-  async command void Usci.setIrtctl(uint8_t v) { UCmxIRTCTL = v; }
-  async command uint8_t Usci.getIrrctl() { return UCmxIRRCTL; }
-  async command void Usci.setIrrctl(uint8_t v) { UCmxIRRCTL = v; }
+  async command uint8_t  Usci.getMctl()		    { return UCmxMCTL; }
+  async command void     Usci.setMctl(uint8_t v)    { UCmxMCTL = v; }
+  async command uint8_t  Usci.getStat()		    { return UCmxSTAT; }
+  async command void     Usci.setStat(uint8_t v)    { UCmxSTAT = v; }
+  async command uint8_t  Usci.getRxbuf()	    { return UCmxRXBUF; }
+  async command void     Usci.setRxbuf(uint8_t v)   { UCmxRXBUF = v; }
+  async command uint8_t  Usci.getTxbuf()	    { return UCmxTXBUF; }
+  async command void     Usci.setTxbuf(uint8_t v)   { UCmxTXBUF = v; }
+  async command uint8_t  Usci.getAbctl()	    { return UCmxABCTL; }
+  async command void     Usci.setAbctl(uint8_t v)   { UCmxABCTL = v; }
+  async command uint16_t Usci.getIrctl()	    { return UCmxIRCTL; }
+  async command void	 Usci.setIrctl(uint16_t v)  { UCmxIRCTL = v; }
+  async command uint8_t	 Usci.getIrtctl()	    { return UCmxIRTCTL; }
+  async command void	 Usci.setIrtctl(uint8_t v)  { UCmxIRTCTL = v; }
+  async command uint8_t	 Usci.getIrrctl()	    { return UCmxIRRCTL; }
+  async command void	 Usci.setIrrctl(uint8_t v)  { UCmxIRRCTL = v; }
 
-  async command uint16_t Usci.getI2Coa()           { return UCmxI2COA; }
-  async command void     Usci.setI2Coa(uint16_t v) { UCmxI2COA = v; }
+  async command uint16_t Usci.getI2Coa()            { return UCmxI2COA; }
+  async command void     Usci.setI2Coa(uint16_t v)  { UCmxI2COA = v; }
 
-  async command uint16_t Usci.getI2Csa()           { return UCmxI2CSA; }
-  async command void     Usci.setI2Csa(uint16_t v) { UCmxI2CSA = v; }
+  async command uint16_t Usci.getI2Csa()            { return UCmxI2CSA; }
+  async command void     Usci.setI2Csa(uint16_t v)  { UCmxI2CSA = v; }
 
-  async command uint16_t Usci.getIctl() { return UCmxICTL; }
-  async command uint16_t Usci.setIctl(uint16_t v) { UCmxICTL = v; }
-  async command uint8_t Usci.getIe() { return UCmxIE; }
-  async command void Usci.setIe(uint8_t v) { UCmxIE = v; }
-  async command uint8_t Usci.getIfg() { return UCmxIFG; }
-  async command void Usci.setIfg(uint8_t v) { UCmxIFG = v; }
+  async command uint16_t Usci.getIctl()		    { return UCmxICTL; }
+  async command uint16_t Usci.setIctl(uint16_t v)   { UCmxICTL = v; }
+  async command uint8_t  Usci.getIe()		    { return UCmxIE; }
+  async command void     Usci.setIe(uint8_t v)	    { UCmxIE = v; }
+  async command uint8_t  Usci.getIfg()		    { return UCmxIFG; }
+  async command void	 Usci.setIfg(uint8_t v)	    { UCmxIFG = v; }
 
-  async command bool Usci.isRxIntrPending()	{ return (UCmxIFG & UCRXIFG); }
-  async command void Usci.clrRxIntr()		{ UCmxIFG &= ~UCRXIFG; }
-  async command void Usci.disableRxIntr()	{ UCmxIE  &= ~UCRXIE;  }
-  async command void Usci.enableRxIntr()	{ UCmxIE  |=  UCRXIE;  }
+  async command bool	 Usci.isRxIntrPending()	    { return (UCmxIFG & UCRXIFG); }
+  async command void	 Usci.clrRxIntr()	    { UCmxIFG &= ~UCRXIFG; }
+  async command void	 Usci.disableRxIntr()	    { UCmxIE  &= ~UCRXIE;  }
+  async command void	 Usci.enableRxIntr()	    { UCmxIE  |=  UCRXIE;  }
 
-  async command bool Usci.isTxIntrPending()	{ return (UCmxIFG & UCTXIFG); }
-  async command void Usci.clrTxIntr()		{ UCmxIFG &= ~UCTXIFG; }
-  async command void Usci.disableTxIntr()	{ UCmxIE  &= ~UCTXIE;  }
-  async command void Usci.enableTxIntr()	{ UCmxIE  |=  UCTXIE;  }
+  async command bool	 Usci.isTxIntrPending()	    { return (UCmxIFG & UCTXIFG); }
+  async command void	 Usci.clrTxIntr()	    { UCmxIFG &= ~UCTXIFG; }
+  async command void	 Usci.disableTxIntr()	    { UCmxIE  &= ~UCTXIE;  }
+  async command void	 Usci.enableTxIntr()	    { UCmxIE  |=  UCTXIE;  }
 
-  async command bool Usci.isBusy()		{ return (UCmxSTAT & UCBUSY); }
+  async command bool	 Usci.isBusy()		    { return (UCmxSTAT & UCBUSY); }
 
-  async command uint8_t Usci.getIv() { return UCmxIV; }
+  async command uint8_t  Usci.getIv()		    { return UCmxIV; }
+
 
   /* I2C bits
    *
    * set direction of the bus
    */
-  async command void Usci.setTransmitMode() { UCmxCTL1 |=  UCTR; }
-  async command void Usci.setReceiveMode()  { UCmxCTL1 &= ~UCTR; }
+  async command void Usci.setTransmitMode()	   { UCmxCTL1 |=  UCTR; }
+  async command void Usci.setReceiveMode()	   { UCmxCTL1 &= ~UCTR; }
+  async command bool Usci.getTransmitReceiveMode() { return (UCmxCTL1 & UCTR); }
 
-  /* Various i2c bits */
-  async command bool Usci.getStopBit()             { return (UCmxCTL1 & UCTXSTP);  }
-  async command bool Usci.getStartBit()            { return (UCmxCTL1 & UCTXSTT);  }
-  async command bool Usci.getNackBit()             { return (UCmxCTL1 & UCTXNACK); }
-  async command bool Usci.getTransmitReceiveMode() { return (UCmxCTL1 & UCTR);     }
+  /* NACK, Stop condition, or Start condition, automatically cleared */
+  async command void Usci.setTxNack()		   { UCmxCTL1 |= UCTXNACK; }
+  async command void Usci.setTxStop()		   { UCmxCTL1 |= UCTXSTP;  }
+  async command void Usci.setTxStart()		   { UCmxCTL1 |= UCTXSTT;  }
 
-  /* set NACK, Stop condition, or Start condition, automatically cleared */
-  async command void Usci.setTXNACK()  { UCmxCTL1 |= UCTXNACK; }
-  async command void Usci.setTXStop()  { UCmxCTL1 |= UCTXSTP;  }
-  async command void Usci.setTXStart() { UCmxCTL1 |= UCTXSTT;  }
+  async command bool Usci.getTxNack()              { return (UCmxCTL1 & UCTXNACK); }
+  async command bool Usci.getTxStop()              { return (UCmxCTL1 & UCTXSTP);  }
+  async command bool Usci.getTxStart()             { return (UCmxCTL1 & UCTXSTT);  }
 
-  async command bool Usci.isNackIntrPending() { return (UCmxIFG & UCNACKIFG); }
-  async command void Usci.clrNackIntr()       { UCmxIFG &= ~UCNACKIFG; }
+  async command bool Usci.isBusBusy()		   { return (UCmxSTAT & UCBBUSY);  }
+
+  async command bool Usci.isNackIntrPending()	   { return (UCmxIFG & UCNACKIFG); }
+  async command void Usci.clrNackIntr()		   { UCmxIFG &= ~UCNACKIFG; }
 
   async command void Usci.configure (const msp430_usci_config_t* config,
                                      bool leave_in_reset) {
