@@ -61,7 +61,8 @@ typedef enum {
   EALREADY       =  9,           // The device state you are requesting is already set
   ENOMEM         = 10,           // Memory required not available
   ENOACK         = 11,           // A packet was not acknowledged
-  ELAST          = 11            // Last enum value
+  ETIMEOUT	 = 12,		 // operation timed out
+  ELAST          = 12            // Last enum value
 } error_t NESC_COMBINE("ecombine");
 
 /*

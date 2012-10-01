@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2012 Eric B. Decker
  * Copyright (c) 2010 People Power Co.
  * All rights reserved.
  *
@@ -46,5 +47,6 @@ interface Msp430UsciError {
    * register.  Note that this event is usually signalled from within
    * an interrupt handler.
    */
-  async event void condition (unsigned int errors);
+  async event void condition(unsigned int errors);
+  async event void timeout();
 }

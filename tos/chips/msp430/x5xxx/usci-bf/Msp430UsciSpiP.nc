@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2012, Eric B. Decker
  * Copyright (c) 2011-2012 João Gonçalves
  * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
@@ -41,6 +42,7 @@
  *
  * @author Peter A. Bigot <pab@peoplepowerco.com>
  * @author João Gonçalves <joao.m.goncalves@ist.utl.pt>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 generic module Msp430UsciSpiP () @safe() {
@@ -285,5 +287,6 @@ implementation {
     unconfigure_();
   }
 
-  default async event void Msp430UsciError.condition (unsigned int errors) { }
+  default async event void Msp430UsciError.condition(unsigned int errors) { }
+  default async event void Msp430UsciError.timeout() { }
 }

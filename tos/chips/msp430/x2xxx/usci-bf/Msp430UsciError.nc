@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2012 Eric B. Decker
  * Copyright (c) 2010 People Power Co.
  * All rights reserved.
  *
@@ -34,15 +35,18 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** Support notification of errors detected in MSP430 USCI modules. */
+/**
+ * Support notification of errors detected in MSP430 USCI modules.
+ */
+
 interface Msp430UsciError {
-  /**
-   * Signalled when the USCI infrastructure detects a hardware error.
+  /** Signalled when the USCI infrastructure detects a hardware error.
    *
    * The passed parameter is a bit set comprising values defined in
    * msp430usci.h; these generally map to bits in the USCI UCxySTAT
    * register.  Note that this event is usually signalled from within
    * an interrupt handler.
    */
-  async event void condition (unsigned int errors);
+  async event void condition(unsigned int errors);
+  async event void timeout();
 }
