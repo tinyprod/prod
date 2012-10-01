@@ -7,8 +7,6 @@
  *
  * Multi-Master driver.
  *
- * This open source code was developed with funding from People Power Company
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -61,6 +59,7 @@ generic module Msp430UsciI2CP () @safe() {
     interface I2CSlave[uint8_t client];
     interface ResourceConfigure[uint8_t client];
     interface Msp430UsciError[uint8_t client];
+    interface Panic;
   }
   uses {
     interface HplMsp430Usci as Usci;
@@ -626,4 +625,16 @@ implementation {
     call Usci.setIe(call Usci.getIe() | UCSTPIE | UCRXIE | UCTXIE);
     signal I2CSlave.slaveStart[call ArbiterInfo.userId()]( call Usci.getStat() & UCGC);
   }
+
+#ifndef REQUIRE_PLATFORM
+  default async command uint16_t Platform.usecsRaw()    { return 0; }
+  default async command uint16_t Platform.jiffiesRaw() { return 0; }
+#endif
+
+#ifndef REQUIRE_PANIC
+  default async command void Panic.panic(uint8_t pcode, uint8_t where, uint16_t arg0,
+					 uint16_t arg1, uint16_t arg2, uint16_t arg3) { }
+  default async command void  Panic.warn(uint8_t pcode, uint8_t where, uint16_t arg0,
+					 uint16_t arg1, uint16_t arg2, uint16_t arg3) { }
+#endif
 }

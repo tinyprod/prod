@@ -117,20 +117,27 @@ configurations should wire the appropriate chip pins to Msp430UsciSpiB0P.
 I2C Mode Support
 ----------------
 
-I2C support added by Derek Baker (derek@red-slate.com)
+A series of I2C drivers were written by Doug Carlson and Marcus Chang
+(John Hopkins) for both the x2 and x5 processors that implements a
+multi-master I2C implementation.  These implementations came from the
+breakfast fork at John Hopkins and were brought in as x2xxx/usci-bf
+and x5xxx/usci-bf.
 
-Added support for I2C master 7 bit addressing ~100khz/~400khz NONE interrupt driven, 
-tested on cc430F5137 with microchip 24lc1025 and Melexis MLX90614 thermometer.
-I2CPacket.read, I2CPacket.write, I2CPacketreadDone, I2CPacketwriteDone
-Bits taken from both PeoplePower and Z1 authors with thanks also to Eric Decker.
 
-Note / Gotcha
+These drivers were fleshed out and verified using a logic analyser.
+A single master optimization was also added.
+
+This forms the i2c portion of the x5xxx/usci-v2 implementation.
+
+
+
+Notes:
 
 When setting the address of the slave device remember you only need the 7 bits, most
 devices datasheets show the address in a 8bit format, e.g 24lc1025 address is 0xA0,
 this turns into 0x50, the 7 msb's right shifted one, the read/right bit is added by 
 the UART when you select the read/write function of the UART in I2C mode.
 
-When writing to a device multiple time, check the data sheet for write times, you
+When writing to a device multiple times, check the data sheet for write times, you
 need to give the device time to commit before you write again else the I2CPacket.write
-will FAIL.
+will FAIL.  This of course depends on the device.
