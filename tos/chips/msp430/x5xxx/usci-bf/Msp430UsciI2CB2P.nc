@@ -49,6 +49,7 @@
 configuration Msp430UsciI2CB2P {
   provides {
     interface I2CPacket<TI2CBasicAddr>[uint8_t client];
+    interface I2CReg[uint8_t client];
     interface I2CSlave[uint8_t client];
     interface ResourceConfigure[uint8_t client];
     interface Msp430UsciError[uint8_t client];
@@ -57,6 +58,8 @@ configuration Msp430UsciI2CB2P {
     interface Msp430UsciConfigure[ uint8_t client ];
     interface HplMsp430GeneralIO as SCL;
     interface HplMsp430GeneralIO as SDA;
+    interface Panic;
+    interface Platform;
   }
 }
 implementation {
@@ -70,8 +73,11 @@ implementation {
   Msp430UsciConfigure = I2CP;
   ResourceConfigure = I2CP;
   I2CPacket = I2CP;
+  I2CReg = I2CP;
   I2CSlave = I2CP;
   Msp430UsciError = I2CP;
+  Panic = I2CP;
+  Platform = I2CP;
   SCL = I2CP.SCL;
   SDA = I2CP.SDA;
 

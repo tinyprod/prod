@@ -55,10 +55,15 @@ generic configuration Msp430UsciI2CB2C() {
     interface Resource;
     interface ResourceRequested;
     interface I2CPacket<TI2CBasicAddr>;
+    interface I2CReg;
     interface I2CSlave;
     interface Msp430UsciError;
   }
-  uses interface Msp430UsciConfigure;
+  uses {
+    interface Msp430UsciConfigure;
+    interface Panic;
+    interface Platform;
+  }
 }
 implementation {
   enum {
@@ -71,9 +76,12 @@ implementation {
 
   components Msp430UsciI2CB2P as I2CP;
   I2CPacket = I2CP.I2CPacket[CLIENT_ID];
+  I2CReg    = I2CP.I2CReg[CLIENT_ID];
   I2CSlave  = I2CP.I2CSlave[CLIENT_ID];
   Msp430UsciConfigure = I2CP.Msp430UsciConfigure[ CLIENT_ID ];
   Msp430UsciError = I2CP.Msp430UsciError[CLIENT_ID];
+  Panic = I2CP;
+  Platform = I2CP;
 
   UsciP.ResourceConfigure[CLIENT_ID] -> I2CP.ResourceConfigure[CLIENT_ID];
 }
