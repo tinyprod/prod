@@ -1,0 +1,17 @@
+
+Support Routines and Libraries.
+
+
+motenet (v1.1)
+MoteNet provides a Socket Library of TinyOS Network Communications....
+(1.1 adds initial python bindings)
+
+netlib
+NetLib provides misc. networking library routines.  (used by motenet)
+
+sf - serial forwarder
+original mote to outside world gateway.  superseded by motenet.
+
+6lowpan
+blip
+coap
