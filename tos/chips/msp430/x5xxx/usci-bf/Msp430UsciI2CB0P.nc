@@ -78,7 +78,4 @@ implementation {
   Platform = I2CP;
   SCL = I2CP.SCL;
   SDA = I2CP.SDA;
-
-  components LocalTimeMilliC;
-  I2CP.LocalTime_bms -> LocalTimeMilliC;
 }
