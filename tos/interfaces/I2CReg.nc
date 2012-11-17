@@ -64,8 +64,6 @@ interface I2CReg {
    *
    * RETURNS:	SUCCESS		yum
    *		ETIMEOUT	operation would timeout.
-   *
-   * can also signal I2CReg.timeout()
    */
   async command error_t reg_read(uint16_t slave_addr, uint8_t reg, uint8_t *val);
   async command error_t reg_read16(uint16_t slave_addr, uint8_t reg, uint16_t *val);
@@ -81,8 +79,6 @@ interface I2CReg {
    *
    * RETURNS:	SUCCESS		yum
    *		ETIMEOUT	operation would timeout.
-   *
-   * can also signal I2CReg.timeout()
    */
   async command error_t reg_readBlock(uint16_t slave_addr, uint8_t reg, uint8_t num_bytes, uint8_t *buf);
 
@@ -97,8 +93,6 @@ interface I2CReg {
    *
    * RETURNS:	SUCCESS		yum
    *		ETIMEOUT	operation would timeout.
-   *
-   * can also signal I2CReg.timeout()
    */
   async command error_t reg_write(uint16_t slave_addr, uint8_t reg, uint8_t val);
   async command error_t reg_write16(uint16_t slave_addr, uint8_t reg, uint16_t val);
