@@ -1,6 +1,7 @@
-This directory contains support for the Universal Serial Controller
-Interface as implemented on MSP430 chips in families 4xx, 5xx, and some
-chips in the 2xx family.
+This directory contains support for the TI x5 cpu Universal Serial Controller
+(USCI).  While it would really be nice to have merged support for both the
+x2 and x5 versions of the USCI support, there are major structural differences
+that make this problematic.  See tos/chips/msp430/02_Serial for an analysis.
 
 ==============================
 
@@ -70,6 +71,10 @@ worth running:
 
 to clear the clutter out of the way.
 
+When you are happy with the changes to the master files, regenerate all
+the clones by simply running generate.sh (./generate.sh to a shell).
+
+
 Common USCI Support
 -------------------
 
@@ -136,8 +141,11 @@ Notes:
 When setting the address of the slave device remember you only need the 7 bits, most
 devices datasheets show the address in a 8bit format, e.g 24lc1025 address is 0xA0,
 this turns into 0x50, the 7 msb's right shifted one, the read/right bit is added by 
-the UART when you select the read/write function of the UART in I2C mode.
+the I2C h/w when the transaction is started.  The I2C address registers assume the
+right shifted (actual address).
 
 When writing to a device multiple times, check the data sheet for write times, you
-need to give the device time to commit before you write again else the I2CPacket.write
-will FAIL.  This of course depends on the device.
+need to give the device time to commit before you write again else the i2c access
+function will FAIL.  This of course depends on the device.  This failure may or may
+not be detected (most likely not) by the local to the cpu USCI h/w.  It depends on
+the chip that is being interfaced to via the I2C bus.
