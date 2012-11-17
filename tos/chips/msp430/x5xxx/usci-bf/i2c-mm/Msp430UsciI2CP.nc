@@ -1,11 +1,9 @@
 /*
  * Copyright (c) 2012 Eric B. Decker
- * Copyright (c) 2011 John Hopkins University
- * Copyright (c) 2011 Redslate Ltd.
- * Copyright (c) 2009-2010 People Power Co.
  * All rights reserved.
  *
  * Multi-Master driver.
+ * (NEEDS TO BE TESTED)
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,26 +38,69 @@
  * Implement the I2C-related interfaces for a MSP430 USCI module
  * instance.  Multi-Master driver.
  *
- * port of usci gen 1 (john hopkins) implementation of i2c
+ * Originally started with the Multi-Master i2c driver from John
+ * Hopkins (Doug Carlson, et. al.).   From the USCI gen 1 port.
+ *
+ * Completely rewritten to simplify and verified for proper operation
+ * at 400 KHz.  Previous drivers worked at 100 KHz but not at 400 KHz.
+ *
+ * This code is based on the single master driver rewrite with multi-master
+ * additions.
+ *
+ * Uses Panic to call out abnormal conditions.  These conditions are
+ * assumed to be out of normal behaviour and aren't recoverable.
+ *
+ * Uses Platform to obtain raw timing information for timeout functions.
+ *
+ * WARNING: By default, null versions for both Panic and timing modules are
+ * used.  This effectively disables any timeout checks or panic invocations.
+ * This preserves the original behaviour and doesn't require changing lots
+ * of things all at once.  When a Platform wants to use the new functionality
+ * it can wire in the required components.  This is the recommended
+ * configuration
+ *
+ * To enable Panic signalling and timeout functions, you must wire in
+ * appropriate routines into Panic and Platform in this module.
+ *
+ * WARNING: If you don't wire in platform timing functions, it is possible
+ * for routines in this module to hang in an infinite loop.  If a platform
+ * has enabled a watchdog timer, it is possible that the watchdog would
+ * then be invoked.  Most platforms don't enable the watchdog.
+ *
+ * It is recommended that you define REQUIRE_PLATFORM and REQUIRE_PANIC in
+ * your platform.h file.  This will require that appropriate wiring exists
+ * for Panic and Platform and is wired in.
+ *
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * previous authors...   But it has been completely rewritten.
  *
  * @author Doug Carlson   <carlson@cs.jhu.edu>
  * @author Marcus Chang   <marcus.chang@gmail.com>
  * @author Peter A. Bigot <pab@peoplepowerco.com> 
  * @author Derek Baker    <derek@red-slate.com>
- * @author Eric B. Decker <cire831@gmail.com>
  */
 
-#include <stdio.h>
 #include "msp430usci.h"
 #include <I2C.h>
+
+#ifndef PANIC_I2C
+
+enum {
+  __panic_i2c = unique(UQ_PANIC_SUBSYS)
+};
+
+#define PANIC_I2C __panic_i2c
+#endif
+
 
 generic module Msp430UsciI2CP () @safe() {
   provides {
     interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr[uint8_t client];
+    interface I2CReg[uint8_t client];
     interface I2CSlave[uint8_t client];
     interface ResourceConfigure[uint8_t client];
     interface Msp430UsciError[uint8_t client];
-    interface Panic;
   }
   uses {
     interface HplMsp430Usci as Usci;
@@ -68,82 +109,105 @@ generic module Msp430UsciI2CP () @safe() {
     interface HplMsp430GeneralIO as SCL;
     interface Msp430UsciConfigure[uint8_t client];
     interface ArbiterInfo;
-    interface LocalTime<TMilli> as LocalTime_bms;
+    interface Panic;
+    interface Platform;
   }
 }
 
 implementation {
-  enum{
-    SLAVE = 0,
-    MASTER_READ = 1,
+
+  enum {
+    MASTER_IDLE  = 0,
+    MASTER_READ  = 1,
     MASTER_WRITE = 2,
+    SLAVE        = 3,
+
+    /*
+     * Time based timeouts.  Given 100 KHz, 400 uS should be plenty, but
+     * this doesn't handle clock stretching.  The time out code needs
+     * to handle this special.   And still needs to make sure that we
+     * don't hang.   While still giving the h/w long enough to complete
+     * its bus transaction.
+     *
+     * For the time being we ignore clock stretching.   Cross that bridge
+     * if the troll climbs out from underneath.
+     *
+     * Timeout is in either uS or uiS depending on what the base clock
+     * system is set for.  Just set it high enough so it doesn't matter.
+     */
+    I2C_MAX_TIME = 400,			/* max allowed, 400 uS (uis) */
   };
 
-  norace uint8_t* m_buf;
-  norace uint8_t m_len;
-  norace uint8_t m_pos;
-  norace uint8_t m_action;
-  norace i2c_flags_t m_flags;
+#define __PANIC_I2C(where, x, y, z) do { \
+	call Panic.panic(PANIC_I2C, where, call Usci.getModuleIdentifier(), \
+			 x, y, z); \
+	force_idle(); \
+  } while (0)
 
-  void showRegisters(); 
-  void nextRead();
-  void nextWrite();
-  void signalDone( error_t error );
+  norace uint8_t*    m_buf;
+  norace uint8_t     m_len;
+  norace uint8_t     m_pos;
+  norace uint8_t     m_left;
+  norace uint8_t     m_action;
+					/* TRUE if TXSTART issued */
+  norace uint8_t     m_started;		/* 1 if started, 0 otherwise */
+  norace i2c_flags_t m_flags;		/* START, STOP, RESTART, etc. */
 
-  void printRegisters(){
-    printf("---\n\r");
-    printf(" CTL0: %x\n\r", call Usci.getCtl0());
-    printf(" CTL1: %x\n\r", call Usci.getCtl1());
 
-    //printf(" CTLW: %x\n\r", call Usci.getCtlw0());
-    //printf(" BRw:  %x\n\r", call Usci.getBrw());
+  error_t configure_(const msp430_usci_config_t* config) {
+    if (!config)
+      return FAIL;			/* does anyone actually check? */
 
-    printf(" OA:   %x\n\r", call Usci.getI2Coa());
-    printf(" SA:   %x\n\r", call Usci.getI2Csa());
-    printf(" IE:   %x\n\r", call Usci.getIe());
-    printf(" IFG:  %x\n\r", call Usci.getIfg());
-    printf("---\n\r");
-  }
-
-  error_t configure_(const msp430_usci_config_t* config){
-    if(! config){
-      return FAIL;
-    }
-
-    //basic config (leave in reset)
     call Usci.configure(config, TRUE);
-
-    //direction is don't-care in datasheet
     call SCL.selectModuleFunc();
     call SDA.selectModuleFunc();
-
-    //i2c-specific config
     call Usci.setI2Coa(config->i2coa);
     call Usci.leaveResetMode_();
+    m_action = SLAVE;
 
-    //enable slave-start interrupt, clear the rest
-    call Usci.setIe((call Usci.getIe() & (BIT7|BIT6)) | UCSTTIE);
+    /*
+     * Turn on START interrupt.   Used for when we are the slave end
+     * and someone else is trying to talk to us...
+     *
+     * But is anything wired in and ready to receive the incoming?
+     */
+    call Usci.setIe(UCSTTIE);
     return SUCCESS;
   }
 
 
-  error_t slaveIdle(){
-
-    //only reset if we are master: if we are already slave we don't
-    //want to clear any state flags by accident.
-    if (call Usci.getCtl0() & UCMST){
+  error_t force_idle() {
+    /*
+     * force the h/w back to idle.   That means take the h/w
+     * out of master (force back to slave, just in case someone
+     * is trying to talk to us).
+     *
+     * If already a Slave don't reset the beasty, preserve any
+     * state currently present.
+     *
+     * Should this actually leave the h/w in reset?  force_idle
+     * only gets called after something goes wrong.   But our
+     * default state is to be in Slave mode.
+     */
+    if (call Usci.getCtl0() & UCMST) {
       call Usci.enterResetMode_();
-      call Usci.setCtl0(call Usci.getCtl0() & ~UCMST);
+      call Usci.andCtl0(~UCMST);
       call Usci.leaveResetMode_();
     }
-
-    //enable slave-start, clear the rest
-    call Usci.setIe((call Usci.getIe() & (BIT7|BIT6)) | UCSTTIE);
+    call Usci.setIe(UCSTTIE);
     m_action = SLAVE;
     return SUCCESS;
   }
 
-  error_t unconfigure_(){
+
+  /*
+   * We assume that the pins being used for SCL/SDA have been set up
+   * or left (initial state) as input (DIR set to 0 for the pin).
+   * When we deselect the pins from the module, the pins will go
+   * back to inputs.  The module itself is kept in reset.   This
+   * configuration should be reasonable for lowish power.
+   */
+  error_t unconfigure_() {
     call Usci.enterResetMode_();
     call SCL.selectIOFunc();
     call SDA.selectIOFunc();
@@ -153,332 +217,529 @@ implementation {
   async command void ResourceConfigure.configure[ uint8_t client ]() {
     configure_(call Msp430UsciConfigure.getConfiguration[client]());
   }
-  
+
   async command void ResourceConfigure.unconfigure[ uint8_t client ]() {
     unconfigure_();
   }
-  
+
+
+  /*
+   * Set up for a transaction.
+   *
+   * First, reset the module.  This will blow away pending interrupts and
+   * interrupt enables.  Will this also make it impossible for the bus
+   * to be busy?
+   *
+   * Reset and then make sure the bus isn't busy.   Since this is the
+   * multi-master driver we want to set MST as we are preparing to go
+   * on the bus.
+   */
+
+  error_t start_check_busy() {
+    uint16_t t0, t1;
+
+    call Usci.enterResetMode_();			// blow any cruft away
+    call Usci.orCtl0(UCMST);				// force into master
+    call Usci.leaveResetMode_();			// trying to talk
+
+    t0 = call Platform.usecsRaw();
+    while (call Usci.isBusBusy()) {
+      t1 = call Platform.usecsRaw();
+      if (t1 - t0 > I2C_MAX_TIME) {
+	__PANIC_I2C(1, t1, t0, 0);
+	return EBUSY;
+      }
+    }
+    return SUCCESS;
+  }
+
+
+  /*
+   * Wait for a CTRL1 signal to deassert.   These in particular
+   * are UCTXNACK (Nack), UCTXSTP (Stop), and UCTXSTT (Start).
+   * Typically only Stop and Start are actually looked at.
+   */
+  error_t wait_deassert_ctl1(uint8_t code) {
+    uint16_t t0, t1;
+
+    t0 = call Platform.usecsRaw();
+
+    /* wait for code bits to go away */
+    while (call Usci.getCtl1() & code) {
+      t1 = call Platform.usecsRaw();
+      if (t1 - t0 > I2C_MAX_TIME) {
+	__PANIC_I2C(2, t1, t0, 0);
+	return ETIMEOUT;
+      }
+    }
+    return SUCCESS;
+  }
+
+
+  /*
+   * wait_ifg: wait for a particlar USCI_IFG bit to pop
+   *
+   * uses I2C_MAX_TIME to time out the access
+   * checks for UCNACKIFG, if it pops abort
+   *
+   * UCNAKIFG simply panics which also yields a i2c h/w reset.
+   * It doesn't send a STOP on the bus which may confuse some
+   * devices.  It is assumed this is a single master system
+   * and new transactions will start with a TXSTART which
+   * should reset all devices out there to start looking
+   * properly.
+   *
+   * It may be necessary to change the NACK abort code so
+   * it issues a STOP prior to panicing just to clean the
+   * bus up.
+   */
+  error_t wait_ifg(uint8_t code) {
+    uint16_t t0, t1;
+    uint8_t ifg;
+
+    t0 = call Platform.usecsRaw();
+    while (1) {
+      ifg = call Usci.getIfg();
+      if (ifg & UCNACKIFG) {				// didn't respond.
+	__PANIC_I2C(3, ifg, 0, 0);
+	return EINVAL;
+      }
+      if (ifg & code) break;
+      t1 = call Platform.usecsRaw();
+      if (t1 - t0 > I2C_MAX_TIME) {
+	__PANIC_I2C(4, t1, t0, 0);
+	return ETIMEOUT;
+      }
+    }
+    return SUCCESS;
+  }
+
+
   /*************************************************************************/
+  /*
+   * WARNING: The TI I2C implementation is double buffered.  One of the
+   * side effects of this, is any unSTOPPed read will result in one possibly
+   * two additional bytes being queued up.  Depends on timing and what
+   * other operations the cpu is doing prior to servicing the i2c interrupts.
+   *
+   * One needs to be careful when using UNSTOPPED transactions coupled with
+   * RESTARTs.  It is very easy to hang the bus or get confused.  Typically
+   * this will result in a NACK interrupt.   See notes below inside of read.
+   */
 
-  async command error_t I2CBasicAddr.read[uint8_t client]( i2c_flags_t flags,
-					   uint16_t addr, uint8_t len, 
-					   uint8_t* buf ) {
+  /*
+   * I2CBasicAddr.read - interrupt driven I2C read
+   *
+   * If we return SUCCESS, an I2CBasicAddr.readDone is guaranteed to be
+   * signalled.  This happens off an interrupt.
+   *
+   * Any error return (non-SUCCESS) indicates no signal will be generated.
+   * Any error leaves the cpu I2C h/w reset and in low power state prior
+   * to returning.
+   *
+   * This implementation closely follows the I2CReg.reg_readBlock code
+   * without the initial register address write.
+   */
+  async command error_t I2CBasicAddr.read[uint8_t client](i2c_flags_t flags,
+		uint16_t addr, uint8_t len, uint8_t* buf ) {
+    error_t rtn;
 
-    //According to TI, we can just poll until the start condition
-    //clears.  But we're nervous and want to bail out if it doesn't
-    //clear fast enough.  This is how many times we loop before we
-    //bail out.
+    if (!len || !buf)
+      return EINVAL;
 
-    uint16_t counter = I2C_ONE_BYTE_READ_COUNTER;
-
-    m_buf = buf;
-    m_len = len;
-    m_flags = flags;
-    m_pos = 0;
+    m_buf    = buf;
+    m_len    = len;
+    m_left   = len;
+    m_flags  = flags;
+    m_pos    = 0;
     m_action = MASTER_READ;
 
-    /* check if this is a new connection or a continuation */
-    if (m_flags & I2C_START) {
-      //TODO: if reset can be removed, can we consolidate this with
-      //the repeated-start?
-      call Usci.enterResetMode_();
-      call Usci.setCtl0(call Usci.getCtl0() | UCMST);
-      call Usci.leaveResetMode_();
+    /*
+     * check if this is a new connection or a continuation
+     * If RESTARTing, then don't do the start_check_busy.
+     * RESTART implies START.
+     */
+    if (m_flags & (I2C_START | I2C_RESTART)) {
 
-      // set slave address 
+      /*
+       * If RESTARTing, assume that we are already in the mode we want (MST or
+       * SLAVE).  Otherwise call start_check_busy to set things up and make sure
+       * we are in a reasonable state.   This will set MST because we are trying
+       * to talk.
+       */
+      if (!(m_flags & I2C_RESTART) && (rtn = start_check_busy()))
+	  return rtn;
+
       call Usci.setI2Csa(addr);
-
-      //check bus status at the latest point possible.
-      if ( call Usci.getStat() & UCBBUSY ){
-        //if the bus is busy, bail out real quick
-        slaveIdle();
-        return EBUSY;
-      }
-      //clear TR bit, set start condition
-      call Usci.setCtl1( (call Usci.getCtl1()&(~UCTR))  | UCTXSTT);
-
-      //enable i2c arbitration interrupts, rx, clear the rest
-      call Usci.setIe( (call Usci.getIe() & (BIT7|BIT6)) | UCNACKIE |UCALIE |UCRXIE);
+      call Usci.setReceiveMode();	/* clears CTR, reading */
+      call Usci.setTxStart();		/* set TXSTT, send Start  */
+      m_started = 1;
 
       /*
        * if only reading 1 byte, STOP bit must be set right after
-       * START condition is triggered
+       * START condition has gone (TXSTT deasserts).
+       *
+       * Normally (more than 1 byte), we assert TXSTT (start)
+       * and then wait for the 1st RXIFG interrupt.  The logic
+       * in the RX interrupt handler will set TXSTOP at the
+       * proper time.
+       *
+       * But if we are only doing one byte we must set STOP
+       * immediately after TXSTT deasserts and it starts
+       * clocking to receive the 1st byte into the RX SR
+       * for the STOP condition to be signalled properly.
        */
-      if ( (m_len == 1) && (m_flags & I2C_STOP) ) {
-        //this logic seems to work fine
-        /* wait until START bit has been transmitted */
-        while ((call Usci.getCtl1() & UCTXSTT) && (counter > 0x01)){
-          counter--;
-        }
-        /* set stop bit */
-        //UCB0CTL1 |= UCTXSTP;
-        call Usci.setCtl1(call Usci.getCtl1() | UCTXSTP);
+      if ((m_left == 1) && (m_flags & I2C_STOP)) {
+	if ((rtn = wait_deassert_ctl1(UCTXSTT)))
+	  return rtn;
+	call Usci.setTxStop();
       }
-    } else if (m_flags & I2C_RESTART) {
-      /* set slave address */
-      call Usci.setI2Csa(addr);
 
-      //clear TR bit, start
-      /* UCTXSTT - generate START condition */
-      //UCB0CTL1 |= UCTXSTT;
-      call Usci.setCtl1((call Usci.getCtl1() & ~UCTR) | UCTXSTT);
-
-      //enable i2c arbitration interrupts, rx, clear the rest
-      call Usci.setIe( (call Usci.getIe() & (BIT7|BIT6)) | UCNACKIE |UCALIE |UCRXIE);
-
-      /* if only reading 1 byte, STOP bit must be set right after START bit */
-      if ( (m_len == 1) && (m_flags & I2C_STOP) ) {
-        /* wait until START bit has been transmitted */
-        while ((call Usci.getCtl1() & UCTXSTT) && (counter > 0x01)){
-          counter--;
-        }
-        /* set stop bit */
-        //UCB0CTL1 |= UCTXSTP;
-        call Usci.setCtl1(call Usci.getCtl1() | UCTXSTP);
-      }
-    } else {
-      //TODO: test
-      nextRead();
+      call Usci.setIe(UCNACKIE | UCALIE | UCRXIE);
+      return SUCCESS;
     }
-    if (counter > 0x01){
-      return SUCCESS;    
-    } else {
-      return FAIL;
+
+    /*
+     * Not START or RESTART.  Continuing with a read...
+     *
+     * This is actually a strange way to access the bus.  Typically
+     * one would do something like (reading a register for example):
+     *
+     * I2CBasicAddr.write(I2C_START, DEV_ADDR, len, buf);
+     *		<-- I2CBasicAddr.writeDone(...);
+     * I2CBasicAddr.read(I2C_RESTART | I2C_STOP, DEV_ADDR, len, buf);
+     *		<-- I2CBasicAddr.readDone(...);
+     *
+     * In other words, typically one always touches the bus with a
+     * bus transaction that causes TXSTART to be asserted.  Stalling
+     * the bus while then getting around to accessing it again isn't
+     * typical and is what this section of code supports.  Also it
+     * has been observed that stalling the bus for too long causes
+     * a NACK to get generated.   Unless one restarts the bus.
+     *
+     * In other words, I've never seen this section actually work.
+     *
+     * We have to special case the one byte case.  Because of how
+     * STOP gets set when actually doing a start.
+     *
+     * Because we are reading and because the h/w is double buffered,
+     * we will read one possibly two extra bytes.  One byte will be
+     * sitting in RXBUF while the next byte will be mostly in the
+     * shift register (SR).  Depends on the timing and when STOP is
+     * set.
+     */
+
+    /*
+     * Must have seen a start prior or abort
+     */
+
+    if (!m_started) {
+      __PANIC_I2C(5, 0, 0, 0);
+      return EINVAL;
     }
+
+    if ((m_left == 1) && (m_flags & I2C_STOP))
+      call Usci.setTxStop();
+    call Usci.setIe(UCNACKIE | UCALIE | UCRXIE);
+    return SUCCESS;
   }
 
-  void nextRead() {
-    uint16_t counter = 0xFFFF;
 
-    if ((m_pos == (m_len - 2)) && m_len > 1) {
-      //we want to send NACK + STOP in response to the last byte.
-      //if m_pos == m_len-2 and we get the RX interrupt, that means
-      //  that the slave has already written the next-to-last byte
-      //  and we have acknowledged it--BUT we have not yet read it.
-      //By setting the stop condition here, we say "send STOP after
-      //the next byte," which will actually be the last byte.
-      //
-      //it is more intuitive to say "read the next-to-last byte and
-      //set the STOP condition real quick before the last byte gets
-      //sent so that we can NACK+STOP it". Maybe this would work if
-      //you slowed down the I2C clock enough?
-      call Usci.setCtl1(call Usci.getCtl1() | UCTXSTP);
-    }
-    /* read byte from RX buffer */
-    m_buf[ m_pos++ ] = call Usci.getRxbuf();
+  /*************************************************************************/
 
-    //TODO: this should check m_flags: if RESTART flag is present, we
-    //should not send stop condition
-    if (m_pos == m_len) {
+  /*
+   * I2CBasicAddr.write - interrupt driven I2C write
+   *
+   * If we return SUCCESS, a I2CBasicAddr.writeDone is guaranteed to be
+   * signalled.  This happens off an interrupt.
+   *
+   * Any error return (non-SUCCESS) then no signal will be generated.
+   */
+  async command error_t I2CBasicAddr.write[uint8_t client](i2c_flags_t flags,
+		uint16_t addr, uint8_t len, uint8_t* buf) {
+    error_t rtn;
 
-      //when we receive the last byte, wait until STP condition is
-      //cleared, then return.
-      while( (call Usci.getCtl1() & UCTXSTP) && (counter > 0x01)) {
-        counter --;
-      }
-      //switch back to slave mode, we're done
-      slaveIdle();
+    if (!len || !buf)
+      return EINVAL;
 
-      //disable the rx interrupt 
-      call Usci.setIe(call Usci.getIe() & ~UCRXIE);
-      if (counter > 0x01) {
-        signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( SUCCESS, call Usci.getI2Csa(), m_pos, m_buf );
-      } else {
-        signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( FAIL, call Usci.getI2Csa() , m_pos, m_buf );
-      }
-    }
-  }
-  
-  async command error_t I2CBasicAddr.write[uint8_t client]( i2c_flags_t flags,
-					    uint16_t addr, uint8_t len,
-					    uint8_t* buf ) {
-    m_buf = buf;
-    m_len = len;
-    m_flags = flags;
-    m_pos = 0;
+    m_buf    = buf;
+    m_len    = len;
+    m_left   = len;
+    m_flags  = flags;
+    m_pos    = 0;
     m_action = MASTER_WRITE;
 
-    /* check if this is a new connection or a continuation */
-    if (m_flags & I2C_START) {
-      /*
-       * Original "gen 1" driver was written for the x2 and implements
-       * i2c as described in x2 User_Manual (slau144, rev H).
-       *
-       * x5 i2c master is described in slau208, section 34.3.4.2.1.
-       *
-       * Sequence:
-       *
-       * - set sa
-       * - set UCTR
-       * - set UCTXSTT
-       *
-       * (start/address written, then we get an interrupt), for TXIFG
-       *
-       */
+    /*
+     * check if this is a new connection or a continuation
+     * If RESTARTing, then don't do the start_check_busy.
+     */
+    if (m_flags & (I2C_START | I2C_RESTART)) {
 
-      /*
-       * Enter Master mode.
-       *
-       * Reset to make sure it takes properly.
-       *
-       * It would be nice if one didn't have to reset the module.  When
-       * not doing the reset, it was observed that the first bus transaction
-       * worked but subsequent didn't (Saw UCSTPIFG, stop condition, and first
-       * byte was dropped).   Adding the reset/leavereset sequence fixed this.
-       */
+      if (!(m_flags & I2C_RESTART) && (rtn = start_check_busy()))
+	  return rtn;
 
-      call Usci.enterResetMode_();
-      call Usci.setCtl0(call Usci.getCtl0() | UCMST);
-      call Usci.leaveResetMode_();
-
-      // set slave address 
       call Usci.setI2Csa(addr);
-
-      //check bus status at the latest point possible.
-      if ( call Usci.getStat() & UCBBUSY ){
-        //if the bus is busy, bail out real quick
-        slaveIdle();
-        return EBUSY;
-      }
-
-      // UCTXSTT - generate START condition 
-      call Usci.setCtl1(call Usci.getCtl1() | UCTR | UCTXSTT);
-
-      //enable relevant state interrupts and TX, clear the rest
-      //while ( call Usci.getCtl1() & UCTXSTT){}
-      call Usci.setIe((call Usci.getIe() & (BIT7|BIT6)) | UCNACKIE | UCALIE | UCTXIE);
-    } 
-    /* is this a restart or a direct continuation */
-    else if (m_flags & I2C_RESTART) {
-      // set slave address 
-      call Usci.setI2Csa(addr);
-
-      /* UCTR - set transmit */
-      /* UCTXSTT - generate START condition */
-      call Usci.setCtl1(call Usci.getCtl1() | UCTR | UCTXSTT);
-      //do we not need to enable any interrupts here?
-    } else {
-      // continue writing next byte 
-      nextWrite();
+      call Usci.orCtl1(UCTR | UCTXSTT);		// writing, Start.
+      m_started = 1;
     }
+
+    if (!m_started) {
+      __PANIC_I2C(6, 0, 0, 0);
+      return EINVAL;
+    }
+    call Usci.setIe(UCNACKIE | UCALIE | UCTXIE);
     return SUCCESS;    
   }
 
-  void nextWrite() {
-    uint16_t counter = 0xFFFF;
 
-    //Hey, now here's a fun thing to do:
-    //  It seems like if two masters set START at almost the same
-    //  time, they both get the TX interrupt, so both write their 0th
-    //  byte into the TX buffer. However, only one of them actually
-    //  writes it out, and no arbitration-loss interrupt is raised for
-    //  the "slow" one. When the "fast" one finishes its transaction,
-    //  the slow one gets a second TX interrupt, which would cause us
-    //  to skip over the first byte by accident. This checks for the
-    //  issue and rewinds the buffer position to 0 if it applies.  I
-    //  make no guarantees about how stable this behavior is.
+  /***************************************************************************/
+  /*
+   * Defaults for I2CBasicAddr
+   */
 
-    if ( call Usci.getCtl1() & UCTXSTT) {
-      m_pos = 0;
-    }
+  default async event void I2CBasicAddr.readDone[uint8_t client](error_t error, uint16_t addr,
+								 uint8_t length, uint8_t* data)  {}
 
-    /* all bytes sent */
-    if ( m_pos == m_len ) {
-      /* not setting STOP bit allows restarting transfer */
-      if ( m_flags & I2C_STOP ) {
-        /* set stop bit */
-        call Usci.setCtl1(call Usci.getCtl1() | UCTXSTP);
+  default async event void I2CBasicAddr.writeDone[uint8_t client](error_t error, uint16_t addr,
+								  uint8_t length, uint8_t* data) {}
 
-        /* wait until STOP bit has been transmitted */
-        while ((call Usci.getCtl1() & UCTXSTP) && (counter > 0x01)) {
-          counter--;
-        }
-
-        //STOPping and just finished last send, so we should go back
-        //to slave mode.
-
-        slaveIdle();
-      } else {
-        //so, we just don't send the STOP bit.
-      }
-
-      //disable tx interrupt, we're DONE 
-      call Usci.setIe(call Usci.getIe() & ~UCTXIE );
-      /* fail gracefully */      
-      if (counter > 0x01) {
-        signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( SUCCESS, call Usci.getI2Csa(), m_len, m_buf );
-      } else{
-        signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( FAIL, call Usci.getI2Csa(), m_len, m_buf );
-      }
-    } else {
-      //send the next char
-      call Usci.setTxbuf(m_buf[ m_pos++ ]);
-    }
+  default async command const msp430_usci_config_t* Msp430UsciConfigure.getConfiguration[uint8_t client]() {
+    return &msp430_usci_i2c_default_config;
   }
 
+
+  /***************************************************************************/
+  /*
+   * Slave Interfaces
+   */
 
   async command void I2CSlave.slaveTransmit[uint8_t clientId](uint8_t data) {
     //TODO: safety
     //write it, reenable interrupt (if it was disabled)
     call Usci.setTxbuf(data);
-    call Usci.setIe(call Usci.getIe() | UCTXIE);
+    call Usci.enableTxIntr();
   }
 
 
   async command uint8_t I2CSlave.slaveReceive[uint8_t client]() {
     //re-enable rx interrupt, read the byte
-    call Usci.setIe(call Usci.getIe() | UCRXIE);
+    call Usci.enableRxIntr();
     return call Usci.getRxbuf();
   }
-  
 
-  //defaults
-  default async event void I2CBasicAddr.readDone[uint8_t client](error_t error, uint16_t addr, uint8_t length, uint8_t* data)  {}
-  default async event void I2CBasicAddr.writeDone[uint8_t client](error_t error, uint16_t addr, uint8_t length, uint8_t* data) {}
-  default async command const msp430_usci_config_t* Msp430UsciConfigure.getConfiguration[uint8_t client]() {
-    return &msp430_usci_i2c_default_config;
-  }
 
-  /***** Slave-mode functions ***/
   command error_t I2CSlave.setOwnAddress[uint8_t client](uint16_t addr) {
     //retain UCGCEN bit
-    call Usci.setI2Coa( (call Usci.getI2Coa() & UCGCEN) | addr);
+    call Usci.setI2Coa(addr);
     return SUCCESS;
   }
 
+
   command error_t I2CSlave.enableGeneralCall[uint8_t client]() {
-    if (UCGCEN & (call Usci.getI2Coa())) {
-      return EALREADY;
-    } else {
-      call Usci.setI2Coa(UCGCEN | (call Usci.getI2Coa()));
-      return SUCCESS;
-    }
+    call Usci.setI2Coa(UCGCEN | (call Usci.getI2Coa()));
+    return SUCCESS;
   }
+
 
   command error_t I2CSlave.disableGeneralCall[uint8_t client]() {
-    if (UCGCEN & ~(call Usci.getI2Coa())) {
-      return EALREADY;
-    } else {
-      call Usci.setI2Coa(~UCGCEN & (call Usci.getI2Coa()));
-      return SUCCESS;
-    }
+    call Usci.setI2Coa(~UCGCEN & (call Usci.getI2Coa()));
+    return SUCCESS;
   }
 
-  //END USCI_GEN1 PORTED CODE
+
   default async event bool I2CSlave.slaveReceiveRequested[uint8_t client]()  { return FALSE; }
   default async event bool I2CSlave.slaveTransmitRequested[uint8_t client]() { return FALSE; }
 
   default async event void I2CSlave.slaveStart[uint8_t client](bool isGeneralCall) { ; }
   default async event void I2CSlave.slaveStop[uint8_t client]() { ; }
 
-  /***************************************************************************/
 
-  void TXInterrupts_interrupted(uint8_t iv);
-  void RXInterrupts_interrupted(uint8_t iv);
-  void NACK_interrupt();
-  void AL_interrupt();
-  void STP_interrupt();
-  void STT_interrupt();
+  /***************************************************************************/
+  /*
+   * INTERRUPT HANDLERS
+   *
+   */
+
+  void TXInterrupts_interrupted(uint8_t iv) {
+    error_t rtn;
+
+    if (m_left) {
+      call Usci.setTxbuf(m_buf[m_pos++]);
+      m_left--;
+      return;
+    }
+
+    /*
+     * when m_left is 0, all bytes have been sent.
+     *
+     * the last byte has just been transferred to the SR and we have
+     * taken one last TXIFG interrupt.  If stopping we need to set
+     * STOP now.
+     */
+    rtn = SUCCESS;
+    if (m_flags & I2C_STOP) {
+      call Usci.setTxStop();
+      rtn = wait_deassert_ctl1(UCTXSTP);
+      m_started = 0;
+    }
+
+    /* the last byte is still on its way out.   we may need to give
+     * it some time before signalling.   But for now just signal.
+     *
+     * If STOPing, this isn't an issue because we wait for the STOP
+     * to be transmitted above.
+     */
+    call Usci.setIe(0);			/* turn off all interrupts */
+    signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()](
+	rtn, call Usci.getI2Csa(), m_len, m_buf);
+    return;
+  }
+
+
+  void RXInterrupts_interrupted(uint8_t iv) {
+    error_t rtn;
+
+    m_left--;
+
+    /*
+     * When we are pulling the next to last byte (ie. the SR is
+     * receiving the last byte), we want to make sure the last
+     * byte get STOP set which will be asserted after that last
+     * byte comes in.
+     */
+    if ((m_left == 1) && (m_flags & I2C_STOP))
+      call Usci.setTxStop();
+
+    m_buf[m_pos++] = call Usci.getRxbuf();
+
+    if (m_left == 0) {
+      /*
+       * all done receiving...
+       */
+      call Usci.setIe(0);		/* turn off all interrupts */
+      rtn = SUCCESS;
+
+      /* if stopping wait for STOP to deassert */
+      if (m_flags & I2C_STOP) {
+	rtn = wait_deassert_ctl1(UCTXSTP);
+	m_started = 0;
+      }
+      signal I2CBasicAddr.readDone[call ArbiterInfo.userId()](
+		rtn, call Usci.getI2Csa(), m_pos, m_buf);
+    }
+  }
+
+
+  void NACK_interrupt() {
+    bool reading;
+    error_t rtn;
+
+    /* remember what we were doing... */
+    reading = (m_action == MASTER_READ);
+
+    /*
+     * Nobody home, abort.   Read or Write
+     *
+     * First close off the transaction.   This releases the bus
+     * properly.   Takes into account other masters (yes we are
+     * single master so who cares, but its the right thing to do.)
+     */
+    call Usci.setTxStop();
+    if ((rtn = wait_deassert_ctl1(UCTXSTP)))
+      goto nack_abort;
+
+    rtn = ENOACK;
+
+    /*
+     * Throw a PANIC because NACK should never happen.
+     * Someone did something weird or something broke.
+     *
+     * __PANIC_I2C will reset the h/w and will reset m_action.
+     */
+    __PANIC_I2C(98, 0, 0, 0);
+
+    /*
+     * Panic itself may be a NOP (ie. not wired to anything) so
+     * we may end up back here.  Signal failure to the application.
+     */
+
+    /*
+     * you can't use the h/w (UCTR bit) because it has been reset
+     * which clears the bit.   You can't use m_action because Panic
+     * forces m_action to MASTER_IDLE.
+     */
+nack_abort:
+    m_started = 0;
+    if (reading) {
+      signal I2CBasicAddr.readDone[call ArbiterInfo.userId()](
+		rtn, call Usci.getI2Csa(), m_len, m_buf);
+      return;
+    }
+
+    /* we were writing.   Signal appropriately */
+    signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()](
+		rtn, call Usci.getI2Csa(), m_len, m_buf);
+    return;
+  }
+
+
+  void AL_interrupt() {
+    uint8_t lastAction = m_action;
+
+    force_idle();
+
+    switch (lastAction) {
+      case MASTER_WRITE:
+	signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()](EBUSY, call Usci.getI2Csa(), m_len, m_buf );
+	break;
+
+      case MASTER_READ:
+	signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( EBUSY, call Usci.getI2Csa(), m_len, m_buf);
+	break;
+
+      default:
+	break;
+    }
+
+    //once this returns, we should get another interrupt for STT
+    //if we are addressed. Otherwise, we're just chillin' in idle
+    //slave mode as per usual.
+  }
+
+
+  void STP_interrupt() {
+
+    /* disable STOP interrupt, enable START interrupt */
+    call Usci.setIe((call Usci.getIe() | UCSTTIE) & ~UCSTPIE);
+
+    //this is ugly: the stop interrupt has higher priority than RX.
+    //It appears to be the case that since we get the RX interrupt as
+    //soon as the byte is received, and the STP interrupt as soon as
+    //the stop condition is received, there is a very short window
+    //where we have the RX but not the STP, and we tend to see the
+    //stop interrupt first.  This will surely confound upper-level
+    //logic (it would see a stop, then another byte), so we reverse
+    //the priority for this case in software.
+
+    if (call Usci.getIfg() & UCRXIFG & call Usci.getIe()) {
+      RXInterrupts_interrupted(call Usci.getIfg());
+    }
+    signal I2CSlave.slaveStop[call ArbiterInfo.userId()]();
+  }
+
+
+  void STT_interrupt() {
+
+    //This is the same issue as noted in the STP_interrupt above, but
+    //applied to repeated start conditions.
+
+    if (call Usci.getIfg() & UCRXIFG & call Usci.getIe() ) {
+      RXInterrupts_interrupted(call Usci.getIfg());
+    }
+    call Usci.setIe(call Usci.getIe() | UCSTPIE | UCRXIE | UCTXIE);
+    signal I2CSlave.slaveStart[call ArbiterInfo.userId()]( call Usci.getStat() & UCGC);
+  }
+
 
   async event void Interrupts.interrupted(uint8_t iv) {
     switch(iv) {
@@ -501,130 +762,458 @@ implementation {
         TXInterrupts_interrupted(iv);
         break;
       default:
-        //error
+	/* very strange */
+	__PANIC_I2C(99, 0, 0, 0);
         break;
     }
   }
 
-  void TXInterrupts_interrupted(uint8_t iv) {
-    /* if master mode */
-    if (call Usci.getCtl0() & UCMST) {
-      nextWrite();
-    } else {
-      if (signal I2CSlave.slaveTransmitRequested[call ArbiterInfo.userId()]()) {
-        //true= "I'm responding RIGHT NOW"
-        // note that when this interrupt context ends, txinterrupt
-        // will be raised again.
-      } else {
-        //false= "I need to pause for a second"
-        //disable TX interrupt.
-        call Usci.setIe(call Usci.getIe() & ~UCTXIE);
-      }
-    }
+
+  /***************************************************************************/
+  /*
+   *
+   * I2CReg implementation.
+   *
+   * WARNING: DOES NOT SUPPORT MULTI-MASTER.   Assumes single-master (us).
+   * Forces MST mode and doesn't let go.  Not sure how to put it back in SLAVE
+   * in a reasonable fashion.
+   *
+   * Does not support lost arbitration.
+   */
+
+
+  /*
+   * see if the slave is out there...
+   *
+   * 0  if no one home
+   * 1  well your guess here.
+   */
+  async command bool I2CReg.slave_present[uint8_t client](uint16_t sa) {
+    error_t rtn;
+
+    if ((rtn = start_check_busy()))
+      return rtn;
+
+    call Usci.setI2Csa(sa);
+    call Usci.orCtl1(UCTR | UCTXSTT | UCTXSTP);		// Write, Start, Stop
+
+    if ((rtn = wait_deassert_ctl1(UCTXSTP)))
+      return rtn;
+
+    rtn = call Usci.isNackIntrPending();		// 1 says NACK'd
+    return (!rtn);					// we want the opposite sense
   }
 
-  void RXInterrupts_interrupted(uint8_t iv) {
-    /* if master mode */
-    if (call Usci.getCtl0() & UCMST) {
-      nextRead();
-    } else {
-      if (signal I2CSlave.slaveReceiveRequested[call ArbiterInfo.userId()]()) {
-        //TRUE: they're responding immediately (should have actually
-        //already responded at this point). 
-      } else {
-        //FALSE: disable the RX interrupt, since the client needs to
-        //do some work
-        call Usci.setIe(call Usci.getIe() & ~UCRXIE);
-      }
-    }
+
+  /*
+   * reg_read:
+   *
+   * START (w/ device addr, in i2csa), transmit
+   * 1st write the reg addr
+   * 2nd restart (w/device addr), receive
+   * read byte (reg contents)
+   * finish
+   */
+  async command error_t I2CReg.reg_read[uint8_t client_id](uint16_t sa, uint8_t reg, uint8_t *val) {
+    uint16_t data;
+    error_t rtn;
+
+    *val = 0;
+    if ((rtn = start_check_busy()))
+      return rtn;
+    call Usci.setI2Csa(sa);
+
+    /* We want to write the regAddr, send the SA and then write regAddr */
+    call Usci.orCtl1(UCTR | UCTXSTT);		// TR (write) & STT
+
+    /*
+     * get 1st TxIFG
+     *
+     * The MSP430 is double buffered.  1st TxIFG will show up shortly after
+     * TxSTT has been sent (both buffers empty).   We write the first byte
+     * (the reg addr), it gets moved to the output buffer (shift register) and
+     * will start to be clocked out.   2nd TxIFG will show at this point.
+     * This is when we want to turn the bus around so we can receive the
+     * byte coming back.
+     */
+
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+    call Usci.setTxbuf(reg);			// write register address
+
+    /* looking for 2nd TxIFG */
+    if ((rtn = wait_ifg(UCTXIFG)))		// says 1st byte got ack'd
+      return rtn;
+
+    /*
+     * receive one byte
+     *
+     * First turn the bus around with a Restart.  Wait for the TxStart
+     * to take and then assert the Stop.   This should put the stop
+     * on the first receive byte.
+     */
+    call Usci.setReceiveMode();			// clears CTR
+    call Usci.setTxStart();
+
+    /* wait for the TxStart to go away */
+    if ((rtn = wait_deassert_ctl1(UCTXSTT)))
+      return rtn;
+    call Usci.setTxStop();
+
+    /* wait for inbound char to show up, first rx byte */
+    if ((rtn = wait_ifg(UCRXIFG)))
+      return rtn;
+
+    data = call Usci.getRxbuf();
+    *val = data;
+    return SUCCESS;
   }
 
 
-  void NACK_interrupt() {
-    uint8_t counter = 0xff;
+  /*
+   * reg_read16
+   *
+   * address slave (sa)
+   * tx (write) reg addr (reg) to the device
+   * restart (assert TXStart) to turn bus around
+   * read two bytes.
+   */
+  async command error_t I2CReg.reg_read16[uint8_t client_id](uint16_t sa, uint8_t reg, uint16_t *val) {
+    uint16_t data;
+    error_t rtn;
 
-    //This occurs during write and read when no ack is received.
-    /* set stop bit */
-    call Usci.setCtl1(call Usci.getCtl1() | UCTXSTP);
+    *val = 0;
+    if ((rtn = start_check_busy()))
+      return rtn;
+    call Usci.setI2Csa(sa);
 
-    /* wait until STOP bit has been transmitted */
-    while ((call Usci.getCtl1() & UCTXSTP) && (counter > 0x01)) {
-      counter--;
-    }
-    call Usci.enterResetMode_();
-    call Usci.leaveResetMode_();
-    //back to slave idle mode
-    slaveIdle();
+    /* We want to write the regAddr, send the SA and then write regAddr */
+    call Usci.orCtl1(UCTR | UCTXSTT);		// TR (write) & STT
 
-    //signal appropriate event depending on whether we were
-    //transmitting or receiving
-    //Note that TR will be cleared if we lost MM arbitration because
-    //another master addressed us as a slave. However, this should
-    //manifest as an AL interrupt, not a NACK interrupt.
-    if (call Usci.getCtl1() & UCTR) {
-      signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( ENOACK, call Usci.getI2Csa(), m_len, m_buf );
-    } else {
-      signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( ENOACK, call Usci.getI2Csa(), m_len, m_buf );
-    }
+    /*
+     * get 1st TxIFG
+     *
+     * The MSP430 is double buffered.  1st TxIFG will show up shortly after
+     * TxSTT has been sent (both buffers empty).   We write the first byte
+     * (the reg addr), it gets moved to the output buffer (shift register) and
+     * will start to be clocked out.   2nd TxIFG will show at this point.
+     * This is when we want to turn the bus around so we can receive two
+     * bytes.  (Send a Restart (assert TxSTT again, but this time indicate
+     * receiving)).   This will occur after the current outgoing byte (in
+     * the outbound serial register) has been ACK'd.
+     */
+
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+    call Usci.setTxbuf(reg);			// write register address
+
+    /* looking for 2nd TxIFG */
+    if ((rtn = wait_ifg(UCTXIFG)))		// says 1st byte got ack'd
+      return rtn;
+
+    /*
+     * receive two bytes
+     *
+     * First turn the bus around with a Restart.
+     *
+     * Also double buffered....    When the 1st RxIFG asserts saying
+     * there is something in RxBUF, the 2nd byte is also being clocked
+     * into the Rx Shift register.  (unless the slave isn't ready in which
+     * case it will be doing clock stretching, SCLLOW will be asserted).
+     *
+     * So if we want to receive two bytes all is good.   TxStop needs
+     * to be asserted while the 2nd byte is being received which
+     * means after the 1st RxIFG has been seen.   We should get one
+     * more RxIFG and that should complete the transaction.
+     */
+    call Usci.setReceiveMode();			// clears CTR
+    call Usci.setTxStart();
+
+    /* wait for the TxStart to go away */
+    if ((rtn = wait_deassert_ctl1(UCTXSTT)))
+      return rtn;
+
+    /* wait for inbound char to show up, first rx byte */
+    if ((rtn = wait_ifg(UCRXIFG)))
+      return rtn;
+
+    /*
+     * Since we have RxIntr asserted, we have a byte in the RxBuf and its been ack'd.
+     * The next byte is in progress so set TxStop.  It will go on the next byte.
+     * Then actually read the current byte which will unfreeze the state machine.
+     *
+     * This will avoid starting another bus cycle, which can happen if we set
+     * stop after reading the first byte.   Depends on if the bus is stalled.
+     * Ie. we got backed up and the I2C h/w is ahead of us.
+     */
+    call Usci.setTxStop();
+
+    data = call Usci.getRxbuf();
+    data = data << 8;
+    if ((rtn = wait_ifg(UCRXIFG)))
+      return rtn;
+    data |= call Usci.getRxbuf();
+    *val = data;
+    return SUCCESS;
   }
 
-  void AL_interrupt() {
-    uint8_t lastAction = m_action;
 
-    slaveIdle();
+  async command error_t I2CReg.reg_readBlock[uint8_t client_id](
+	    uint16_t sa, uint8_t reg, uint8_t num_bytes, uint8_t *buf) {
 
-    //clear AL flag
-    call Usci.setStat(call Usci.getStat() & ~(UCALIFG));
+    uint16_t left;
+    error_t  rtn;
 
-    //TODO: more descriptive error? I guess EBUSY is fair.
-    if(lastAction == MASTER_WRITE) {
-      signal I2CBasicAddr.writeDone[call ArbiterInfo.userId()]( EBUSY, call Usci.getI2Csa(), m_len, m_buf );
-    } else if(lastAction == MASTER_READ) {
-      signal I2CBasicAddr.readDone[call ArbiterInfo.userId()]( EBUSY, call Usci.getI2Csa(), m_len, m_buf);
+    if (num_bytes == 0 || buf == NULL)
+      return EINVAL;
+
+    left = num_bytes;
+
+    /*
+     * special case of left starts out 1, single byte.
+     *
+     */
+    if (left == 1)
+      return call I2CReg.reg_read[client_id](sa, reg, &buf[0]);
+
+    if ((rtn = start_check_busy()))
+      return rtn;
+
+    call Usci.setI2Csa(sa);
+
+    /* We want to write the regAddr, send the SA and then write regAddr */
+    call Usci.orCtl1(UCTR | UCTXSTT);		// TR (write) & STT
+
+    /*
+     * get 1st TxIFG
+     *
+     * The MSP430 is double buffered.  1st TxIFG will show up shortly after
+     * TxSTT has been sent (both buffers empty).   We write the first byte
+     * (the reg addr), it gets moved to the output buffer (shift register) and
+     * will start to be clocked out.   2nd TxIFG will show at this point.
+     * This is when we want to turn the bus around so we can start to receive
+     * bytes.  (Send a Restart (assert TxSTT again, but this time indicate
+     * receiving)).   This will occur after the current outgoing byte (in
+     * the outbound serial register) has been ACK'd.
+     */
+
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+    call Usci.setTxbuf(reg);			// write register address
+
+    /* looking for 2nd TxIFG */
+    if ((rtn = wait_ifg(UCTXIFG)))		// says 1st byte got ack'd
+      return rtn;
+
+    /*
+     * Turn the bus around with a Restart.
+     */
+    call Usci.setReceiveMode();			// clears CTR
+    call Usci.setTxStart();
+
+    /* wait for the TxStart to go away */
+    if ((rtn = wait_deassert_ctl1(UCTXSTT)))
+      return rtn;
+
+    /*
+     * RX is doubled buffered.   There is the incoming shift register (SR)
+     * which feeds the actual RXBUF.  When rxbuf is loaded rxifg is asserted.
+     *
+     * After rxbuf is loaded, the next byte will start to be clocked into
+     * SR.  If rxbuf hasn't been emptied by the time 7 bit times have gone
+     * by, the state machine will stop clocking (scl will be low) until
+     * rxbuf gets emptied.
+     *
+     * What happens if we assert TxStop when we are holding off the receiver?
+     */
+    while (left) {
+      if ((rtn = wait_ifg(UCRXIFG)))
+	return rtn;
+      left--;
+
+      /*
+       * If there is only one more byte left, then set stop.
+       * The state machine will have already started to receive
+       * into the SR so the last byte is on the fly.
+       *
+       * If the state machine hung (on bit 7, scl low), setting
+       * TxStop prior to pulling the last byte will issue the
+       * Stop after this last byte.
+       *
+       * The order of setting txStop and pulling the Rxbuf byte
+       * is important.
+       */
+      if (left == 1)
+	call Usci.setTxStop();
+      *buf++ = call Usci.getRxbuf();
     }
-
-    //once this returns, we should get another interrupt for STT
-    //if we are addressed. Otherwise, we're just chillin' in idle
-    //slave mode as per usual.
+    if ((rtn = wait_deassert_ctl1(UCTXSTP)))
+      return rtn;
+    return SUCCESS;
   }
 
-  void STP_interrupt() {
 
-    /* disable STOP interrupt, enable START interrupt */
-    call Usci.setIe((call Usci.getIe() | UCSTTIE) & ~UCSTPIE);
+  /*
+   * reg_write:
+   *
+   * START (w/ device addr, in i2csa), transmit
+   * 1st write the reg addr
+   * write byte (reg contents)
+   * finish
+   */
+  async command error_t I2CReg.reg_write[uint8_t client_id](uint16_t sa,
+						    uint8_t reg, uint8_t val) {
+    error_t rtn;
 
-    //this is ugly: the stop interrupt has higher priority than RX.
-    //It appears to be the case that since we get the RX interrupt as
-    //soon as the byte is received, and the STP interrupt as soon as
-    //the stop condition is received, there is a very short window
-    //where we have the RX but not the STP, and we tend to see the
-    //stop interrupt first.  This will surely confound upper-level
-    //logic (it would see a stop, then another byte), so we reverse
-    //the priority for this case in software.
+    if ((rtn = start_check_busy()))
+      return rtn;
+    call Usci.setI2Csa(sa);
 
-    if (call Usci.getIfg() & UCRXIFG & call Usci.getIe()) {
-      RXInterrupts_interrupted(call Usci.getIfg());
-    }
-    signal I2CSlave.slaveStop[call ArbiterInfo.userId()]();
+    /* We want to write the regAddr, send the SA and then write regAddr */
+    call Usci.orCtl1(UCTR | UCTXSTT);		// TR (write) & STT
+
+    /*
+     * get 1st TxIFG
+     *
+     * The MSP430 is double buffered.  1st TxIFG will show up shortly after
+     * TxSTT has been sent (both buffers empty).   We write the first byte
+     * (the reg addr), it gets moved to the output buffer (shift register) and
+     * will start to be clocked out.   2nd TxIFG will show at this point.
+     * This is when we want to turn the bus around so we can receive the
+     * byte coming back.
+     */
+
+    if ((rtn = wait_ifg(UCTXIFG)))		// wait for txstart to finish
+      return rtn;
+
+    call Usci.setTxbuf(reg);			// write register address
+    if ((rtn = wait_ifg(UCTXIFG)))		// says reg addr got ack'd
+      return rtn;
+
+    /*
+     * write one byte
+     *
+     * We've got an existing TxIFG, so we have room.  Write the new value
+     * and wait until it gets moved into the shift register (TxIfg will come
+     * up when this happens).  Then set TxStop to finish.
+     */
+    call Usci.setTxbuf(val);
+    if ((rtn = wait_ifg(UCTXIFG)))		// says val got ack'd
+      return rtn;
+
+    call Usci.setTxStop();
+    if ((rtn = wait_deassert_ctl1(UCTXSTP)))
+      return rtn;
+    return SUCCESS;
   }
-  
-  void STT_interrupt() {
 
-    //clear start flag, but leave enabled (repeated start)
-    //enable stop interrupt
-    //enable RX/TX interrupts
 
-    call Usci.setStat(call Usci.getStat() &~ UCSTTIFG);
+  async command error_t I2CReg.reg_write16[uint8_t client_id](uint16_t sa,
+						      uint8_t reg, uint16_t val) {
+    error_t rtn;
 
-    //This is the same issue as noted in the STP_interrupt above, but
-    //applied to repeated start conditions.
+    if ((rtn = start_check_busy()))
+      return rtn;
+    call Usci.setI2Csa(sa);
 
-    if (call Usci.getIfg() & UCRXIFG & call Usci.getIe() ) {
-      RXInterrupts_interrupted(call Usci.getIfg());
-    }
-    call Usci.setIe(call Usci.getIe() | UCSTPIE | UCRXIE | UCTXIE);
-    signal I2CSlave.slaveStart[call ArbiterInfo.userId()]( call Usci.getStat() & UCGC);
+    /* We want to write the regAddr, send the SA and then write regAddr */
+    call Usci.orCtl1(UCTR | UCTXSTT);		// TR (write) & STT
+
+    /*
+     * get 1st TxIFG
+     *
+     * The MSP430 is double buffered.  1st TxIFG will show up shortly after
+     * TxSTT has been sent (both buffers empty).   We write the first byte
+     * (the reg addr), it gets moved to the output buffer (shift register) and
+     * will start to be clocked out.   2nd TxIFG will show at this point.
+     * This is when we want to turn the bus around so we can receive the
+     * byte coming back.
+     */
+
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+    call Usci.setTxbuf(reg);			// write register address
+
+    /* looking for 2nd TxIFG */
+    if ((rtn = wait_ifg(UCTXIFG)))		// says reg addr got ack'd
+      return rtn;
+
+    /*
+     * write first byte, we do msb first.
+     * We've got an existing TxIFG, so we have room.
+     */
+    call Usci.setTxbuf(val >> 8);		// msb part
+    if ((rtn = wait_ifg(UCTXIFG)))		// says 1st byte got ack'd
+      return rtn;
+
+    /*
+     * send 2nd, but wait until it is in the shift register
+     * before sending Stop
+     */
+    call Usci.setTxbuf(val & 0xff);		// lsb part
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+
+    call Usci.setTxStop();
+    if ((rtn = wait_deassert_ctl1(UCTXSTP)))
+      return rtn;
+    return SUCCESS;
   }
+
+
+  async command error_t I2CReg.reg_writeBlock[uint8_t client_id](uint16_t sa,
+				uint8_t reg, uint8_t num_bytes, uint8_t *buf) {
+    uint16_t left;
+    error_t  rtn;
+
+    if (num_bytes == 0 || buf == NULL)
+      return EINVAL;
+
+    left = num_bytes;
+
+    if ((rtn = start_check_busy()))
+      return rtn;
+    call Usci.setI2Csa(sa);
+
+    /* writing (will write regAddr), send start */
+    call Usci.orCtl1(UCTR | UCTXSTT);		// TR (write) & STT
+
+    /*
+     * get 1st TxIFG
+     *
+     * The MSP430 is double buffered.  1st TxIFG will show up shortly after
+     * TxSTT has been sent (both buffers empty).   We write the first byte
+     * (the reg addr), it gets moved to the output buffer (shift register) and
+     * will start to be clocked out.   2nd TxIFG will show at this point.
+     * This is when we want to turn the bus around so we can start to receive
+     * bytes.  (Send a Restart (assert TxSTT again, but this time indicate
+     * receiving)).   This will occur after the current outgoing byte (in
+     * the outbound serial register) has been ACK'd.
+     */
+
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+    call Usci.setTxbuf(reg);			// write register address
+
+    while (left) {
+      if ((rtn = wait_ifg(UCTXIFG)))		// says previous byte got ack'd
+	return rtn;
+
+      left--;
+      call Usci.setTxbuf(*buf++);
+    }
+    /*
+     * we have to wait until the last byte written actually
+     * makes it into the SR before setting Stop.
+     */
+    if ((rtn = wait_ifg(UCTXIFG)))
+      return rtn;
+    call Usci.setTxStop();
+    if ((rtn = wait_deassert_ctl1(UCTXSTP)))
+      return rtn;
+    return SUCCESS;
+  }
+
 
 #ifndef REQUIRE_PLATFORM
   default async command uint16_t Platform.usecsRaw()    { return 0; }
