@@ -1,3 +1,33 @@
+
+NOTE: motenet supersedes the serial forwarder and libmote.a.   See ../motenet
+Motenet provides a socket based interface to the WSN.  It currently uses
+code from sf to build the needed pieces.  This all occurs from inside the
+motenet directory.
+
+
+To install using stow:
+
+      ./bootstrap
+      ./configure --prefix=/opt/stow/motenet
+      make
+
+      sudo -s
+      make install
+
+      ("sudo make install" for some reason doesn't pick up the value of $TOSROOT properly so
+      the make install doesn't work write unless you are root first)
+
+      This will install bin/{sf, sflisten, sfsend, seriallisten, serialsend}, include/{message.h,
+      serialsource.h, sfsource.h}, and lib/libmote.a.  These will be installed into /opt/stow/motenet.
+
+
+   Install into /opt/{bin,include,lib} using stow.  (still root)
+
+      cd /opt/stow
+      stow motenet
+
+
+
 Mini C-SDK for TinyOS
 =====================
 

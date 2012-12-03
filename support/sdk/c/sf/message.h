@@ -9,8 +9,9 @@
 /* Authors:  David Gay  <dgay@intel-research.net>
  *           Intel Research Berkeley Lab
  */
-#ifndef MESSAGE_H
-#define MESSAGE_H
+
+#ifndef __MESSAGE_H__
+#define __MESSAGE_H__
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,6 +33,11 @@ void tmsg_fail(void);
  *  function. If the function is NULL, tmsg_fail does nothing.
 */
 void (*tmsg_set_fail(void (*fn)(void)))(void);
+
+/** reset the data pointer and length of the tmsg struct
+ *  usefull when moving over encapsulations.
+ */
+void reset_tmsg(tmsg_t *msg, void *packet, size_t len) ;
 
 /**
  * Create a message buffer from array 'packet' of 'len' bytes
@@ -158,4 +164,4 @@ void tmsg_write_float_be(tmsg_t *msg, size_t offset, float x);
 }
 #endif
 
-#endif
+#endif		/* __MESSAGE_H__ */
