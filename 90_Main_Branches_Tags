@@ -1,0 +1,81 @@
+
+This is the main release/development repository for TinyOS.
+
+These are some initial thoughts on doing maintanence for TinyOS release cycles.
+
+THIS IS A WORK IN PROGRESS.   Input is encouraged.   If tinyos-devel@millennium.berkeley.edu
+isn't appropriate (should be, but YMMV), send them to me cire831@gmail.com.
+
+However, it would be prefered if you comment using github by looking at the commit that
+brought this file into tp-freeforall.
+
+
+
+The mainline of the TinyProd family of repositories is an initial cut at a structure for how
+to manage this. The mainline is gh:tinyprod/prod (the main pristine release fork).
+gh:tp-freeforall/prod is the development fork where most new work is done.   tp-freeforall
+(aka. ffa) actively tracks the current SVN tinyos development repository.
+
+The general form for a repository/branch is: <github_context>/<repo>(branch)
+ie. gh:tp-freeforall/prod (svn/current) is the svn/current branch in the
+tp-freeforall/prod repository located on github.
+
+
+See the following documents for more details on how this github stuff is put together...
+
+https://github.com/tp-freeforall/prod/blob/tp-master/<filename>
+
+00a_Repo_Notes: For a general overview of what the tp-freeforall repo is about.
+ 
+00b_Development_Environment: Setting up a development environment for the msp430.
+
+00c_Getting_Started_Git: Overview of getting started using git, github, and the repo.
+
+00d_Contribution_Process: Contributing back to the central Repository.   Work in Progress.
+
+
+
+
+In the meantime the following branches and tags are proposed to move us in a reasonable direction.
+
+Tags are used to denote the main tinyos 2.1.2 releases and its maintanence releases.
+
+ie.
+
+tos-2_1_2_0 is the initial release of 2.1.2 (same as release_tinyos_2_1_2).
+
+tos-2_1_2_1 is the 1st maintanence release of 2.1.2.   It contains a batch of
+patches from the development trunk so doesn't have the need for any cherry picked
+bugs, etc.
+
+
+Branches:
+
+Currently, the following branches exist between the working TinyOS development
+repository and the TinyProd family of repos.
+
+master: In general, master refers to the default main branch in a GIT repository.
+Currently, master refers to the master branch coming from the T2-SVN development
+repository.
+
+tos-maint: the mainline maintanence branch.
+
+tos-maint-next: a branch holding proposed changes destined for the next maintanence release.
+
+
+svn/current: a tracking branch that tracks master.
+
+
+
+
+First, why a seperate TinyProd/prod repository for releases?   This is to minimize
+how much other cruft is held in the repository.  If you want to see the cruft and 
+are okay with dealing with the associated overhead, use the TP-FREEFORALL repository.
+
+The intent is to keep most ordinary uses from having to pull the other objects that we
+as developers are generating.
+
+
+The maintanence branches and tags will in the future all be managed out of the Release
+repository (ie. TinyProd/prod).   Currently, while gestating these are replicated in both
+tp-freeforall as well as tinyprod.
