@@ -1,4 +1,4 @@
-WARNING:  Default branch has been switched to *** msp430-int ***
+WARNING:  Default branch has been switched to *** tp-master ***
 
 ============================================================================
 
@@ -27,22 +27,24 @@ a better release note will be written.  This will occur immediately after the
 TinyOS 2.1.2 release occurs.
 
 
-** Default (Main working) Branch:** (2011-12-16)   msp430-int
-  Integration cycle.  Merging tinyos-main (SVN) -> msp430-int
+** Default (Main working) Branch:** (2012-12-03)   tp-master
+   motenet_rel, msp430-int, etc.  all merged.
 
 <current feature branch>
-msp430-int:     msp430 integration
-msp430-int-pu:  msp430 integration (proposed updates)  (currently collapsed)
+msp430-int:     msp430 integration (merged).
 
-If in doubt, branch off from msp430-int.
+If in doubt, branch off tp-master.
 
-Status: 2011-12-16
+Status: 2012-12-03
 
-tinyprod-base: integrated with the tip of tinyos-main trunk (82dab04, r5767)
+tinyprod-base: integrated with the tip of tinyos-main trunk (0e4829, r6209)
 msp430-int:    integrated with updated tinyprod-base.
 
 Merge with Z1 (x2) tinyos-main code complete.
 
+
+2012-12-03: msp430-int merged into tp-master
+    motenet_rel merged into tp-master
 
 2011-12-16: msp430-int-next promoted to msp430-int
     integration with Z1 x2 tinyos-main (svn) complete.
@@ -134,20 +136,17 @@ family) its primary focus is on the newer processors which requires the newer
 toolchain.   The intent is that all processors (original, x1 as well as the newer
 x2 and x5 families) should be tested with the newer toolchain.
 
-The base msp430 toolchain (4.5.3 and later) is available for Ubuntu Oneric
-(11.10).  And a complete interium msp430 toolchain is available from
-http://tinyprod.net/debian-dev.   Just follow the instructions in the README.
-
-Some testing with the old 3.2.3 toolchain (original tinyos and z1 varient) has
-also been done for basic functionality (ie. does it compile).   The old tool
-chain (3.2.3, tinyos) is available as *legacy* in the same tool repo mentioned above.
+The current msp430 toolchain, 4.6.3 should be used.  This tool chain is available
+for Ubuntu Oneric (11.10) and Debian (6.5) or later.  Debian packages are available
+from http://tinyprod.net/repos/debian.  Follow the instructions in the README.
 
 
 * Repo Structure
 
 github.com/tinyprod/prod: main TinyProd repo.
-  The VeryBlessed repo.  Holds the stable mainline (master).   Releases
-  come off this repo and the master branch.
+  The VeryBlessed repo.  Holds the stable mainline (svn/current).   Releases
+  come off this repo and the master branch.  Current tinyprod branch is
+  tp-master.
 
 github.com/tp-freeforall/prod: working fork.
   Blessed repo.  Holds consolidated integration branches and
@@ -156,7 +155,7 @@ github.com/tp-freeforall/prod: working fork.
 github.com/<github_user>/prod: user's tinyprod working fork.
   branched off tp-freeforall/prod.   working branches
   should be branched off the tp-freeforall/prod(branch)
-  that the user is working on.  (ie. msp430-int or msp430-int-pu)
+  that the user is working on.  (ie. msp430-int or msp430-int-pu, topic branches)
 
 The general form for a repository/branch is: <github_context>/<repo>(branch)
 ie. gh:tp-freeforall/prod(msp430-int-pu) is the msp430-int-pu branch in the
@@ -176,9 +175,9 @@ svn/upstream: svn tinyos tracking branch.
 svn/upstream-next: the upstream of the repo is being moved.   This is the new
 proposed upstream position.
 
-master: the main tinyprod release line.
-next:   integration branch for next release on master.
-pu:     integration branch for proposed updates.
+tp-master: the main tinyprod release line.
+tp-next:   integration branch for next release on master.
+tp-pu:     integration branch for proposed updates.
 
 <feature>-int: integration branch for feature
 <feature>-int-pu: proposed update.
