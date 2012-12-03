@@ -60,6 +60,7 @@ module HardwareC {
 implementation {
 
   command void Hardware.init() {
+    WDTCTL = WDTPW + WDTHOLD;
     BCSCTL1 = RSEL0 | RSEL1 | RSEL2 | XT2OFF;
     DCOCTL = DCO0 | DCO1 | DCO2;
   }

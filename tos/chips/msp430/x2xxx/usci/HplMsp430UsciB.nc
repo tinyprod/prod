@@ -202,6 +202,15 @@ interface HplMsp430UsciB {
   async command void clearGeneralCall();
   async command void setGeneralCall();
 
+  /* set master/slave mode, i2c */
+  async command void setSlaveMode();
+  async command void setMasterMode();
+
+  /* get bits of uctl1 in i2c mode */
+  async command bool getStopBit();
+  async command bool getStartBit();  
+  async command bool getTransmitReceiveMode();
+
   /*
    * when master the SLA (slave address register says who we
    * are talking to.

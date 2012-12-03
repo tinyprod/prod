@@ -429,9 +429,19 @@ implementation {
   async command void Usci.clearGeneralCall() { UCB1I2COA &= ~UCGCEN; }
   async command void Usci.setGeneralCall()   { UCB1I2COA |=  UCGCEN; }
 
-  /* get/set Slave Address, I2Csa */
-  async command uint16_t Usci.getSlaveAddress()            { return UCB1I2CSA; }
-  async command void Usci.setSlaveAddress( uint16_t addr ) { UCB1I2CSA = addr; }
+  /* set master/slave mode, i2c */
+  async command void Usci.setSlaveMode()  { UCB1CTL0 |=  UCMST; }
+  async command void Usci.setMasterMode() { UCB1CTL0 &= ~UCMST; }
+
+  /* get stop bit in i2c mode */
+  async command bool Usci.getStartBit() { return (UCB1CTL1 & UCTXSTT); } 
+  async command bool Usci.getStopBit() { return (UCB1CTL1 & UCTXSTP); }
+  async command bool Usci.getTransmitReceiveMode() { return (UCB1CTL1 & UCTR); }
+
+  /* get/set Slave Address, i2cSA */
+  /* do you really need the atomic? */
+  async command uint16_t Usci.getSlaveAddress()            { atomic { return UCB1I2CSA; } }
+  async command void Usci.setSlaveAddress( uint16_t addr ) { atomic { UCB1I2CSA = addr; } }
 
   /* enable/disable NACK interrupt */
   async command void Usci.disableNACKInt() { UCB1I2CIE &= ~UCNACKIE; }

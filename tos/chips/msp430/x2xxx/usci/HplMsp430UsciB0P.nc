@@ -423,6 +423,15 @@ implementation {
   async command void Usci.clearGeneralCall() { UCB0I2COA &= ~UCGCEN; }
   async command void Usci.setGeneralCall()   { UCB0I2COA |=  UCGCEN; }
 
+  /* set master/slave mode, i2c */
+  async command void Usci.setSlaveMode()  { UCB0CTL0 |=  UCMST; }
+  async command void Usci.setMasterMode() { UCB0CTL0 &= ~UCMST; }
+
+  /* get stop bit in i2c mode */
+  async command bool Usci.getStartBit() { return (UCB0CTL1 & UCTXSTT); } 
+  async command bool Usci.getStopBit() { return (UCB0CTL1 & UCTXSTP); }
+  async command bool Usci.getTransmitReceiveMode() { return (UCB0CTL1 & UCTR); }
+
   /* get/set Slave Address, I2Csa */
   async command uint16_t Usci.getSlaveAddress()            { return UCB0I2CSA; }
   async command void Usci.setSlaveAddress( uint16_t addr ) { UCB0I2CSA = addr; }
