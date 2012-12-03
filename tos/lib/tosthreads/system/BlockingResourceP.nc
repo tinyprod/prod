@@ -134,18 +134,3 @@ implementation {
     return call Resource.isOwner();
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -51,12 +51,11 @@ interface HalTMP102Advanced {
   event void setTLowDone(error_t error);
   command error_t setTHigh(uint16_t val);
   event void setTHighDone(error_t error);
-  
+
   //it is not possible to configure sensor resolution
-  
-  
+
   event void alertThreshold();
-  
+
   /* We must include following modes for TMP102 */
   //conversion rate
   //extended mode
@@ -64,6 +63,4 @@ interface HalTMP102Advanced {
   event void setExtendedModeDone(error_t error);
   command error_t setConversionRate(tmp102_cr_t rate);
   event void setConversionRateDone(error_t error);
-
-
 }

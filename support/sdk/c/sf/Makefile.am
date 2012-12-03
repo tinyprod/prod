@@ -8,10 +8,10 @@ BUILT_SOURCES = serialpacket.h serialprotocol.h
 
 # set so libmote.a will get built and installed
 
-bin_PROGRAMS=sf seriallisten serialsend sflisten sfsend
+bin_PROGRAMS=sf prettylisten sflisten sfsend seriallisten serialsend
 lib_LIBRARIES=libmote.a
 include_HEADERS=sfsource.h serialsource.h message.h
-noinst_PROGRAMS=prettylisten
+#noinst_PROGRAMS=prettylisten sflisten sfsend seriallisten serialsend
 #noinst_LIBRARIES=libmote.a
 
 sf_SOURCES = sf.c

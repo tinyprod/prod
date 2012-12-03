@@ -1,0 +1,190 @@
+
+CPU families:
+
+We currently define 3 cpu families that group similar TI msp430 chips together.   Two chips
+can be grouped together if the module/interface behaviour is similar enough.
+
+The main family is simply "msp430" and whenever possible we endevour to put everything we can into the
+generic msp430 directory.  This is the top level.   However when it becomes too cumbersome to make
+this fit for a given functionality, it may be necessary to split a new cpu out into one of the family
+directories.  These are subdirectories off msp430, ie.  msp430/x1xxx and are selected by the .platform
+file for a platform.
+
+Currently what differentiates the different family directories is interrupt behaviour, peripheral
+register mapping, clocking, and low power behaviour.
+
+
+CPUs supported:
+
+    x1xxx: msp430f149, msp430f1611
+    x2xxx: msp430f261{6,7,8,9}
+    x5xxx: cc430f513{7,8,8a}, msp430f5438{,a}
+
+
+Interrupt Vectors:
+
+x1xxx vectors:  (149, 1611)					x2xxx vectors: (msp430f261{6,7,8,9})
+
+								14      DAC12_VECTOR                            
+								15      DMA_VECTOR                              
+0xFFE0	0	DACDMA_VECTOR		(1611 only)     	16      USCIAB1TX_VECTOR                        
+0xFFE2	1	PORT2_VECTOR			       		17      USCIAB1RX_VECTOR                        
+0xFFE4	2	USART1TX_VECTOR			        	18      PORT1_VECTOR                            
+0xFFE6	3	USART1RX_VECTOR			        	19      PORT2_VECTOR                            
+0xFFE8	4	PORT1_VECTOR			       		20      RESERVED20_VECTOR                       
+0xFFEA	5	TIMERA1_VECTOR		Timer A CC1-2   	21      ADC12_VECTOR                            
+0xFFEC	6	TIMERA0_VECTOR		Timer A CC0     	22      USCIAB0TX_VECTOR                        
+0xFFEE	7	ADC12_VECTOR			        	23      USCIAB0RX_VECTOR                        
+0xFFF0	8	USART0TX_VECTOR			        	24      TIMERA1_VECTOR          Timer A CC1-2   
+0xFFF2	9	USART0RX_VECTOR			        	25      TIMERA0_VECTOR          Timer A CC0     
+0xFFF4	1	WDT_VECTOR			       		26      WDT_VECTOR                              
+0xFFF6	1	COMPARATORA_VECTOR		        	27      COMPARATORA_VECTOR                      
+0xFFF8	1	TIMERB1_VECTOR		Timer B CC1-6   	28      TIMERB1_VECTOR          Timer B CC1-6   
+0xFFFA	1	TIMERB0_VECTOR		Timer B CC0     	29      TIMERB0_VECTOR          Timer B CC0     
+0xFFFC	1	NMI_VECTOR			        	30      NMI_VECTOR                              
+0xFFFE	15	RESET_VECTOR			       		31      RESET_VECTOR                            
+
+
+x5xxx vectors: (msp430f543{5,6,7,8}{,a}, cc430f5137)
+
+543{5,6,7,8}{,a}						cc430f5137
+0xFFD2	41	RTC_VECTOR
+0xFFD4	42	PORT2_VECTOR
+0xFFD6	43	USCI_B3_VECTOR
+0xFFD8	44	USCI_A3_VECTOR
+0xFFDA	45	USCI_B1_VECTOR					45      AES_VECTOR                              
+0xFFDC	46	USCI_A1_VECTOR					46      RTC_VECTOR                              
+0xFFDE	47	PORT1_VECTOR					                                                
+0xFFE0	48	TIMER1_A1_VECTOR	Timer1_A3, CC1-2	48      PORT2_VECTOR                            
+0xFFE2	49	TIMER1_A0_VECTOR	Timer1_A3, CC0		49      PORT1_VECTOR                            
+0xFFE4	50	DMA_VECTOR					50      TIMER1_A1_VECTOR        Timer1_A3 CC1-2 
+0xFFE6	51	USCI_B2_VECTOR					51      TIMER1_A0_VECTOR        Timer1_A3 CC0   
+0xFFE8	52	USCI_A2_VECTOR					52      DMA_VECTOR                              
+0xFFEA	53	TIMER0_A1_VECTOR	Timer0_A5 CC1-4		53      CC1101_VECTOR                           
+0xFFEC	54	TIMER0_A0_VECTOR	Timer0_A5 CC0		54      TIMER0_A1_VECTOR        Timer0_A5 CC1-4 
+0xFFEE	55	ADC12_VECTOR					55      TIMER0_A0_VECTOR        Timer0_A5 CC0   
+0xFFF0	56	USCI_B0_VECTOR					56      ADC12_VECTOR                            
+0xFFF2	57	USCI_A0_VECTOR					57      USCI_B0_VECTOR                          
+0xFFF4	58	WDT_VECTOR					58      USCI_A0_VECTOR                          
+0xFFF6	59	TIMER0_B1_VECTOR	Timer0_B7 CC1-6		59      WDT_VECTOR                              
+0xFFF8	60	TIMER0_B0_VECTOR	Timer0_B7 CC0		60      COMP_B_VECTOR                           
+0xFFFA	61	UNMI_VECTOR					61      UNMI_VECTOR                             
+0xFFFC	62	SYSNMI_VECTOR					62      SYSNMI_VECTOR                           
+0xFFFE	63	RESET_VECTOR					63      RESET_VECTOR                            
+
+
+1) Vectors move to various addresses dependent on what cpu you are using.  (handled using the
+   proper cpu header file).
+
+2) Depending on family, vectors are shared across function.  This complicates things and is ugly.
+
+   ie.  x1xxx vector 0 is DACDMA (shared with DAC and DMA) but on the x2xxx and x5xxx families DMA
+   has its own vector and no DAC vector (no DAC).
+
+   Worse yet is the sharing of vectors for the USCI on the x2xxx parts.   A vector is provided for
+   USCIAB0TX_VECTOR which is shared across both the A side and B side of the USCI which can be
+   operated in different modes.  This has been cleaned up in the x5xxx series parts.
+
+
+Addressing:
+
+The x1xxx family supports 16 bit addressing, x2xxx and x5xxx support 20 bit addresses.
+
+x2xxx family parts define __MSP430_HAS_MSP430X_CPU__
+x5xxx family parts define __MSP430_HAS_MSP430XV2_CPU__
+
+Either __MSP430_HAS_MSP430X_CPU__ or __MSP430_HAS_MSP430XV2_CPU__ indicates the potential
+for 20 bit addresses.  Whether 20 bit addresses are being used depends on what switches
+are passed to the toolchain.
+
+
+ADC12:
+
+The adc12 module is supported on x1xxx, x2xxx, and x5xxx parts.   ADC12_VECTOR is defined and
+the module behaves the same for all supported families.  No special support needs to be
+provided.
+
+
+DMA:
+
+1) Addressing.   The x1xxx family only supports 16 bit addresses.  The x2xxx and x5xxx support
+   20 bit addresses.
+
+   x1xxx family parts define __MSP430_HAS_DMA_3__ (16 bit addresses, 3 channels).
+   x2xxx, x5xxx family parts define __MSP430_HAS_DMAX_3__ (20 bit addresses, 3 channels).
+
+   DMAX modules provide 2 16-bit address objects for each DMA address needed.  (20 bit defined)
+   The lower 16 bit object is equivilent to a DMA address on a non-DMAX module.  When this lower
+   object is written the upper is automatically zeroed.  This provides backward compatibility
+   for drivers written for non-DMAX modules.  These drivers will work fine with DMAX modules
+   when accessing the lower 64K of memory.  We will provide a dma16 driver initially and will
+   support 20 bits when there is a well defined need to do so.   Under what circumstances does
+   one actually want to dma out of ROM?  Please feel free to dma into ROM  :-)
+
+2) TSEL size.  Transfer_Select determines what triggers a DMA cycle.
+   TSEL is 4 bits on x1 and x2 processors and 5 bits on x5 cpus.
+
+3) TSEL values.  Trigger values depend tightly on h/w present (processor dependent) and visible
+   to client.  Can this be hidden from the application layer?
+
+4) TSEL location.  3 channels using 4 bit TSELs will fit in one 16 bit control word (x1, x2
+   processors).   The x5 uses 5 bit TSELS organized 2 TSELs per 16 bit word.  (one per byte).
+   DMA_TSEL_BASE, TSEL_MASK and TSEL_SHIFT values will vary depending on processor family.
+
+5) Operation Control word.  This control word on the x1/x2 processors controls DMA_ONFETCH,
+   ROUND_ROBIN, and ENNMI.  (DMACTL1).   The x5 replaces DMA_ONFETCH with DMARMWDIS which
+   disallows dma transfers form oocuring whil read-modify-write operations are occuring.
+   
+6) Interrupt vector:
+
+   On the x1xxx family, the vector is named DACDMA_VECTOR (shared with the DAC) and other
+   families use DMA_VECTOR.
+
+   The driver uses either DACDMA_VECTOR or DMA_VECTOR if defined.  Otherwise complains about lack of
+   support.
+
+
+Clocks:
+
+   The x1xxx family has the original basic clock system (BCS) and has a 3 bit range select field.
+   The x2xxx family has revision 2 of this system (BC2) with a 4 bit range field but is essentially
+   mostly compatable with the x1xxx clock.
+
+   The x5xxx family has the Unified Clock System which is different (__MSP430_HAS_UCS__).
+
+
+Timers:
+
+   The Msp430 processors have various flavors of timers, the two main categories are TA and TB
+   which have slightly different operational characteristics.  Different cpus support different
+   combinations of timers and compare registers.
+
+   The current TinyOS msp430 interface implements 32KiHz and a 1MiHz timers.  The mapping between
+   a cpu h/w timer and appropriate s/w timer is cpu/family/platform dependent.
+
+   Supported X1 (msp430f149/1611) and X2 (msp430f2615-18) processors provide TA3 and TB7.   The
+   low level driver for timing and clocks is provided in the x1x2 directory and is shared across
+   the x1 and x2 processors.  Mapping from h/w to s/w is provided in the x1x2/timer directory.
+
+   Supported X5 processors (cc430f5137 and msp430f5138) provide T0A5 and T1A3.  Mappings are provided
+   in the x5xxx/timer directory.
+
+
+
+I0 Port naming:
+
+   TI defines 8 bit numbered ports (P1 ... P<n>).  In later families 16 bit lettered ports PORTA, etc.
+   are also defined.   Layout of these ports varies by family.  In later parts, lettered ports are
+   a 16 bit overlay of two 8 bit numbered ports.  ie. PortA is the 16 bit version of Port1 and Port2.
+   But this varies by family.
+
+   x1xxx parts define __MSP430_HAS_PORT1__ to _PORT6__ no letter ports defined.
+
+   x2xxx parts define __MSP430_HAS_PORT1__ to _PORT8__.   PORTA overlays Port7/8.
+
+   x5xxx parts define __MSP430_HAS_PORT1__ to _PORT8__.   PORTA overlays Port1/2.
+   PORTB overlays Port3/4, etc.   Number of ports defined depends on the cpu and how
+   many i/o pins are brought off the silicon.
+
+   Note: the cc430f5137 has port1/2 (A), port 3/4 (B), port 5 (C).  C is 16 bits but
+   only port5 is defined and overlays portC (low half).

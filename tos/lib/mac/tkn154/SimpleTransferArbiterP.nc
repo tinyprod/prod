@@ -144,16 +144,23 @@ implementation {
   }
 
   /**
-    Returns the current user of the Resource.
-    If there is no current user, the return value
-    will be 0xFF
-  */      
+   * Returns the current user of the Resource.
+   *
+   * formerly check state, but now relies on current
+   * owner, ie. resId.   Just return resId.   If the
+   * default owner owns the resource then the resId will
+   * be one higher than the max client id.
+   *
+   * This was originally part of ResourceDefaultOwner
+   * (SerialDemux) changes.   It is needed if a DefaultOwner
+   * actually needs to do something with the hardware.  Ie.
+   * interrupts need to be steared to the ResourceDefaultOwner
+   * demultiplexer.   In which case the client id (resId) is
+   * used to do the signal and needs to be a real number and not
+   * 0xff.
+   */      
   async command uint8_t ArbiterInfo.userId() {
-    atomic {
-      if(state != RES_BUSY)
-        return NO_RES;
-      return resId;
-    }
+    atomic return resId;
   }
 
   /**

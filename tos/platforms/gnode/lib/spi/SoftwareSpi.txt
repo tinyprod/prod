@@ -1,0 +1,38 @@
+Component: SoftwareSpi
+Description: software SPI implementation
+
+Usage:
+This implements the SpiPacket and SpiByte interfaces in software, using three general I/O pins.
+
+Clock polarity and phase
+From http://en.wikipedia.org/wiki/Serial_Peripheral_Interface_Bus, which has a picture: 
+
+In addition to setting the clock frequency, the master must also configure the clock polarity
+and phase with respect to the data. Freescale's SPI Block Guide [1] names these two options
+as CPOL and CPHA respectively, and most vendors have adopted that convention.
+
+At CPOL=0 the base value of the clock is zero 
+For CPHA=0, data are read on the clock's rising edge (low->high transition) and data are changed on a falling edge (high->low clock transition).
+For CPHA=1, data are read on the clock's falling edge and data are changed on a rising edge.
+
+At CPOL=1 the base value of the clock is one (inversion of CPOL=0) 
+For CPHA=0, data are read on clock's falling edge and data are changed on a rising edge.
+For CPHA=1, data are read on clock's rising edge and data are changed on a falling edge.
+
+That is, CPHA=0 means sample on the leading (first) clock edge, while CPHA=1 means sample
+on the trailing (second) clock edge, regardless of whether that clock edge is rising or falling.
+Note that with CPHA=0, the data must be stable for a half cycle before the first clock cycle.
+Also, note that no matter what the CPOL and CPHA modes say, the initial clock value must be
+stable before the chip select line goes active.
+
+Wiring:
+Users of this component must connect the following:
+MISO, MOSI and Clock general I/O pins
+		
+Dependencies:
+None
+
+Known bugs:
+Only modes 0,1 and 1,1 have been tested.
+
+To do:

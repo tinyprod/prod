@@ -1,0 +1,15 @@
+This directory contains support for the msp430 basic clock (__MSP430_HAS_BASIC_CLOCK) and
+basic clock plus (__MSP430_HAS_BC2_).  These are clock modules provided  by 1st gen x1xxx
+processors and 2nd gen x2xxx processors (ie. msp430f2618 etc).
+
+The hardware configuration is assumed to include a 32768 Hz external clock crystal that
+is used as an accurate timebase.  This timebase is used to syncronize internal clocks
+and provides clocking for the primary time base.   This provides timer clocking while
+the processor is sleeping.
+
+x1: msp430f1611,     TA3 and TB7.
+x2: msp430f261[6-9], TA3 and TB7.
+
+By default, TA is the 1MiHz timebase and TB is a 32KiHz timebase.
+
+Other msp430 x1/x2 family chips will have various mixtures of TA and TB.

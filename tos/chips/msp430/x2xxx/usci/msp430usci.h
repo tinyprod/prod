@@ -1,8 +1,6 @@
 /*
  * Copyright (c) 2010-2011 Eric B. Decker
  * Copyright (c) 2009-2010 DEXMA SENSORS SL
- * All rights reserved.
- *
  * Copyright (c) 2004-2006, Technische Universitaet Berlin
  * All rights reserved.
  *
@@ -42,45 +40,100 @@
  * @author Jordi Soucheiron <jsoucheiron@dexmatech.com>
  *
  * Support the x2 version of the USCI for the TI MSPx2xx (see TI MSP430x2xx
- * Users guide slau144e).
+ * Users guide slau144f).
+ *
+ * The x2 USCI interface is seriously screwy.   USCI port registers are spread
+ * out over various places and the interrupts have different modules on the same
+ * vector.  This gets cleaned up in the x5 processors but that makes sharing
+ * the same code complicated.   The following functional defines tell the story:
+ *
+ * x1:  __MSP430_HAS_UART0__	usart0 present
+ *	__MSP430_HAS_I2C__	usart0 has I2C
+ *	__MSP430_HAS_UART1__
+ *
+ * x2:	__MSP430_HAS_USCI__
+ *	__MSP430_HAS_USCI_AB0__	indicates interrupts messy.
+ *	__MSP430_HAS_USCI_AB1__
+ *
+ * x5:	__MSP430_HAS_USCI_A0__	indicates vectors are module specific.
+ *	__MSP430_HAS_USCI_B0__
+ *	__MSP430_HAS_USCI_A1__
+ *	__MSP430_HAS_USCI_B1__	etc.
  */
 
 #ifndef _H_MSP430USCI_H
 #define _H_MSP430USCI_H
 
+#if !defined(__MSP430_HAS_USCI__)
+#error "msp430usci: processor not supported, currently only supports x2xxx (HAS_USCI)"
+#endif
+
+#if __GNUC__ >= 4
+#warning "USCI periph_reg bitfields: mspgcc >= 4 (check bitfield code gen)."
+#endif
+
 /*
- * The MSP430X architecture at least the msp430f2618 family
- * has a total of four ports that can be used independently
- * usciA0, A1 (uart, spi) and usciB0, B1 (i2c, spi only).
+ * The x2 family consists of the msp430f261{6,7,8,9} which provides
+ * 2 USCI_As (UART/SPI) and 2 USCI_Bs (SPI/I2C).  These are mapped on a pure
+ * hardware naming scheme along with appropriate sharing files which enable
+ * arbitration for each h/w module.
  *
- * We set the resources up so multiple use of a given port
- * can be arbritrated.
+ * usciA0: HplMsp430UsciA0, Msp430UartA0, Msp430SpiA0
+ *	   Msp430UsciA0C, Msp430UsciSharedA0P (arbitrated)
+ *	   dma
  *
- * UART0 -> usciA0	SPI2 -> usciA0
- * UART1 -> usciA1	SPI3 -> usciA1
- * SPI0  -> usciB0	I2C0
- * SPI1  -> usciB1	I2C1
+ * usciA1: HplMsp430UsciA1, Msp430UartA1, Msp430SpiA1
+ *	   Msp430UsciA1C, Msp430UsciSharedA1P (arbitrated)
+ *	   dma
  *
- * spi2,3 are mapped to usciA0,A1 because the typical
- * configuration is to use dual uarts and dual spis
- * so the less used configuration maps as 2 and 3.
+ * usciB0: HplMsp430UsciB0, Msp430SpiB0, Msp430I2CB0
+ *	   Msp430UsciB0C, Msp430UsciSharedB0P (arbitrated)
+ *	   dma
+ *
+ * usciB1: HplMsp430UsciB1, Msp430SpiB1, Msp430I2CB1
+ *	   Msp430UsciB1C, Msp430UsciSharedB1P (arbitrated)
+ *	   no dma
+ *
+ * usciB1 does not support dma because the dma engine can't be triggered
+ * on tx/rx data avail.  Not enough bits.
+ *
+ * Actual mapping between usci h/w and function is done by platform files.
+ * ie.  tos/platforms/<platform>/mappings    or
+ *      tos/platforms/<platform>/chips/<chip>
  */
 
-//USCI A0, A1: UART, SPI
-#define MSP430_HPLUSCIA0_RESOURCE "Msp430UsciA0.Resource"
-#define MSP430_HPLUSCIA1_RESOURCE "Msp430UsciA1.Resource"
-#define MSP430_UART0_BUS          MSP430_HPLUSCIA0_RESOURCE
-#define MSP430_UART1_BUS          MSP430_HPLUSCIA1_RESOURCE
-#define MSP430_SPI2_BUS           MSP430_HPLUSCIA0_RESOURCE
-#define MSP430_SPI3_BUS           MSP430_HPLUSCIA1_RESOURCE
+// USCI A0: UART, SPI
+#define MSP430_HPLUSCIA0_RESOURCE	"Msp430UsciA0.Resource"
+#define MSP430_UARTA0_BUS		"Msp430UartA0.Resource"
+#define MSP430_SPIA0_BUS		"Msp430SpiA0.Resource"
 
-//USCI B0, B1: SPI,  I2C
-#define MSP430_HPLUSCIB0_RESOURCE "Msp430UsciB0.Resource"
-#define MSP430_HPLUSCIB1_RESOURCE "Msp430UsciB1.Resource"
-#define MSP430_SPI0_BUS		  MSP430_HPLUSCIB0_RESOURCE
-#define MSP430_SPI1_BUS		  MSP430_HPLUSCIB1_RESOURCE
-#define MSP430_I2C0_BUS		  MSP430_HPLUSCIB0_RESOURCE
-#define MSP430_I2C1_BUS		  MSP430_HPLUSCIB1_RESOURCE
+//#define MSP430_UARTA0_BUS		MSP430_HPLUSCIA0_RESOURCE
+//#define MSP430_SPIA0_BUS		MSP430_HPLUSCIA0_RESOURCE
+
+// USCI A1: UART, SPI
+#define MSP430_HPLUSCIA1_RESOURCE	"Msp430UsciA1.Resource"
+#define MSP430_UARTA1_BUS		"Msp430UartA1.Resource"
+#define MSP430_SPIA1_BUS		"Msp430SpiA1.Resource"
+
+//#define MSP430_UARTA1_BUS		MSP430_HPLUSCIA1_RESOURCE
+//#define MSP430_SPIA1_BUS		MSP430_HPLUSCIA1_RESOURCE
+
+// USCI B0: SPI,  I2C
+#define MSP430_HPLUSCIB0_RESOURCE	"Msp430UsciB0.Resource"
+#define MSP430_SPIB0_BUS		"Msp430SpiB0.Resource"
+#define MSP430_I2CB0_BUS		"Msp430I2CB0.Resource"
+
+//#define MSP430_SPIB0_BUS		MSP430_HPLUSCIB0_RESOURCE
+//#define MSP430_I2CB0_BUS		MSP430_HPLUSCIB0_RESOURCE
+
+// USCI B1: SPI,  I2C
+#define MSP430_HPLUSCIB1_RESOURCE	"Msp430UsciB1.Resource"
+#define MSP430_SPIB1_BUS		"Msp430SpiB1.Resource"
+#define MSP430_I2CB1_BUS		"Msp430I2CB1.Resource"
+
+//#define MSP430_SPIB1_BUS		MSP430_HPLUSCIB1_RESOURCE
+//#define MSP430_I2CB1_BUS		MSP430_HPLUSCIB1_RESOURCE
+
 
 typedef enum {
   USCI_NONE = 0,
@@ -136,18 +189,26 @@ DEFINE_UNION_CAST(int2uctl1,msp430_uctl1_t,uint8_t)
 /*
  * The usci/uart baud rate mechanism is significantly different
  * than the msp430 usart uart.  See section 15.3.9 of the TI
- * MSP430x2xx Family User's Guide, slau144e for details.
+ * MSP430x2xx Family User's Guide, slau144f for details.
  *
  * For 32768Hz and 1048576Hz, we use UCOS16=0.
  * For higher cpu dco speeds we use oversampling, UCOS16=1.
+ *
+ * NOTE: keep in mind that baud rates are effected by the submain cpu
+ * clock.  On TinyOS platforms this is a power of 2 hz.  TI defines
+ * various factory calibration values for decimal MHz.  In other words
+ * we don't use the predefined TI values.  To denote this we use MIHZ
+ * nomenclature.
  */
 
 typedef enum {
+  /* these names are preserved for backward compatibility */
   UBR_32KHZ_1200=0x001B,    UMCTL_32KHZ_1200=0x04,
   UBR_32KHZ_2400=0x000D,    UMCTL_32KHZ_2400=0x0c,
   UBR_32KHZ_4800=0x0006,    UMCTL_32KHZ_4800=0x0e,
   UBR_32KHZ_9600=0x0003,    UMCTL_32KHZ_9600=0x06,  
 
+  /* these names are preserved for backward compatibility */
   UBR_1048MHZ_9600=0x006D,   UMCTL_1048MHZ_9600=0x04,
   UBR_1048MHZ_19200=0x0036,  UMCTL_1048MHZ_19200=0x0a,
   UBR_1048MHZ_38400=0x001B,  UMCTL_1048MHZ_38400=0x04,
@@ -156,32 +217,45 @@ typedef enum {
   UBR_1048MHZ_128000=0x0008, UMCTL_1048MHZ_128000=0x02,
   UBR_1048MHZ_256000=0x0004, UMCTL_1048MHZ_230400=0x02,
 
-  /* 1MHz = 1000000 Hz, 4MHz 4000000, 8MHz 8000000
-   * 16MHz 16000000.   use UCOS16 for oversampling,
+  /*
+   * new names for later TI processors (x2xxx, msp430f261x).
+   *
+   * 1MIHZ = 1048576 Hz, 4MIHZ 4194304, 8MIHZ 8388608
+   * 16MIHZ 16777216.   use UCOS16 for oversampling,
    * use both UCBRF and UCBRS.
    *
-   * Settings for 1MHz, 8Mhz, and 16MHz are taken from
-   * a table on page 15-22 of slau144e.
+   * There is a table on page 15-22 of slau144f, MSP430x2xx family User's Guide
+   * but these are mostly powers of 10.   TinyOS clocks are binary so we can't
+   * use these.
    */
-  UBR_1MHZ_9600=0x6,       UMCTL_1MHZ_9600=0x81,
-  UBR_1MHZ_19200=0x3,      UMCTL_1MHZ_19200=0x41,
-  UBR_1MHZ_57600=0x1,      UMCTL_1MHZ_57600=0x0F,
 
-  UBR_8MHZ_4800=0x68,      UMCTL_8MHZ_4800=0x31,
-  UBR_8MHZ_9600=0x34,      UMCTL_8MHZ_9600=0x11,
-  UBR_8MHZ_19200=0x1A,     UMCTL_8MHZ_19200=0x11,
-  UBR_8MHZ_38400=0x0D,     UMCTL_8MHZ_38400=0x01,
-  UBR_8MHZ_57600=0x08,     UMCTL_8MHZ_57600=0xB1,
-  UBR_8MHZ_115200=0x04,    UMCTL_8MHZ_115200=0x3B,
-  UBR_8MHZ_230400=0x02,    UMCTL_8MHZ_230400=0x27,
+  UBR_1MIHZ_9600=0x6,       UMCTL_1MIHZ_9600=0xd1,
+  UBR_1MIHZ_19200=0x3,      UMCTL_1MIHZ_19200=0x71,
+  UBR_1MIHZ_57600=0x1,      UMCTL_1MIHZ_57600=0x21,
 
-  UBR_16MHZ_4800=0xD0,     UMCTL_16MHZ_4800=0x51,
-  UBR_16MHZ_9600=0x68,     UMCTL_16MHZ_9600=0x31,
-  UBR_16MHZ_19200=0x34,    UMCTL_16MHZ_19200=0x11,
-  UBR_16MHZ_38400=0x1A,    UMCTL_16MHZ_38400=0x11,
-  UBR_16MHZ_57600=0x11,    UMCTL_16MHZ_57600=0x61,
-  UBR_16MHZ_115200=0x8,    UMCTL_16MHZ_115200=0xB1,
-  UBR_16MHZ_230400=0x4,    UMCTL_16MHZ_230400=0x3B,
+  UBR_4MIHZ_4800=0x36,      UMCTL_4MIHZ_4800=0xa1,
+  UBR_4MIHZ_9600=0x1B,      UMCTL_4MIHZ_9600=0x51,
+  UBR_4MIHZ_19200=0x0D,     UMCTL_4MIHZ_19200=0xa1,
+  UBR_4MIHZ_38400=0x06,     UMCTL_4MIHZ_38400=0xd1,
+  UBR_4MIHZ_57600=0x04,     UMCTL_4MIHZ_57600=0x91,
+  UBR_4MIHZ_115200=0x02,    UMCTL_4MIHZ_115200=0x41,
+  UBR_4MIHZ_230400=0x01,    UMCTL_4MIHZ_230400=0x21,
+
+  UBR_8MIHZ_4800=0x6D,      UMCTL_8MIHZ_4800=0x41,
+  UBR_8MIHZ_9600=0x36,      UMCTL_8MIHZ_9600=0xA1,
+  UBR_8MIHZ_19200=0x1B,     UMCTL_8MIHZ_19200=0x51,
+  UBR_8MIHZ_38400=0x0D,     UMCTL_8MIHZ_38400=0xA1,
+  UBR_8MIHZ_57600=0x09,     UMCTL_8MIHZ_57600=0x21,
+  UBR_8MIHZ_115200=0x04,    UMCTL_8MIHZ_115200=0x91,
+  UBR_8MIHZ_230400=0x02,    UMCTL_8MIHZ_230400=0x41,
+
+  UBR_16MIHZ_4800=0xDA,     UMCTL_16MIHZ_4800=0x71,
+  UBR_16MIHZ_9600=0x6D,     UMCTL_16MIHZ_9600=0x41,
+  UBR_16MIHZ_19200=0x36,    UMCTL_16MIHZ_19200=0xA1,
+  UBR_16MIHZ_38400=0x1B,    UMCTL_16MIHZ_38400=0x51,
+  UBR_16MIHZ_57600=0x12,    UMCTL_16MIHZ_57600=0x31,
+  UBR_16MIHZ_115200=0x9,    UMCTL_16MIHZ_115200=0x21,
+  UBR_16MIHZ_230400=0x4,    UMCTL_16MIHZ_230400=0x91,
 } msp430_uart_rate_t;
 
 
@@ -224,9 +298,13 @@ typedef union {
 } msp430_uart_union_config_t;
 
 
+/*
+ * be sure to check Msp430DcoSpec.h for what speed we think
+ * the processor is actually running at.  We assume 8MiHz.
+ */
 const msp430_uart_union_config_t msp430_uart_default_config = { {
-  ubr     :	UBR_8MHZ_115200,
-  umctl   :	UMCTL_8MHZ_115200,
+  ubr     :	UBR_8MIHZ_115200,
+  umctl   :	UMCTL_8MIHZ_115200,
   ucmode  :	0,			// uart
   ucspb   :	0,			// one stop
   uc7bit  :	0,			// 8 bit

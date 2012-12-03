@@ -1073,4 +1073,5 @@ still provide the same functionality.
 Take a look in the tinyos-2.x source tree under 
 tinyos-2.x/tos/chips/msp430/usart to see the full implementation of 
 these components along with the corresponding Uart implementation.
-
+Implementations on more modern TI processors can be found in
+tos/chips/msp430/x5xxx/usci-v2.

@@ -1,36 +1,38 @@
 /*
+ * Copyright (c) 2011 Zolertia Labs
+ * Copyright (c) 2009 DEXMA SENSORS SL
  * Copyright (c) 2005-2006 Arch Rock Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
+ *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the Arch Rock Corporation nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
- * ARCHED ROCK OR ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
- * OF THE POSSIBILITY OF SUCH DAMAGE
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include "Timer.h"
-#include "SensirionSht11.h"
 
 /**
  * SensirionSht11LogicP contains the actual driver logic needed to
@@ -47,11 +49,17 @@
  * waits to keep the Sensirion happy.
  *
  * Modified to work for both GPIO's and Ziglet port of Zolertia Z1 mote
- * Shadows /chip/sht1x
+ * Shadows /chip/sht1x.  To use sensor as Ziglet, simply add:
+ * CFLAGS += -DIS_ZIGLET
  *
  * @author Gilman Tolle <gtolle@archrock.com>
- * @version $Revision: 1.4 $ $Date: 2006/12/12 18:23:12 $
+ * @author: Xavier Orduna <xorduna@dexmatech.com>
+ * @author: Jordi Soucheiron <jsoucheiron@dexmatech.com>
+ * @author: Antonio Lignan <alinan@zolertia.com>
  */
+
+#include "Timer.h"
+#include "SensirionSht11.h"
 
 generic module SensirionSht11LogicP() {
   provides interface SensirionSht11[ uint8_t client ];
@@ -297,7 +305,9 @@ implementation {
       call DATA.set();
       #ifndef IS_ZIGLET
         call InterruptDATA.enableFallingEdge();
-      #else
+      #endif
+
+      #ifdef IS_ZIGLET
         post stayAwake();
       #endif
     }
@@ -430,4 +440,3 @@ implementation {
   default event void SensirionSht11.readStatusRegDone[uint8_t client]( error_t result, uint8_t val ) { }
   default event void SensirionSht11.writeStatusRegDone[uint8_t client]( error_t result ) { }
 }
-

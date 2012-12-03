@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2009 DEXMA SENSORS SL
- * Copyright (c) 20011 ZOLERTIA LABS
+ * Copyright (c) 2011 ZOLERTIA LABS
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,6 @@ configuration HplADXL345C {
   provides interface GpioInterrupt as GpioInterrupt1;
   provides interface GpioInterrupt as GpioInterrupt2;
 }
-
 implementation {
   components HplMsp430GeneralIOC as GeneralIOC;
   components HplMsp430InterruptC as InterruptC;

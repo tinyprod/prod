@@ -1,8 +1,5 @@
-// $Id: ProgFlashC.nc,v 1.2 2010-06-29 22:07:50 scipio Exp $
-
 /*
- *
- *
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University  of California.  
  * All rights reserved.
  *
@@ -12,10 +9,12 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
+ *
  * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -33,11 +32,26 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
+ * @author Jonathan Hui <jwhui@cs.berkeley.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * This module supports writing to Flash on MSP430 processors.  Currently
+ * only handles writing flash in the lower 48 whoops lower 64K.  The newer
+ * processors have more flash.  Eventually we'll want to extend this.
+ *
+ * Currently, if someone tries to use another processor other than the old
+ * ones we bitch.  That is just to flag that things are other than
+ * they seem.
+ *
+ * We could check for __MSP430_HAS_MSP430X_CPU__ or __MSP430_HAS_MSP430XV2_CPU__
+ * but it is better to more restrictive.  The idea is force people to look
+ * at stuff written for previous processors when a new processor is brought over
+ * (ie. ported to TinyOS).   Active involvement rather than things kind of work.
  */
 
-/**
- * @author Jonathan Hui <jwhui@cs.berkeley.edu>
- */
+#if !defined(__msp430x14x) && !defined(__msp430x16x)
+#warn "ProgFlashC: limited to lower 64K (x149 and x1611)"
+#endif
 
 module ProgFlashC {
   provides {

@@ -1,9 +1,10 @@
 #-*-Makefile-*- vim:syntax=make
-#$Id: telosa.target,v 1.6 2008-03-11 09:34:13 klueska Exp $
 
 PLATFORM ?= telosa
 
 MSP_MCU = msp430f149
+
+OPTFLAGS ?= -Os
 
 MSP_BSL ?= tos-bsl
 

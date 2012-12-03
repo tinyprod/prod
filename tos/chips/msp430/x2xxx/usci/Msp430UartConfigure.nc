@@ -41,5 +41,5 @@
 #include "msp430usci.h"
 
 interface Msp430UartConfigure {
-  async command msp430_uart_union_config_t* getConfig();
+  async command const msp430_uart_union_config_t* getConfig();
 }

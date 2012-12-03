@@ -1,0 +1,330 @@
+
+Getting Started.
+
+Git is great.    Git is good.    Git is powerful.
+
+Alas, that makes it a little daunting getting started.   This document should
+help make it a little less painful.  Git is powerful and hopefully you will
+find it is worth the effort.
+
+This document is written assuming that you will be using github to contribute
+to the TinyProd TinyOS repository structure.
+
+
+Contents:
+
+- Why Git?
+- GitHub
+- Set up Git
+- Set up your working repository
+- Further Reading
+- Guidelines
+
+
+* Why Git?
+
+The main reason behind the selection of GIT is it's fully distributed nature,
+fast branching, and associated merge magic.  The TinyOS development community
+is essentially world wide and we want to make encourage the rate of development
+by making the contribution process very easy as well as accessable.
+
+  o Fully distributed.
+
+  o Everything is local.   No need of a centralized server for anything.
+    (note our workflow does require integration repositories but this isn't
+    implicit in GIT), nor does it impact the contribution process.
+
+  o Cheap local branching.  This is important.  We want to foster faster
+    development.  Try something out while still staying in touch with what
+    is happening in the mainline.  This is much more difficult with rTinyOS's
+    (research TinyOS) CVS contrib and SVN based repositories.
+
+    Note, branching in GIT is fundamentally different than pretty much any
+    other SCM system and is responsbile for much of the productivity of projects
+    using GIT.
+
+  o GITHUB.  When coupled with github, git provides very powerful visibility tools
+    (what is being changed and by whom).  Code review becomes very easy when
+    using GIT and github.
+
+  o Git is Small
+
+  o Git is Fast
+
+  o Support for any workflow.  Although we are using the Integration Manager
+    Workflow.   This also promotes code review.
+
+  o Allows gradual reintegration of currently active contrib source bodies.
+    Currently the contrib source body is maintained in CVS and is rather
+    cumbersome to use.   Bringing active contrib code into the TinyProd
+    github realm would provide the same mechanism for accessing and using
+    active contrib code as the main TinyOS body.
+
+    Using TinyProd hosted contrib code would be as simple as merging two
+    git branches or possibly two branches in different git repositories.
+
+  o Other DVCS could also have been chosen (SVN is not a DVCS), such as Hg
+    or Bzr but I happened to be a fan of GIT.   And it seems to be working
+    well for what we are trying to do.
+
+
+* GitHub
+
+* We use github to host the repository.   And they have very good help files
+  that will assist you in getting set up.
+
+* Go to github.com and get yourself a logon.  Choose your login name
+  carefully.   You can rename it once (but only once).
+  
+  Once you are logged in, You'll be presented a start up page which
+  includes things like "Set Up Git", "Create a Repository", "Fork a
+  Repository", etc.   We will be using existing repositories.
+
+
+* Set Up Git.
+
+  This section details items that only need to be when first getting started.
+  For more information on using git and contributing to the project please
+  see 00a_Contribution_Process.
+
+ o set up SSH keys.  If you have an existing SSH key you can use it.
+   Existing keys can typically be found in ~/.ssh.   The instructions have
+   you backup and remove and then regenerating a new ssh key.  You don't
+   need to do that but can use your existing key if you wish.  For
+   example: you could use ~/.ssh/id_rsa.pub as your key.
+
+ o Set your username and email
+
+   $ git config --global user.name "Firsname Lastname"
+   $ git config --global user.email "your_email@youremail.com"
+
+ o Set your GitHub token.
+
+   Follow the instructions on the github help page (Set Up Git).
+
+
+* Other things to put into your git config.   (global for the user,
+  which lives at ~/.gitconfig)
+
+  o To avoid problems with DOS EOL sequences, we always store in the
+    repository using UNIX EOL sequences.   Set autocrlf to input to
+    avoid these problems.
+
+    $ git config --global core.autocrlf input
+
+  o It is handy to set up local copies of remote branches automatically.
+
+    $ git config --global branch.autosetupmerge true
+
+  o And when pushing handy to push only the current branch (the most common
+    activity).
+
+    $ git config --global push.default current
+
+  o It is really handy to define various aliases for common commands.
+
+    $ git config --global alias.b branch
+    $ git config --global alias.ci commit
+
+    will define two aliases, b for branch and ci for commit.  You can do
+    things like:
+
+    $ git b                   # display current branch
+    $ git ci                  # same as git commit
+
+
+An example ~/.gitconfig looks like:  (Its mine with the github token
+redacted)...
+
+[user]
+	name = Eric B. Decker
+	email = cire831@gmail.com
+[core]
+	editor = emacsclient
+	autocrlf = input
+[alias]
+	b  = branch
+	br = branch
+	c  = config
+	ci = commit
+	co = checkout
+	cp = cherry-pick
+	d  = diff
+	lp = log -p
+	r  = remote
+	rem= remote
+	st = status
+	s  = status
+	wc = whatchanged
+[branch]
+	autosetupmerge = true
+[pack]
+	threads = 0
+[push]
+	default = current
+[github]
+	user = cire831
+	token = xxxxxxxxxx
+
+
+* Set up your working repository
+
+  See 00a_Repo_Notes for the structure of the repositories and their
+  relationships.
+
+  Also see 00d_Contribution_Process for examples of how to interacte with the
+  various branches and repositories.
+
+  The main repo is https://github.com/tinyprod/prod with an integration repo
+  at https://github.com/tp-freeforall/prod.  (The later is a fork off
+  tinyprod/prod).
+
+  Contributors work in a local repo linked to a working github repo that is
+  forked from tp-freeforall/prod.  This keeps a fair amount of independence
+  between different developers.
+
+  Contributors work initially on a contributor branch in their local
+  repository.  When a contributor is happy with the work they have done,
+  they will integrate their changes into a local copy of the integration
+  branch.   This integration branch is pushed back to the contributor's
+  github fork and a request for a pull is made between the contributor's
+  branch and the main integration branch.
+
+  Please refer to 00d_Contribution_Process for details on how to set up
+  your working repository.
+
+
+* Further Reading
+
+  o GitHub Help
+    (http://help.github.com)
+
+    GitHub has lots of help.  The TinyProd structure is a bit more
+    complicated than what is presented in the help files.   So keep
+    that in mind when working through the examples.
+
+  o Main Git Site, Documentation
+    (http://git-scm.com/documentation)
+
+  o Git Reference
+    (http://gitref.org)
+
+  o Git from the bottom up.
+    (http://ftp.newartisans.com/pub/git.from.bottom.up.pdf)
+
+    Is an easy to understand description of how git works from the bottom up.
+
+  o Pro Git is a book about git that is very good.
+    (http://progit.org)
+
+  o Distributed Git
+    (http://progit.org/book/ch5-0.html)
+
+    This chapter talks about using Git as part of a distributed workflow.  It
+    gives a good foundation about how we are managing the TinyProd repository.
+
+    In particular, please read Integration-Manger Workflow (its what we are
+    using).   And we have added one more repository to the left of the
+    Blessed Repository which is VeryBlessed.  :-)   [VeryBlessed is the
+    gh:TinyProd/prod repository].
+
+    Also please read, Contributing to a Project.   Some of what is written there
+    is also summarized in the Guidelines section below.
+
+
+* Guidelines
+
+* Commit guidelines.
+
+  o First and foremost make commits logical units.
+
+    Logically seperate changesets.   Don't code for weeks and then bring the
+    whole piece in as one commit.
+
+    Make a commit something that can be looked at and digested reasonably.
+    Solves one problem.
+
+    Keep the history clean and understandable.
+
+
+  o Use meaningful commit messages.
+
+    the first line (50 chars or less) is used as the short message.   This
+    message is displayed in one line logs and other places.  Make it
+    meaningful and concise if possible.
+
+    Follow the first line by a blank line then a more detailed message which
+    should provide more detailed information about what the commit does.  The
+    GIT project itself requires motivation as well as contrasting the new
+    behaviour to old behaviour.  Why was this change necessary?  Its not a
+    bad habit to get into when it makes sense to do so.
+
+  o Use the imperative present tense when writing commit messages.
+
+  o Always include a blank line after the short message (the first line).
+
+  o Always run git diff --check to make sure you aren't introducing trailing
+    whitespace.   Some tools bitch about this and it is really annoying.
+
+
+* Copyright.
+
+  The main TinyOS code is copyrighted by individual authors using the 3 clause
+  Modified BSD license.   The simplest thing to do is either use no copyright
+  or use the BSD license.
+
+  We are trying to get any new code to use the same boilerplate license.   The
+  intent is to minimize any extraneous noise when generating diffs.   The
+  boilerplate is written so the only part that needs to be modified as new
+  authors are added is the actually Copyright (c) <year> <name> clause at
+  the front.
+
+  A template for this copyright can be found in $(TOSROOT)/licenses/bsd.txt.
+  
+
+* coding style.   These are suggestions.   There isn't a style nazi.
+
+    TinyProd is directly downstream from the academic TinyOS SVN trunk.  As such
+    most of the coding style is adapted to be consistent with that repository.
+    Some changes have been made to keep the code as compact as possible.
+
+  o Indent:2
+
+    if ( a == b) {
+      c = d;
+    }
+
+  o Braces: same line  (see above), closing brace by itself.
+
+  o single provides/uses: same line, multiple blocked.
+
+    module xyz {
+      provides interface NameInterface as NI;
+      uses     interface AnotherInterface as AI;
+    }
+
+    module abc {
+      provides {
+        interface NameInterface as NI;
+	interface AnotherInterface as AI;
+      }
+      uses {
+        interface Inter1;
+	interface Inter2;
+      }
+      implementation {
+        ...
+      }
+
+  o if then else
+
+    if ( a == b)
+      <then clause>
+    else
+      <else clause>
+
+    if ( a == b) {
+       block statements
+    } else {
+       block statements
+    }

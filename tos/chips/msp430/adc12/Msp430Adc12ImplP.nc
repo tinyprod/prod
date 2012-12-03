@@ -1,37 +1,48 @@
 /*
+ * Copyright (c) 2011, Eric B. Decker
+ * Copyright (c) 2010, People Power Co.
  * Copyright (c) 2006, Technische Universitaet Berlin
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
  * are met:
+ *
  * - Redistributions of source code must retain the above copyright notice,
- *   this list of conditions and the following disclaimer.
- * - Redistributions in binary form must reproduce the above copyright 
- *   notice, this list of conditions and the following disclaimer in the 
- *   documentation and/or other materials provided with the distribution.
- * - Neither the name of the Technische Universitaet Berlin nor the names 
- *   of its contributors may be used to endorse or promote products derived
+ *   notice, this list of conditions and the following disclaimer.
+ *
+ * - Redistributions in binary form must reproduce the above copyright
+ *   notice, this list of conditions and the following disclaimer in the
+ *   documentation and/or other materials provided with the
+ *   distribution.
+ *
+ * - Neither the name of the copyright holders nor the names of
+ *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
- * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY 
- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
- * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+ * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * - Revision -------------------------------------------------------------
- * $Revision: 1.14 $
- * $Date: 2008-11-10 14:56:12 $
- * @author: Jan Hauer <hauer@tkn.tu-berlin.de>
+ * @author Jan Hauer <hauer@tkn.tu-berlin.de>
+ * @author Peter A. Bigot <pab@peoplepowerco.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  * ========================================================================
  */
+
+#if (! ADC12_USE_PLATFORM_ADC) && defined(ADC12_P6PIN_AUTO_CONFIGURE)
+/* Convert ADC12_P6PIN_AUTO_CONFIGURE to new signal */
+#define ADC12_PIN_AUTO_CONFIGURE 1
+#endif /* P6PIN auto configure without PlatformAdcC */
 
 #include <Msp430Adc12.h>
 module Msp430Adc12ImplP @safe()
@@ -46,19 +57,31 @@ module Msp430Adc12ImplP @safe()
   uses {
     interface ArbiterInfo as ADCArbiterInfo;
     interface HplAdc12;
-    interface Msp430Timer as TimerA;;
+    interface Msp430Timer as TimerA;
     interface Msp430TimerControl as ControlA0;
     interface Msp430TimerControl as ControlA1;
     interface Msp430Compare as CompareA0;
     interface Msp430Compare as CompareA1;
-    interface HplMsp430GeneralIO as Port60;
-    interface HplMsp430GeneralIO as Port61;
-    interface HplMsp430GeneralIO as Port62;
-    interface HplMsp430GeneralIO as Port63;
-    interface HplMsp430GeneralIO as Port64;
-    interface HplMsp430GeneralIO as Port65;
-    interface HplMsp430GeneralIO as Port66;
-    interface HplMsp430GeneralIO as Port67;
+    interface HplMsp430GeneralIO as A0;
+    interface HplMsp430GeneralIO as A1;
+    interface HplMsp430GeneralIO as A2;
+    interface HplMsp430GeneralIO as A3;
+    interface HplMsp430GeneralIO as A4;
+    interface HplMsp430GeneralIO as A5;
+#if 6 < ADC12_PINS_AVAILABLE
+    interface HplMsp430GeneralIO as A6;
+    interface HplMsp430GeneralIO as A7;
+#if 8 < ADC12_PINS_AVAILABLE
+    interface HplMsp430GeneralIO as A8;
+    interface HplMsp430GeneralIO as A9;
+    interface HplMsp430GeneralIO as A10;
+    interface HplMsp430GeneralIO as A11;
+    interface HplMsp430GeneralIO as A12;
+    interface HplMsp430GeneralIO as A13;
+    interface HplMsp430GeneralIO as A14;
+    interface HplMsp430GeneralIO as A15;
+#endif /* ADC12_PINS_AVAILABLE : 8 */
+#endif /* ADC12_PINS_AVAILABLE : 6 */
   }
 }
 implementation
@@ -94,14 +117,16 @@ implementation
     adc12ctl0_t ctl0;
 
     atomic {
-      // stop any ongoing conversion (conversion data -if any- is unreliable)
-      call HplAdc12.stopConversion(); 
-      // clear pending interrupt flags (potential relict from SW reset / PUC)
-      call HplAdc12.resetIFGs(); 
+      call HplAdc12.stopConversion(); 	/* data unreliable */
+      call HplAdc12.resetIFGs(); 	/* clear relicts from SWReset */
       ctl0 = call HplAdc12.getCtl0();
       ctl0.adc12tovie = 1;
       ctl0.adc12ovie = 1;
       call HplAdc12.setCtl0(ctl0);
+#ifdef __MSP430_HAS_REF__
+      // Clear REFMSTR: use ADC12CTL to configure reference generate for backwards compatibility
+      REFCTL0 &= (~REFMSTR);
+#endif // __MSP430_HAS_REF__
     }
     return SUCCESS;
   }
@@ -147,34 +172,58 @@ implementation
   
   void configureAdcPin( uint8_t inch )
   {
-#ifdef ADC12_P6PIN_AUTO_CONFIGURE
+#if ADC12_PIN_AUTO_CONFIGURE
     switch (inch)
     {
-      case 0: call Port60.selectModuleFunc(); call Port60.makeInput(); break;
-      case 1: call Port61.selectModuleFunc(); call Port61.makeInput(); break;
-      case 2: call Port62.selectModuleFunc(); call Port62.makeInput(); break;
-      case 3: call Port63.selectModuleFunc(); call Port63.makeInput(); break;
-      case 4: call Port64.selectModuleFunc(); call Port64.makeInput(); break;
-      case 5: call Port65.selectModuleFunc(); call Port65.makeInput(); break;
-      case 6: call Port66.selectModuleFunc(); call Port66.makeInput(); break;
-      case 7: call Port67.selectModuleFunc(); call Port67.makeInput(); break;
+      case 0: call A0.selectModuleFunc(); call A0.makeInput(); break;
+      case 1: call A1.selectModuleFunc(); call A1.makeInput(); break;
+      case 2: call A2.selectModuleFunc(); call A2.makeInput(); break;
+      case 3: call A3.selectModuleFunc(); call A3.makeInput(); break;
+      case 4: call A4.selectModuleFunc(); call A4.makeInput(); break;
+      case 5: call A5.selectModuleFunc(); call A5.makeInput(); break;
+#if 6 < ADC12_PINS_AVAILABLE
+      case 6: call A6.selectModuleFunc(); call A6.makeInput(); break;
+      case 7: call A7.selectModuleFunc(); call A7.makeInput(); break;
+#if 8 < ADC12_PINS_AVAILABLE
+      case 8: call A8.selectModuleFunc(); call A8.makeInput(); break;
+      case 9: call A9.selectModuleFunc(); call A9.makeInput(); break;
+      case 10: call A10.selectModuleFunc(); call A10.makeInput(); break;
+      case 11: call A11.selectModuleFunc(); call A11.makeInput(); break;
+      case 12: call A12.selectModuleFunc(); call A12.makeInput(); break;
+      case 13: call A13.selectModuleFunc(); call A13.makeInput(); break;
+      case 14: call A14.selectModuleFunc(); call A14.makeInput(); break;
+      case 15: call A15.selectModuleFunc(); call A15.makeInput(); break;
+#endif /* ADC12_PINS_AVAILABLE : 8 */
+#endif /* ADC12_PINS_AVAILABLE : 6 */
     }
 #endif
   }
   
   void resetAdcPin( uint8_t inch )
   {
-#ifdef ADC12_P6PIN_AUTO_CONFIGURE
+#if ADC12_PIN_AUTO_CONFIGURE
     switch (inch)
     {
-      case 0: call Port60.selectIOFunc(); break;
-      case 1: call Port61.selectIOFunc(); break;
-      case 2: call Port62.selectIOFunc(); break;
-      case 3: call Port63.selectIOFunc(); break;
-      case 4: call Port64.selectIOFunc(); break;
-      case 5: call Port65.selectIOFunc(); break;
-      case 6: call Port66.selectIOFunc(); break;
-      case 7: call Port67.selectIOFunc(); break;
+      case 0: call A0.selectIOFunc(); break;
+      case 1: call A1.selectIOFunc(); break;
+      case 2: call A2.selectIOFunc(); break;
+      case 3: call A3.selectIOFunc(); break;
+      case 4: call A4.selectIOFunc(); break;
+      case 5: call A5.selectIOFunc(); break;
+#if 6 < ADC12_PINS_AVAILABLE
+      case 6: call A6.selectIOFunc(); break;
+      case 7: call A7.selectIOFunc(); break;
+#if 8 < ADC12_PINS_AVAILABLE
+      case 8: call A8.selectIOFunc(); break;
+      case 9: call A9.selectIOFunc(); break;
+      case 10: call A10.selectIOFunc(); break;
+      case 11: call A11.selectIOFunc(); break;
+      case 12: call A12.selectIOFunc(); break;
+      case 13: call A13.selectIOFunc(); break;
+      case 14: call A14.selectIOFunc(); break;
+      case 15: call A15.selectIOFunc(); break;
+#endif /* ADC12_PINS_AVAILABLE : 8 */
+#endif /* ADC12_PINS_AVAILABLE : 6 */
     }
 #endif
   }
@@ -184,7 +233,7 @@ implementation
   {
     error_t result = ERESERVE;
 #ifdef ADC12_CHECK_ARGS
-    if (!config)
+    if (!config || config->inch == INPUT_CHANNEL_NONE)
       return EINVAL;
 #endif
     atomic {
@@ -232,7 +281,7 @@ implementation
     if (jiffies>0) 
       return EINVAL;
 #endif
-    if (!config || jiffies == 1 || jiffies == 2)
+    if (!config || config->inch == INPUT_CHANNEL_NONE || jiffies == 1 || jiffies == 2)
       return EINVAL;
 #endif
     atomic {
@@ -276,15 +325,16 @@ implementation
 
   async command error_t SingleChannel.configureMultiple[uint8_t id](
       const msp430adc12_channel_config_t *config,
-      uint16_t *buf, uint16_t length, uint16_t jiffies)
-  {
+      uint16_t *buf, uint16_t length, uint16_t jiffies) {
+
     error_t result = ERESERVE;
+
 #ifdef ADC12_CHECK_ARGS
 #ifndef ADC12_TIMERA_ENABLED
     if (jiffies>0) 
       return EINVAL;
 #endif
-    if (!config || !buf || !length || jiffies == 1 || jiffies == 2)
+    if (!config || config->inch == INPUT_CHANNEL_NONE || !buf || !length || jiffies == 1 || jiffies == 2)
       return EINVAL;
 #endif
     atomic {
@@ -337,15 +387,16 @@ implementation
 
   async command error_t SingleChannel.configureMultipleRepeat[uint8_t id](
       const msp430adc12_channel_config_t *config,
-      uint16_t *buf, uint8_t length, uint16_t jiffies)
-  {
+      uint16_t *buf, uint8_t length, uint16_t jiffies) {
+
     error_t result = ERESERVE;
+
 #ifdef ADC12_CHECK_ARGS
 #ifndef ADC12_TIMERA_ENABLED
     if (jiffies>0) 
       return EINVAL;
 #endif
-    if (!config || !buf || !length || length > 16 || jiffies == 1 || jiffies == 2)
+    if (!config || config->inch == INPUT_CHANNEL_NONE || !buf || !length || length > 16 || jiffies == 1 || jiffies == 2)
       return EINVAL;
 #endif
     atomic {
@@ -378,7 +429,7 @@ implementation
         resultBufferLength = length;
         resultBufferStart = buf;
         resultBufferIndex = 0;            
-        
+
         call HplAdc12.setCtl0(ctl0);
         call HplAdc12.setCtl1(ctl1);
         for (i=0; i<(length-1) && i < 15; i++)
@@ -420,15 +471,18 @@ implementation
   async command error_t MultiChannel.configure[uint8_t id](
       const msp430adc12_channel_config_t *config,
       adc12memctl_t *memctl, uint8_t numMemctl, uint16_t *buf, 
-      uint16_t numSamples, uint16_t jiffies)
-  {
+      uint16_t numSamples, uint16_t jiffies) {
+
     error_t result = ERESERVE;
+
 #ifdef ADC12_CHECK_ARGS
 #ifndef ADC12_TIMERA_ENABLED
     if (jiffies>0) 
       return EINVAL;
 #endif
-    if (!config || !memctl || !numMemctl || numMemctl > 15 || !numSamples || 
+    /* note: numSamples % (numMemctl+1) is expensive and should be reworked */
+    if (!config || config->inch == INPUT_CHANNEL_NONE || !memctl || !numMemctl ||
+	numMemctl > 15 || !numSamples || 
         !buf || jiffies == 1 || jiffies == 2 || numSamples % (numMemctl+1) != 0)
       return EINVAL;
 #endif
@@ -642,27 +696,23 @@ implementation
           break;
         }
 #endif
+
       default:
         stopConversion();
         break;
       } // switch
   }
 
-  default async event error_t SingleChannel.singleDataReady[uint8_t id](uint16_t data)
-  {
+  default async event error_t SingleChannel.singleDataReady[uint8_t id](uint16_t data) {
     return FAIL;
   }
-   
+
   default async event uint16_t* SingleChannel.multipleDataReady[uint8_t id](
-      uint16_t *buf, uint16_t numSamples)
-  {
-    return 0;
-  }
-   
-  default async event void MultiChannel.dataReady[uint8_t id](uint16_t *buffer, uint16_t numSamples) {};
-  
-  default async event void Overflow.memOverflow[uint8_t id](){}
-  default async event void Overflow.conversionTimeOverflow[uint8_t id](){}
+	uint16_t *buf, uint16_t numSamples) { return 0; }
 
+  default async event void MultiChannel.dataReady[uint8_t id](
+	uint16_t *buffer, uint16_t numSamples) {};
+
+  default async event void Overflow.memOverflow[uint8_t id]() {}
+  default async event void Overflow.conversionTimeOverflow[uint8_t id]() {}
 }
-

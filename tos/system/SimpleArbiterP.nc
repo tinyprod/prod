@@ -131,15 +131,10 @@ implementation {
 
   /**
     Returns the current user of the Resource.
-    If there is no current user, the return value
-    will be 0xFF
+    May return the default owner id.
   */      
   async command uint8_t ArbiterInfo.userId() {
-    atomic {
-      if(state != RES_BUSY)
-        return NO_RES;
-      return resId;
-    }
+    return resId;
   }
 
   /**

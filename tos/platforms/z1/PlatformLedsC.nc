@@ -45,8 +45,7 @@ configuration PlatformLedsC {
   provides interface GeneralIO as Led2;
   uses interface Init;
 }
-
-implementation{
+implementation {
   components
     HplMsp430GeneralIOC as GeneralIOC
     , new Msp430GpioC() as Led0Impl
@@ -66,5 +65,4 @@ implementation{
 
   Led2 = Led2Impl;
   Led2Impl -> GeneralIOC.Port55;
- 
 }

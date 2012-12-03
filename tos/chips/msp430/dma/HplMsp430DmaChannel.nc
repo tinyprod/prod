@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University of California.  
  * All rights reserved.
  *
@@ -8,11 +9,13 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -28,59 +31,68 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @author Ben Greenstein <ben@cs.ucla.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
+ *
+ * See Msp430Dma.h for major changes.
  */
 
-/**
- * @author Ben Greenstein <ben@cs.ucla.edu>
- * @version $Revision: 1.5 $ $Date: 2010-06-29 22:07:45 $
- */
+#include <Msp430Dma.h>
 
 interface HplMsp430DmaChannel {
-  async command error_t setTrigger(dma_trigger_t trigger);
-  async command void clearTrigger();
-  async command void setSingleMode();
-  async command void setBlockMode();
-  async command void setBurstMode();
-  async command void setRepeatedSingleMode();
-  async command void setRepeatedBlockMode();
-  async command void setRepeatedBurstMode();
-  async command void setSrcNoIncrement();
-  async command void setSrcDecrement();
-  async command void setSrcIncrement();
-  async command void setDstNoIncrement();
-  async command void setDstDecrement();
-  async command void setDstIncrement();
-  async command void setWordToWord(); 
-  async command void setByteToWord(); 
-  async command void setWordToByte(); 
-  async command void setByteToByte(); 
-  async command void setEdgeSensitive();
-  async command void setLevelSensitive();
 
-  async command void enableDMA();
-  async command void disableDMA();
+  /**
+   * Set/Get the DMA Channel Control word.
+   *
+   * Use cpu defines to control a dma channel.  ie.
+   *
+   * call DMA.setChannelControl( DMA_DT_SINGLE | DMA_DT_RPT | DMASBDB
+   *             | DMA_SRC_INC | DMA_DST_INC | DMAEN);
+   *
+   * You should leave the following bits alone:
+   *
+   *     DMAREQ, DMAABORT, DMAIE, and DMAIFG
+   *
+   * There are seperate routines for manipulating or testing
+   * those bits.
+   */
+  async command void		setChannelControl(uint16_t ctl);
+  async command uint16_t	getChannelControl();
 
-  async command void enableInterrupt() ; 
-  async command void disableInterrupt() ; 
+  async command void		setTrigger(dma_trigger_t trigger);
+  async command dma_trigger_t	getTrigger();
 
-  async command bool interruptPending();
+  async command void		enableDMA();
+  async command void		disableDMA();
 
-  async command bool aborted();
-  async command void triggerDMA();
+  async command void		enableInterrupt();
+  async command void		disableInterrupt();
 
-  async command void setSrc(void *saddr);
-  async command void setDst(void *daddr);
-  async command void setSize(uint16_t sz);
+  async command bool		interruptPending();
+  async command void		clearInterrupt();
 
-  async command void setState(dma_channel_state_t s, dma_channel_trigger_t t, void* src, void* dest, uint16_t size);
-  async command void setStateRaw(uint16_t state, uint16_t trigger, void* src, void* dest, uint16_t size);
-  async command dma_channel_state_t getState();
-  async command void* getSource();
-  async command void* getDestination();
-  async command uint16_t getSize();
-  async command dma_channel_trigger_t getTrigger();
+  async command bool		aborted();
 
-  async command void reset();
+  async command void		triggerDMA();
 
-  async event void transferDone(error_t success);
+  async command void		setSrc(uint16_t saddr);
+  async command uint16_t	getSrc();
+
+  async command void		setDst(uint16_t daddr);
+  async command uint16_t	getDst();
+
+  async command void		setSize(uint16_t sz);
+  async command uint16_t	getSize();
+
+  /**
+   * Channel Reset
+   *
+   * Turn a dma channel off.  Force reset.
+   * will set Channel Control to 0
+   * will set Channel trigger to 0
+   */
+  async command void		reset();
+
+  async event void		transferDone();
 }

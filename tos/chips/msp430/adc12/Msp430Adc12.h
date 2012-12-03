@@ -1,15 +1,20 @@
-/* 
+/*
+ * Copyright (c) 2011, Eric B. Decker
+ * Copyright (c) 2010, People Power Co.
  * Copyright (c) 2006, Technische Universitaet Berlin
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
+ *
  * - Redistributions of source code must retain the above copyright notice,
  *   this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the distribution.
+ *
  * - Neither the name of the Technische Universitaet Berlin nor the names
  *   of its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -26,28 +31,50 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * - Revision -------------------------------------------------------------
- * $Revision: 1.5 $
- * $Date: 2007-06-25 15:47:14 $
- * @author: Jan Hauer <hauer@tkn.tu-berlin.de>
- * ========================================================================
+ * @author Jan Hauer <hauer@tkn.tu-berlin.de>
+ * @author Peter A. Bigot <pab@peoplepowerco.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
  
 #ifndef MSP430ADC12_H
 #define MSP430ADC12_H
 #include "Msp430RefVoltGenerator.h"
 
+#if !defined(__msp430_have_adc12)
+#if !defined(__MSP430_HAS_ADC12__)
+#if !defined(__MSP430_HAS_ADC12_PLUS__)
+#error Target msp430 device does not have ADC12 module
+#endif
+#endif
+#endif
+
+/*
+ * ADC12_USE_PLATFORM_ADC: Assume the platform defines a PlatformAdcC
+ * component that provides the necessary timer and IO pin interfaces.
+ *
+ * ADC12_PINS_AVAILABLE: The number of pins available on the hardware.
+ * If not defined, defaults to 8.
+ *
+ * ADC12_PIN_AUTO_CONFIGURE: Define to automatically configure all
+ * available pins.  Only applies if ADC12_USE_PLATFORM_ADC is defined;
+ * otherwise refer to ADC12_P6PIN_AUTO_CONFIGURE.
+ */
+
 #define ADC12_TIMERA_ENABLED
 #define ADC12_P6PIN_AUTO_CONFIGURE
 #define ADC12_CHECK_ARGS
 //#define ADC12_ONLY_WITH_DMA
+
+#ifndef ADC12_PINS_AVAILABLE
+#define ADC12_PINS_AVAILABLE 8
+#endif /* ADC12_PINS_AVAILABLE */
 
 // for HIL clients 
 #define REF_VOLT_AUTO_CONFIGURE
 
 typedef struct { 
   // see README.txt
-  unsigned int inch: 4;            // input channel 
+  unsigned int inch: 5;            // input channel 
   unsigned int sref: 3;            // reference voltage 
   unsigned int ref2_5v: 1;         // reference voltage level 
   unsigned int adc12ssel: 2;       // clock source sample-hold-time 
@@ -81,8 +108,12 @@ enum inch_enum
    EXTERNAL_REF_VOLTAGE_CHANNEL = 8,        // VeREF+ (input channel 8)
    REF_VOLTAGE_NEG_TERMINAL_CHANNEL = 9,    // VREF-/VeREF- (input channel 9)
    TEMPERATURE_DIODE_CHANNEL = 10,          // Temperature diode (input channel 10)
-   SUPPLY_VOLTAGE_HALF_CHANNEL = 11,        // (AVcc-AVss)/2 (input channel 11-15)
-   INPUT_CHANNEL_NONE = 12                  // illegal (identifies invalid settings)
+   SUPPLY_VOLTAGE_HALF_CHANNEL = 11,        // (AVcc-AVss)/2
+   INPUT_CHANNEL_A12 = 12,                  // input channel A12
+   INPUT_CHANNEL_A13 = 13,                  // input channel A13
+   INPUT_CHANNEL_A14 = 14,                  // input channel A14
+   INPUT_CHANNEL_A15 = 15,                  // input channel A15
+   INPUT_CHANNEL_NONE,                      // illegal (identifies invalid settings)
 };
 
 enum sref_enum
@@ -165,23 +196,32 @@ enum sampcon_id_enum
 #define ADCC_READ_STREAM_SERVICE "AdcC.ReadStream.Client"
 
 
-
 #ifdef __MSP430_TI_HEADERS__
-//#if __GNUC__ >= 4
-  
-// "The bitfield structures that overlay peripheral registers are not part of
-// mspgcc in the future; the recommended way of accessing those fields is to
-// use the masks defined in the TI headers."
-// (http://www.millennium.berkeley.edu/pipermail/tinyos-devel/2011-March/004804.html)
-//
-// Until the ADC driver is updated our temporary workaround is to re-define the
-// bitfield structures and continue using them when accessing peripheral
-// registers via the DEFINE_UNION_CAST (the same is done in the MSP430 Timer
-// and USART drivers). It has been verified that the definitions of the ADC12
-// flags has not changed over the different MSP430 chip variants that have an
-// ADC12, i.e. using common structs is safe (verified for the header files
-// installed via package msp430mcu-tinyos version 20110613-20110821).
-// (http://mail.millennium.berkeley.edu/pipermail/tinyos-2.0wg/2011-August/003861.html)
+  // "The bitfield structures that overlay peripheral registers are not part of
+  // mspgcc in the future; the recommended way of accessing those fields is to
+  // use the masks defined in the TI headers."
+  // (https://www.millennium.berkeley.edu/pipermail/tinyos-devel/2011-March/004804.html)
+  //
+  // Older versions of cpu header files included register definitions using bit field
+  // structures.   Current versions using TI_HEADERS no longer include these bit field
+  // structure definitions.
+  //
+  // One could rewrite the drivers to use masks as is recommended in the tinyos-devel
+  // excerpt listed above.  Technically there is nothing wrong with using bit fields
+  // as long as they work (there have been problems in different versions of the compiler).
+  // The big problem with bit fields is endianess and portability (related) but neither
+  // of those issues should be a problem here.
+  //
+  // It has been verified that the definitions of the ADC12
+  // flags has not changed over the different MSP430 chip variants that have an
+  // ADC12, i.e. using common structs is safe (verified for the header files
+  // installed via package msp430mcu-tinyos version 20110613-20110821).
+  // (http://mail.millennium.berkeley.edu/pipermail/tinyos-2.0wg/2011-August/003861.html)
+  //
+  // So it is left as an exercise for the student to reimplement the driver if someone
+  // feels it is worth the time to do so.
+  //
+  // Be sure to check the generated code with a current compiler (which are in flux).
 
 typedef struct {
   volatile unsigned
@@ -211,8 +251,51 @@ typedef struct {
 volatile unsigned int : 0; // align to word boundary (saves significant amount of code)
 } __attribute__ ((packed)) adc12ctl1_t;
 
-#else
 
+#ifdef __MSP430_HAS_ADC12_PLUS__
+
+typedef struct {
+  volatile unsigned
+    bit0:1,
+    bit1:1,
+    bit2:1,
+    bit3:1,
+    bit4:1,
+    bit5:1,
+    bit6:1,
+    bit7:1,
+    bit8:1,
+    bit9:1,
+    bit10:1,
+    bit11:1,
+    bit12:1,
+    bit13:1,
+    bit14:1,
+    bit15:1;
+} __attribute__ ((packed)) adc12xflg_t;
+
+/* The adc12 declaration itself */
+struct adc12_t {
+  adc12ctl0_t ctl0;
+  adc12ctl1_t ctl1;
+  adc12xflg_t ifg;
+  adc12xflg_t ie;
+  adc12xflg_t iv;
+};
+
+#endif	/* __MSP430_HAS_ADC12_PLUS__ */
+
+#ifdef notdef
+#define ENC ADC12ENC
+#define CONSEQ0 ADC12CONSEQ0
+#define CONSEQ1 ADC12CONSEQ1
+#endif
+
+#endif		/* __MSP430_TI_HEADERS__ */
+
+#if __GNUC__ >= 4
+#warning "ADC12 periph_reg bitfields: mspgcc >= 4 (check bitfield code gen)."
+#else
   /* Test for GCC bug (bitfield access) - only version 3.2.3 is known to be stable */
   #define GCC_VERSION (__GNUC__ * 100 + __GNUC_MINOR__ * 10 + __GNUC_PATCHLEVEL__)
   #if GCC_VERSION == 332
@@ -221,11 +304,6 @@ volatile unsigned int : 0; // align to word boundary (saves significant amount o
     #warning "This version of msp430-gcc might contain a bug when accessing bitfield structs (version 3.2.3 is safe - anything else is on your own risk)"
   #endif  
 
-#endif
+#endif		/* __GNUC__ >= 4 */
 
-
-#if !defined(__msp430_have_adc12) && !defined(__MSP430_HAS_ADC12__)
-#error Target msp430 device does not have ADC12 module
-#endif
-
-#endif
+#endif		/* MSP430ADC12_H */

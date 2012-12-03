@@ -367,12 +367,17 @@ void __assertUART(const char* file, int line)
 {
     printfUART("ASSERT FAILED: file= %s, lineNbr= %i\n", file, line);
     // for some reason, CLR means on
+    // its because its low true logic as defined at the h/w.   namely when the
+    // controlling bit gets set to 0 (clr), the diode is forward biased and the
+    // led starts to emit.
+
     TOSH_MAKE_RED_LED_OUTPUT();
     TOSH_MAKE_YELLOW_LED_OUTPUT();
     TOSH_MAKE_GREEN_LED_OUTPUT();
     TOSH_CLR_RED_LED_PIN();
     TOSH_CLR_YELLOW_LED_PIN();
     TOSH_CLR_GREEN_LED_PIN();
+    for (;;);
     exit(1);
 }
 // --------------------------------------------------------------
@@ -380,4 +385,3 @@ void __assertUART(const char* file, int line)
 
 #endif  // PRINTFUART_H
 #endif  // PRINTFZ1_H
-

@@ -1,0 +1,37 @@
+
+#source ../../.gdb_x1
+ source ../../.gdb_x2
+#source ../../.gdb_x5
+
+set remoteaddresssize 0d64
+set remotetimeout 0d999999
+target remote localhost:2000
+
+disp/i $pc
+x/i $pc
+set pri ele 0
+
+#b RealMainP.nc:75
+#b RealMainP.nc:82
+#b SchedulerBasicP.nc:151
+#b SchedulerBasicP.nc:148
+#b VirtualizeTimerC.nc:81
+#dis
+
+define nx
+fini
+ni 3
+si 2
+end
+
+define noint
+printf "cur sr: %02x\n", $r2
+set $r2=0
+end
+
+define npc
+x/16i $pc
+end
+document npc
+display next (16) instructions from $pc
+end

@@ -1341,9 +1341,12 @@ but wired to the proper implementation of the ResourceConfigure
 interface. In this way, different instances of the Msp430Usart0C
 can each have different configurations associated with them, but
 still provide the same functionality.</p>
+
 <p>Take a look in the tinyos-2.x source tree under
 tinyos-2.x/tos/chips/msp430/usart to see the full implementation of
-these components along with the corresponding Uart implementation.</p>
+these components along with the corresponding Uart implementation.
+Implementations on more modern TI processors can be found in
+tos/chips/msp430/x{2,5}xxx/usci-v2.</p>
 </div>
 </div>
 </div>

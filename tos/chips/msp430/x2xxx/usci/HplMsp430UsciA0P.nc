@@ -75,7 +75,10 @@ implementation {
   MSP430REG_NORACE(IFG2);
   MSP430REG_NORACE(UCA0CTL0);
   MSP430REG_NORACE(UCA0CTL1);
+  MSP430REG_NORACE(UCA0STAT);
+  MSP430REG_NORACE(UCA0MCTL);
   MSP430REG_NORACE(UCA0TXBUF);
+  MSP430REG_NORACE(UCA0RXBUF);
 
   async event void UsciRawInterrupts.rxDone(uint8_t temp) {
     signal Interrupts.rxDone(temp);
@@ -99,8 +102,18 @@ implementation {
   }
 
   async command msp430_uctl1_t Usci.getUctl1() {
-    return int2uctl1(UCA0CTL0);
+    return int2uctl1(UCA0CTL1);
   }
+
+  /*
+   * setUbr: change the Baud Rate divisor
+   *
+   * The BR registers are 2 bytes and accessed as two byte references.
+   * We want it to be atomic.   On the x2xxx part can UBR be referenced
+   * as a single atomic word?  NO.  (This is how it is done on the x5xxx).
+   * For now we do it atomically and using two byte references (because
+   * of the address space and according to TI documentation).
+   */
 
   async command void Usci.setUbr(uint16_t control) {
     atomic {
@@ -110,7 +123,9 @@ implementation {
   }
 
   async command uint16_t Usci.getUbr() {
-    return (UCA0BR1 << 8) + UCA0BR0;
+    atomic {
+      return (UCA0BR1 << 8) + UCA0BR0;
+    }
   }
 
   async command void Usci.setUmctl(uint8_t control) {
@@ -129,7 +144,15 @@ implementation {
     return UCA0STAT;
   }
 
-  /* Operations */
+  /*
+   * Reset/unReset
+   *
+   * resetUsci(bool): (deprecated) TRUE puts device into reset, FALSE takes it out.  But this
+   *   requires pushing the parameter on the stack and all those extra instructions.
+   *
+   * {un,}resetUsci_n(): reset and unreset the device but result in single instruction that
+   *   sets or clears the appropriate bit in the h/w.
+   */
   async command void Usci.resetUsci(bool reset) {
     if (reset)
       SET_FLAG(UCA0CTL1, UCSWRST);
@@ -137,11 +160,23 @@ implementation {
       CLR_FLAG(UCA0CTL1, UCSWRST);
   }
 
+  async command void Usci.resetUsci_n() {
+    SET_FLAG(UCA0CTL1, UCSWRST);
+  }
+
+  async command void Usci.unresetUsci_n() {
+    CLR_FLAG(UCA0CTL1, UCSWRST);
+  }
+
   bool isSpi() {
     msp430_uctl0_t tmp;
 
     tmp = int2uctl0(UCA0CTL0);
     return (tmp.ucsync && tmp.ucmode != 3);
+  }
+
+  async command bool Usci.isSpi() {
+    return isSpi();
   }
 
   bool isI2C() {
@@ -158,10 +193,6 @@ implementation {
     return (tmp.ucsync == 0);
   }
 
-  async command bool Usci.isSpi() {
-    return isSpi();
-  }
-
   async command msp430_uscimode_t Usci.getMode() {
     if (isSpi())
       return USCI_SPI;
@@ -169,8 +200,7 @@ implementation {
       return USCI_I2C;
     if (isUart())
       return USCI_UART;
-    else
-      return USCI_NONE;
+    return USCI_NONE;
   }
 
   async command void Usci.enableSpi() {
@@ -189,46 +219,69 @@ implementation {
     }
   }
 
-  void configSpi(msp430_spi_union_config_t* config) {
+  void configSpi(const msp430_spi_union_config_t* config) {
     UCA0CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCA0CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
-    call Usci.setUmctl(0);		/* MCTL <- 0 if spi */
+    /* MCTL (modulation register) is zero'd on module reset
+     * per TI MSP430x2xx User's Guide SLAUF, pg 15-27. */
   }
 
-  async command void Usci.setModeSpi(msp430_spi_union_config_t* config) {
+  /*
+   * setModeSpi: configure the usci for spi mode
+   *
+   * note: make sure all interrupts are clear when taking the port
+   * out of reset.  There is an assumption in the system that the
+   * tx path needs a first write to fire off the interrupt system.
+   *
+   * Also note that resetting the usci will clear any interrupt enables
+   * for the device.  Don't need to explicitly disableIntr.
+   */
+  async command void Usci.setModeSpi(const msp430_spi_union_config_t* config) {
     atomic {
-      call Usci.disableIntr();
-      call Usci.clrIntr();
-      call Usci.resetUsci(TRUE);
+      call Usci.resetUsci_n();
       call Usci.enableSpi();
       configSpi(config);
-      call Usci.resetUsci(FALSE);
-    }    
+      call Usci.unresetUsci_n();
+      call Usci.clrIntr();
+    }
   }
 
-  async command bool Usci.isTxIntrPending(){
-    if (IFG2 & UCA0TXIFG)
-      return TRUE;
-    return FALSE;
+  async command bool Usci.isTxIntrPending() {
+    return (IFG2 & UCA0TXIFG);
   }
 
-  async command bool Usci.isRxIntrPending(){
-    if (IFG2 & UCA0RXIFG)
-      return TRUE;
-    return FALSE;
+  async command bool Usci.isRxIntrPending() {
+    return (IFG2 & UCA0RXIFG);
   }
 
   async command void Usci.clrTxIntr(){
     IFG2 &= ~UCA0TXIFG;
   }
 
+  /*
+   * clear any pending RxIntr.
+   *
+   * We want to clean out atomically any pending rx interrupt pending.
+   * This should also clean out any error bits that might have been set.
+   * The best way to do this is to simply read the RXBUF.  The TI hardware
+   * atomically cleans out any error indicators and the IFG.
+   */
   async command void Usci.clrRxIntr() {
-    IFG2 &= ~UCA0RXIFG;
+    call Usci.rx();
   }
 
+  /*
+   * clrIntr: clear all rx and tx interrupts
+   *
+   * clear any pending interrupts.  Intended to be used when
+   * starting up a port and we want a pristine state.
+   */
   async command void Usci.clrIntr() {
-    IFG2 &= ~(UCA0TXIFG | UCA0RXIFG);
+    atomic {
+      call Usci.rx();			/* clean rx side out */
+      IFG2 &= ~UCA0TXIFG;		/* and turn off tx ifg */
+    }
   }
 
   async command void Usci.disableRxIntr() {
@@ -240,16 +293,27 @@ implementation {
   }
 
   async command void Usci.disableIntr() {
-      IE2 &= ~(UCA0TXIE | UCA0RXIE);
+    IE2 &= ~(UCA0TXIE | UCA0RXIE);
   }
 
   async command void Usci.enableRxIntr() {
-    atomic {
-      IFG2 &= ~UCA0RXIFG;
-      IE2  |=  UCA0RXIE;
-    }
+    IE2  |=  UCA0RXIE;
   }
 
+  /*
+   * enableTxIntr
+   *
+   * enable the usci tx h/w to interrupt.
+   *
+   * Note: The TI module when reset sets UCxxTXIFG so enabling the tx interrupt
+   * would cause an interrupt.  Many implementations use this to cause
+   * the output path to fire up.
+   *
+   * TinyOS however assumes that one needs to fire off the first byte and this
+   * will cause a TX interrupt later which will fire up the output path.  We
+   * clear out the pending tx interrupt.  The first byte must be forced out by
+   * hand and then interrupts will continue the process.
+   */
   async command void Usci.enableTxIntr() {
     atomic {
       IFG2 &= ~UCA0TXIFG;
@@ -257,35 +321,35 @@ implementation {
     }
   }
 
+  /*
+   * enableIntr: enable rx and tx interrupts
+   * DEPRECATED.
+   *
+   * Doesn't make sense to do this.   RX and TX side get dealt with independently
+   * so why would this ever get called?    Deprecate.
+   *
+   * First clear out any pending tx interrupt flags then set interrupt enables.
+   * If there is a rx byte available then enabling the rx interrupt will kick.
+   */
   async command void Usci.enableIntr() {
     atomic {
-      IFG2 &= ~(UCA0TXIFG | UCA0RXIFG);
-      IE2  |=  (UCA0TXIE  | UCA0RXIE);
+      IFG2 &= ~UCA0TXIFG;		/* and tx side */
+      IE2  |= (UCA0TXIE | UCA0RXIE);	/* enable both tx and rx */
     }
   }
 
-  /*
-   * Returns true if the transmit path is empty.
-   *
-   * in the usart hardware there was a seperate bit that indicated
-   * both parts of the transmitter path were empty.  The TXBUF and
-   * the outgoing shift register.
-   *
-   * Unfortunately, TI changed this in the USCI h/w to a single busy
-   * bit that indcates that either the tx or the rx path is busy.
-   * So if the transmitter is idle but we are receiving a character
-   * then we still think the transmitter is busy.  TI sucks.
-   */
-  async command bool Usci.isTxEmpty() {
-    if (UCA0STAT & UCBUSY)
-      return FALSE;
-    return TRUE;
+  async command bool Usci.isBusy() {
+    return (UCA0STAT & UCBUSY);
   }
 
   async command void Usci.tx(uint8_t data) {
     UCA0TXBUF = data;
   }
 
+  /*
+   * grab current Rx buf from the h/w.
+   * This will also clear any pending error status bits.
+   */
   async command uint8_t Usci.rx() {
     return UCA0RXBUF;
   }
@@ -308,21 +372,30 @@ implementation {
     }
   }
 
-  void configUart(msp430_uart_union_config_t* config) {
+  void configUart(const msp430_uart_union_config_t* config) {
     UCA0CTL1 = (config->uartRegisters.uctl1 | UCSWRST);
     UCA0CTL0 = config->uartRegisters.uctl0;		/* ucsync should be off */
     call Usci.setUbr(config->uartRegisters.ubr);
     call Usci.setUmctl(config->uartRegisters.umctl);
   }
 
-  async command void Usci.setModeUart(msp430_uart_union_config_t* config) {
-    atomic { 
-      call Usci.disableIntr();
-      call Usci.clrIntr();
-      call Usci.resetUsci(TRUE);
+  /*
+   * setModeUart: configure the usci for uart mode
+   *
+   * note: make sure all interrupts are clear when taking the port
+   * out of reset.  There is an assumption in the system that the
+   * tx path needs a first write to fire off the interrupt system.
+   *
+   * Also note that resetting the usci will clear any interrupt enables
+   * for the device.  Don't need to explicitly disableIntr.
+   */
+  async command void Usci.setModeUart(const msp430_uart_union_config_t* config) {
+    atomic {
+      call Usci.resetUsci_n();
       call Usci.enableUart();
       configUart(config);
-      call Usci.resetUsci(FALSE);
+      call Usci.unresetUsci_n();
+      call Usci.clrIntr();
     }
   }
 }

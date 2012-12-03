@@ -9,6 +9,8 @@ MSP_MCU = msp430f1611
 VOLUME_FILE = volumes-at45db.xml
 VOLUME_ALLOCATOR ?= tos-storage-at45db
 
+OPTFLAGS ?= -Os
+
 ifndef DEFAULT_PROGRAM
 DEFAULT_PROGRAM = bsl
 endif
@@ -20,6 +22,8 @@ ifeq (,$(findstring /dev/ttyUSB,$(BSL)))
     BSL:=/dev/tty$(BSL)
   endif
 endif
+
+NESC_FLAGS:=-Wnesc-all
 
 $(call TOSMake_include_platform,msp)
 

@@ -60,7 +60,13 @@ interface HplMsp430UsciB {
   async command void setUctl1(msp430_uctl1_t control);
   async command msp430_uctl1_t getUctl1();
 
-  /* UCxxBR1 UCxxBR0 */
+  /* UCxxBR1 UCxxBR0
+   *
+   * set will install a new BR divisor.  If the device is reset it
+   * is left reset.  If running, the device is first reset, the new
+   * BR installed, and then taken out of reset.  This causes the new
+   * BR to take effect.
+   */
   async command void setUbr(uint16_t ubr);
   async command uint16_t getUbr();
 
@@ -74,11 +80,21 @@ interface HplMsp430UsciB {
 
   /*
    * resetUsci() - reset or unreset module port
+   * DEPRECATED
    *
    * reset:	TRUE (set UCSWRST)
    *		FALSE (unset UCSWRST), let the port run
    */
   async command void resetUsci(bool reset);
+
+  /*
+   * resetUsci_n()
+   * unresetUsci_n()
+   *
+   * reset usci, no parameter.  generates better code
+   */
+  async command void resetUsci_n();
+  async command void unresetUsci_n();
 
   /*
    * return enum indicating what mode the usci port in in.
@@ -100,9 +116,14 @@ interface HplMsp430UsciB {
   async command void clrRxIntr();
   async command void clrIntr();
 
-  /**
+  /*
+   * TI h/w provides a busy bit.  return tx or rx is doing something
+   */
+  async command bool isBusy();
+
+  /*
    * Transmit a byte of data. When the transmission is completed,
-   * <code>txDone</done> is generated. Only then a new byte may be
+   * <code>txDone</done> is signaled. Only then a new byte may be
    * transmitted, otherwise the previous byte will be overwritten.
    */
   async command void tx(uint8_t data);
@@ -138,7 +159,7 @@ interface HplMsp430UsciB {
    * configure usci as spi using config.
    * leaves interrupts disabled.
    */
-  async command void setModeSpi(msp430_spi_union_config_t* config);
+  async command void setModeSpi(const msp430_spi_union_config_t* config);
 
 
   /***********************************************************************
@@ -158,17 +179,22 @@ interface HplMsp430UsciB {
    * configure usci as i2c using config.
    * leaves interrupts disabled.
    */
-  async command void setModeI2C( msp430_i2c_union_config_t* config );
+  async command void setModeI2C(const msp430_i2c_union_config_t* config);
 
   /* control which direction the bus is in */
   async command void setTransmitMode();
   async command void setReceiveMode();
+
+  /* get bits of uctl1 in i2c mode */
+  async command bool getStopBit();
+  async command bool getTransmitReceiveMode();
 
   /* h/w bits for controlling what to send next when master */
   async command void setTXNACK();
   async command void setTXStop();
   async command void setTXStart();
 
+  /* Address this i2c module responds to */
   async command uint16_t getOwnAddress();
   async command void setOwnAddress( uint16_t addr );
 
@@ -185,9 +211,10 @@ interface HplMsp430UsciB {
   async command bool getStartBit();  
   async command bool getTransmitReceiveMode();
 
-  /* when master the SLA (slave address register says who we
-     are talking to.
-  */
+  /*
+   * when master the SLA (slave address register says who we
+   * are talking to.
+   */
   async command uint16_t getSlaveAddress();
   async command void     setSlaveAddress(uint16_t addr);
 
@@ -202,4 +229,14 @@ interface HplMsp430UsciB {
 
   async command void disableArbLostInt();
   async command void enableArbLostInt();
+
+#ifdef notdef
+  /*
+   * set master/slave mode, i2c
+   * DEPRECATED.   Slave or master mode isn't changed on the fly
+   * but rather is set via a config block.
+   */
+  async command void setSlaveMode();
+  async command void setMasterMode();
+#endif
 }

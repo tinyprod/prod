@@ -83,10 +83,10 @@ implementation {
     atomic {
       if(!(call FcfsQueue.isEnqueued(id))) {
         if(qHead == NO_ENTRY)
-	        qHead = id;
-	      else
-  	      resQ[qTail] = id;
-	      qTail = id;
+	  qHead = id;
+	else
+	  resQ[qTail] = id;
+	qTail = id;
         return SUCCESS;
       }
       return EBUSY;

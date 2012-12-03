@@ -1,0 +1,2 @@
+COMPONENT=DmaC
+include $(MAKERULES)

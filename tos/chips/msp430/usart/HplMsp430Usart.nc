@@ -165,13 +165,13 @@ interface HplMsp430Usart {
   /**
    * Switches USART to Spi mode.
    */
-  async command void setModeSpi(msp430_spi_union_config_t* config);
+  async command void setModeSpi(const msp430_spi_union_config_t* config);
   
   /**
    * Switches USART to Uart mode (RX and TX enabled)
    * Interrupts disabled by default.
    */
-  async command void setModeUart(msp430_uart_union_config_t* config);
+  async command void setModeUart(const msp430_uart_union_config_t* config);
   
   /* Dis/enabling of UTXIFG / URXIFG */
   async command void disableRxIntr();
@@ -216,17 +216,13 @@ interface HplMsp430Usart {
    * Transmit a byte of data. When the transmission is completed,
    * <code>txDone</done> is generated. Only then a new byte may be
    * transmitted, otherwise the previous byte will be overwritten.
-   * The mode of transmission (Uart or Spi) depends on the current
-   * state of the USART, which must be managed by a higher layer.
-   *
-   * @return SUCCESS always.
    */
   async command void tx(uint8_t data);
   
   /**
    * Get current value from RX-buffer.
    *
-   * @return SUCCESS always.
+   * @return byte received
    */
   async command uint8_t rx();
 

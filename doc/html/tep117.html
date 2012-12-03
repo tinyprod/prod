@@ -493,9 +493,15 @@ interface I2CPacket&lt;addr_size&gt; {
 <p>The interface is typed according to the addressing space the
 underlying implementation supports.  Valid type values are below.</p>
 <pre class="literal-block">
-TI2CExtdAddr - Interfaces uses the extended (10-bit) addressing mode.
-TI2CBasicAddr - Interfaces uses the basic (7-bit) addressing mode.
+TI2C10Bit     - use 10-bit addressing.
+TI2C7Bit      - use 7-bit addressing.
+TI2CExtdAddr  - (same as 10-bit), deprecated.
+TI2CBasicAddr - (same as 7-bit).
 </pre>
+
+<p>For backward compatibility use TI2CBasicAddr, but new code should use
+TI2C7Bit when possible.  It's a better name.</p>
+
 <p>The i2c_flags_t values are defined below. The flags define the
 behavior of the operation for the call being made. These values may be
 ORed together.</p>

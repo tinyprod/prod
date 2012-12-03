@@ -99,7 +99,7 @@ implementation{
   void configureMultiple(){
     error_t e;
     printfz1("configuring multiple\n");
-    e = call adc.configureMultiple(&adcconfig, adb, FADSAMPLES, 0); 
+    e = call adc.configureMultiple(&adcconfig, adb, FADSAMPLES, 20); 
     if(e != SUCCESS) showerror();
     printfz1("error %d\n", e);
   }

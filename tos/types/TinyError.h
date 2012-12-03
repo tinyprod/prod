@@ -48,8 +48,8 @@
 #define NESC_COMBINE(x)
 #endif
 
-enum {
-  SUCCESS        =  0,          
+typedef enum {
+  SUCCESS        =  0,
   FAIL           =  1,           // Generic condition: backwards compatible
   ESIZE          =  2,           // Parameter passed in was too big.
   ECANCEL        =  3,           // Operation cancelled by a call.
@@ -61,17 +61,18 @@ enum {
   EALREADY       =  9,           // The device state you are requesting is already set
   ENOMEM         = 10,           // Memory required not available
   ENOACK         = 11,           // A packet was not acknowledged
-  ELAST          = 11            // Last enum value
-};
+  ETIMEOUT	 = 12,		 // operation timed out
+  ELAST          = 12            // Last enum value
+} error_t NESC_COMBINE("ecombine");
 
-typedef uint8_t error_t NESC_COMBINE("ecombine");
-
-error_t ecombine(error_t r1, error_t r2) @safe()
-/* Returns: r1 if r1 == r2, FAIL otherwise. This is the standard error
-     combination function: two successes, or two identical errors are
-     preserved, while conflicting errors are represented by FAIL.
-*/
-{
+/*
+ * Returns: r1 if r1 == r2, FAIL otherwise.
+ *
+ * This is the standard error combination function: two successes, or
+ * two identical errors are preserved, while conflicting errors are
+ * represented by FAIL.
+ */
+error_t ecombine(error_t r1, error_t r2) @safe() {
   return r1 == r2 ? r1 : FAIL;
 }
 

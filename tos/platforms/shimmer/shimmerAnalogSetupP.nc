@@ -176,7 +176,7 @@ implementation {
   }
   
   command void shimmerAnalogSetup.triggerConversion() {
-    call Msp430DmaChannel.startTransfer();
+    call Msp430DmaChannel.enableDma();
     call HplAdc12.startConversion();
   }
 
@@ -245,25 +245,23 @@ implementation {
   }
 
   void setupDMA(uint16_t * destAddr) {
-    call Msp430DmaControl.init();                                     // blanks registers
-
-    call Msp430DmaControl.setFlags(FALSE, FALSE, FALSE);              // enable_nmi, round_robin, on_fetch
-
-    call Msp430DmaChannel.setupTransfer(DMA_BLOCK_TRANSFER,           //dma_transfer_mode_t transfer_mode, 
-					DMA_TRIGGER_ADC12IFGx,        //dma_trigger_t trigger, 
-					DMA_EDGE_SENSITIVE,           //dma_level_t level,
-					(void *)ADC12MEM0_,            //void *src_addr, 
-					(void *)destAddr,              //void *dst_addr, 
-					NUM_ADC_CHANS,                //uint16_t size,
-					DMA_WORD,                     //dma_byte_t src_byte, 
-					DMA_WORD,                     //dma_byte_t dst_byte,
-					DMA_ADDRESS_INCREMENTED,      //dma_incr_t src_incr, 
-					DMA_ADDRESS_INCREMENTED);     //dma_incr_t dst_incr
-
-    call Msp430DmaChannel.startTransfer();
+    call Msp430DmaControl.reset();		// blanks registers
+    call Msp430DmaControl.setOpControl(0);	// DMAONFETCH, ROUNDROBIN, ENNMI all off
+    call Msp430DmaChannel.setupTransfer(
+	  DMA_DT_BLOCK |			// block mode, edge sensitive
+	  DMA_SW_DW |				// word to word
+	  DMA_SRC_INC |				// src/dst increment
+	  DMA_DST_INC,
+	DMA_TRIGGER_ADC12IFG,			// trigger
+	(uint16_t) ADC12MEM0_,			// src
+	(uint16_t) destAddr,			// dst
+	NUM_ADC_CHANS);				// length
+    call Msp430DmaChannel.enableDma();
   }
+
   async event void Msp430DmaChannel.transferDone(error_t success) {
   }
+
   async event void HplAdc12.conversionDone(uint16_t iv) {
   }
 }

@@ -116,6 +116,8 @@ implementation {
 
   command void Packet.clear(message_t* msg) {
     memset(getHeader(msg), 0, sizeof(serial_header_t));
+    /* no footer */
+    memset(getMetadata(msg), 0, sizeof(serial_metadata_t));
     return;
   }
 

@@ -63,8 +63,7 @@ implementation {
     }
   }
   
-  async command void HplI2C.setModeI2C( msp430_i2c_union_config_t* config ) {
-    
+  async command void HplI2C.setModeI2C(const msp430_i2c_union_config_t* config) {
     call HplUsart.resetUsart(TRUE);
     call HplUsart.disableUart();
     call HplUsart.disableSpi();
@@ -74,7 +73,6 @@ implementation {
     call UCLK.selectModuleFunc();
     
     atomic {
-
       IE1 &= ~(UTXIE0 | URXIE0);  // interrupt disable    
       
       U0CTL &= ~(I2C | I2CEN | SYNC);

@@ -124,7 +124,7 @@ implementation {
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
     call Usart.resetUsart(TRUE);
     call Usart.disableSpi();
-    call Usart.resetUsart(FALSE);
+    /* leave in reset */
   }
 
   event void UsartResource.granted[ uint8_t id ]() {
@@ -173,7 +173,7 @@ implementation {
   default async command error_t UsartResource.request[ uint8_t id ]() { return FAIL; }
   default async command error_t UsartResource.immediateRequest[ uint8_t id ]() { return FAIL; }
   default async command error_t UsartResource.release[ uint8_t id ]() { return FAIL; }
-  default async command msp430_spi_union_config_t* Msp430SpiConfigure.getConfig[uint8_t id]() {
+  default async command const msp430_spi_union_config_t* Msp430SpiConfigure.getConfig[uint8_t id]() {
     return &msp430_spi_default_config;
   }
 

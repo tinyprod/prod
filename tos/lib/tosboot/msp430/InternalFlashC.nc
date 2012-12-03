@@ -1,8 +1,5 @@
-// $Id: InternalFlashC.nc,v 1.4 2010-06-29 22:07:50 scipio Exp $
-
 /*
- *
- *
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2004 The Regents of the University  of California.  
  * All rights reserved.
  *
@@ -33,9 +30,6 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- */
-
-/**
  * InternalFlashC.nc - Internal flash implementation for telos msp
  * platform. On the msp, the flash must first be erased before a value
  * can be written. However, the msp can only erase the flash at a
@@ -47,8 +41,21 @@
  * Valid address range is 0x1000 - 0x107E (0x107F is used to store the
  * version number of the information segment).
  *
+ * This module currently only supports the flash modules on the msp430f149
+ * and msp430f1611.  It may support other processors but has only been
+ * tested on the 149 and 1611.
+ *
+ * The 149 and 1611 have info flash between 1080 and 10ff and this is what
+ * this module wacks.  Other processors may have the info memory at different
+ * locations and needs to be checked out prior to use.
+ *
  * @author Jonathan Hui <jwhui@cs.berkeley.edu>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
+
+#if !defined(__msp430x14x) && !defined(__msp430x16x)
+#error "processor not supported: only x149 and x1611 supported"
+#endif
 
 module InternalFlashC {
   provides interface InternalFlash;

@@ -1,4 +1,3 @@
-
 /**
  * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2009 DEXMA SENSORS SL
@@ -11,10 +10,12 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
+ *
  * - Neither the name of the copyright holder nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
@@ -31,6 +32,10 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @author Cory Sharp <cssharp@eecs.berkeley.edu>
+ * @author Xavier Orduna <xorduna@dexmatech.com>
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 /*
@@ -43,19 +48,33 @@
 #define _H_msp430regtypes_h
 
 /*
-  To generate the primary contents of this file seen below, in
-  mspgcc/msp430/include/, execute the following command:
-
-    find . | xargs perl -ne '
-      BEGIN { %t = qw(b uint8_t w uint16_t); }
-      if( /\bsfr([bw])\s*\(\s*(\w+)/ && length($2) > 1 ) {
-        $r{$2} = $t{$1};
-        print "#define TYPE_$2 $t{$1}\n" if /\bsfr([bw])\s*\(\s*(\w+)/;
-      } elsif( /^#define\s+(\w+)\s+(\w+)\s+$/ ) {
-        print "#define TYPE_$1 $r{$2}\n" if $r{$2};
-      }
-    ' | sort -u
-*/
+ * With the mspgcc (gcc 3.2.3) toolchain the following was used to
+ * generate this file.   With mspgcc4 (gcc 4.4.5), uniarch, and TI_HEADERS
+ * this is no longer true.
+ *
+ * Rather, this file is maintained by hand and is essentially the union of
+ * the cpu definitions that are currently being used and supported by the
+ * msp430 TinyOS trunk.
+ *
+ * These values get used in various low level msp430 drivers.  At some point
+ * it may make sense to figure a different way to do this and then get rid
+ * of this file.   Well maybe next year.  :-)
+ *
+ * No longer supported.   Kept for historical reference:
+ *
+ * To generate the primary contents of this file seen below, in
+ * mspgcc/msp430/include/, execute the following command:
+ *
+ * find . | xargs perl -ne '
+ *   BEGIN { %t = qw(b uint8_t w uint16_t); }
+ *    if( /\bsfr([bw])\s*\(\s*(\w+)/ && length($2) > 1 ) {
+ *      $r{$2} = $t{$1};
+ *      print "#define TYPE_$2 $t{$1}\n" if /\bsfr([bw])\s*\(\s*(\w+)/;
+ *    } elsif( /^#define\s+(\w+)\s+(\w+)\s+$/ ) {
+ *       print "#define TYPE_$1 $r{$2}\n" if $r{$2};
+ *    }
+ *   ' | sort -u
+ */
 
 #define TYPE_ACTL uint16_t
 #define TYPE_ADAT uint16_t
@@ -73,12 +92,6 @@
 #define TYPE_ADC12IV uint16_t
 #define TYPE_ADC12MCTL0 uint8_t
 #define TYPE_ADC12MCTL1 uint8_t
-#define TYPE_ADC12MCTL10 uint8_t
-#define TYPE_ADC12MCTL11 uint8_t
-#define TYPE_ADC12MCTL12 uint8_t
-#define TYPE_ADC12MCTL13 uint8_t
-#define TYPE_ADC12MCTL14 uint8_t
-#define TYPE_ADC12MCTL15 uint8_t
 #define TYPE_ADC12MCTL2 uint8_t
 #define TYPE_ADC12MCTL3 uint8_t
 #define TYPE_ADC12MCTL4 uint8_t
@@ -87,14 +100,14 @@
 #define TYPE_ADC12MCTL7 uint8_t
 #define TYPE_ADC12MCTL8 uint8_t
 #define TYPE_ADC12MCTL9 uint8_t
+#define TYPE_ADC12MCTL10 uint8_t
+#define TYPE_ADC12MCTL11 uint8_t
+#define TYPE_ADC12MCTL12 uint8_t
+#define TYPE_ADC12MCTL13 uint8_t
+#define TYPE_ADC12MCTL14 uint8_t
+#define TYPE_ADC12MCTL15 uint8_t
 #define TYPE_ADC12MEM0 uint16_t
 #define TYPE_ADC12MEM1 uint16_t
-#define TYPE_ADC12MEM10 uint16_t
-#define TYPE_ADC12MEM11 uint16_t
-#define TYPE_ADC12MEM12 uint16_t
-#define TYPE_ADC12MEM13 uint16_t
-#define TYPE_ADC12MEM14 uint16_t
-#define TYPE_ADC12MEM15 uint16_t
 #define TYPE_ADC12MEM2 uint16_t
 #define TYPE_ADC12MEM3 uint16_t
 #define TYPE_ADC12MEM4 uint16_t
@@ -103,6 +116,12 @@
 #define TYPE_ADC12MEM7 uint16_t
 #define TYPE_ADC12MEM8 uint16_t
 #define TYPE_ADC12MEM9 uint16_t
+#define TYPE_ADC12MEM10 uint16_t
+#define TYPE_ADC12MEM11 uint16_t
+#define TYPE_ADC12MEM12 uint16_t
+#define TYPE_ADC12MEM13 uint16_t
+#define TYPE_ADC12MEM14 uint16_t
+#define TYPE_ADC12MEM15 uint16_t
 #define TYPE_AEN uint16_t
 #define TYPE_AIN uint16_t
 #define TYPE_BCSCTL1 uint8_t
@@ -113,6 +132,16 @@
 #define TYPE_BTCTL uint8_t
 #define TYPE_CACTL1 uint8_t
 #define TYPE_CACTL2 uint8_t
+
+/*
+ * WARNING: All clocking in TinyOS is done as powers of 2.  Time is done as
+ * binary millisecs, binary micro-secs, etc.   binary MHz (MiHz).   However,
+ * TI specifies their calibration constants using decimal MHz.  Your mileage will vary.
+ *
+ * Also on newer processors (particularily with variable core voltages) TI specifies
+ * the maximum frequency as a power of ten MHz.   This presents more problems for
+ * TinyOS' insistence that time is binary.
+ */
 #define TYPE_CALBC1_1MHZ  uint8_t
 #define TYPE_CALBC1_8MHZ  uint8_t
 #define TYPE_CALBC1_12MHZ uint8_t
@@ -121,6 +150,7 @@
 #define TYPE_CALDCO_8MHZ  uint8_t
 #define TYPE_CALDCO_12MHZ uint8_t
 #define TYPE_CALDCO_16MHZ uint8_t
+
 #define TYPE_CAPD uint8_t
 #define TYPE_CBCTL uint8_t
 #define TYPE_CCR0 uint16_t
@@ -129,12 +159,18 @@
 #define TYPE_CCTL0 uint16_t
 #define TYPE_CCTL1 uint16_t
 #define TYPE_CCTL2 uint16_t
+
+/*
+ * Are these two still used?
+ */
 #define TYPE_DAC12CTL0 uint16_t
 #define TYPE_DAC12IFG uint16_t
+
 #define TYPE_DAC12_0CTL uint16_t
 #define TYPE_DAC12_0DAT uint16_t
 #define TYPE_DAC12_1CTL uint16_t
 #define TYPE_DAC12_1DAT uint16_t
+
 #define TYPE_DCOCTL uint8_t
 #define TYPE_DMA0CTL uint16_t
 #define TYPE_DMA0DAL uint16_t
@@ -164,7 +200,11 @@
 #define TYPE_FLL_CTL0 uint8_t
 #define TYPE_FLL_CTL1 uint8_t
 #define TYPE_I2CDCTL uint8_t
-#define TYPE_I2CDR uint8_t
+
+/*
+ * I2CDR is the old old name.  Should get converted to using I2CDRB.
+ */
+#define TYPE_I2CDR  uint8_t
 #define TYPE_I2CDRB uint8_t
 #define TYPE_I2CDRW uint16_t
 #define TYPE_I2CIE uint8_t
@@ -181,25 +221,16 @@
 #define TYPE_IE2 uint8_t
 #define TYPE_IFG1 uint8_t
 #define TYPE_IFG2 uint8_t
+
 #define TYPE_LCDACTL uint8_t
 #define TYPE_LCDAPCTL0 uint8_t
 #define TYPE_LCDAPCTL1 uint8_t
 #define TYPE_LCDAVCTL0 uint8_t
 #define TYPE_LCDAVCTL1 uint8_t
 #define TYPE_LCDCTL uint8_t
+
 #define TYPE_LCDM1 uint8_t
-#define TYPE_LCDM10 uint8_t
-#define TYPE_LCDM11 uint8_t
-#define TYPE_LCDM12 uint8_t
-#define TYPE_LCDM13 uint8_t
-#define TYPE_LCDM14 uint8_t
-#define TYPE_LCDM15 uint8_t
-#define TYPE_LCDM16 uint8_t
-#define TYPE_LCDM17 uint8_t
-#define TYPE_LCDM18 uint8_t
-#define TYPE_LCDM19 uint8_t
 #define TYPE_LCDM2 uint8_t
-#define TYPE_LCDM20 uint8_t
 #define TYPE_LCDM3 uint8_t
 #define TYPE_LCDM4 uint8_t
 #define TYPE_LCDM5 uint8_t
@@ -213,7 +244,19 @@
 #define TYPE_LCDMD uint8_t
 #define TYPE_LCDME uint8_t
 #define TYPE_LCDMF uint8_t
-#define TYPE_MAC uint16_t
+#define TYPE_LCDM10 uint8_t
+#define TYPE_LCDM11 uint8_t
+#define TYPE_LCDM12 uint8_t
+#define TYPE_LCDM13 uint8_t
+#define TYPE_LCDM14 uint8_t
+#define TYPE_LCDM15 uint8_t
+#define TYPE_LCDM16 uint8_t
+#define TYPE_LCDM17 uint8_t
+#define TYPE_LCDM18 uint8_t
+#define TYPE_LCDM19 uint8_t
+#define TYPE_LCDM20 uint8_t
+
+#define TYPE_MAC  uint16_t
 #define TYPE_MACS uint16_t
 #define TYPE_MBCTL uint16_t
 #define TYPE_MBIN0 uint16_t
@@ -222,83 +265,127 @@
 #define TYPE_MBOUT1 uint16_t
 #define TYPE_ME1 uint8_t
 #define TYPE_ME2 uint8_t
-#define TYPE_MPY uint16_t
-#define TYPE_MPYS uint16_t
+
 #define TYPE_OA0CTL0 uint8_t
 #define TYPE_OA0CTL1 uint8_t
 #define TYPE_OA1CTL0 uint8_t
 #define TYPE_OA1CTL1 uint8_t
 #define TYPE_OA2CTL0 uint8_t
 #define TYPE_OA2CTL1 uint8_t
-#define TYPE_OP2 uint16_t
+
 #define TYPE_PORT_OUT uint8_t
 #define TYPE_PORT_IN uint8_t
 #define TYPE_PORT_DIR uint8_t
 #define TYPE_PORT_SEL uint8_t
 #define TYPE_PORT_REN uint8_t
-#define TYPE_P0DIR uint8_t
-#define TYPE_P0IE uint8_t
-#define TYPE_P0IES uint8_t
-#define TYPE_P0IFG uint8_t
-#define TYPE_P0IN uint8_t
+#define TYPE_PORT_DS uint8_t
+
+/*
+ * Port 0?  very odd.  TI starts with P1 so where did P0 come from?
+ */
+#define TYPE_P0IN  uint8_t
 #define TYPE_P0OUT uint8_t
-#define TYPE_P1DIR uint8_t
-#define TYPE_P1IE uint8_t
-#define TYPE_P1IES uint8_t
-#define TYPE_P1IFG uint8_t
-#define TYPE_P1IN uint8_t
+#define TYPE_P0DIR uint8_t
+#define TYPE_P0IFG uint8_t
+#define TYPE_P0IES uint8_t
+#define TYPE_P0IE  uint8_t
+#define TYPE_P0SEL uint8_t
+
+#define TYPE_P1IN  uint8_t
 #define TYPE_P1OUT uint8_t
+#define TYPE_P1DIR uint8_t
+#define TYPE_P1IFG uint8_t
+#define TYPE_P1IES uint8_t
+#define TYPE_P1IE  uint8_t
 #define TYPE_P1SEL uint8_t
 #define TYPE_P1REN uint8_t
-#define TYPE_P2DIR uint8_t
-#define TYPE_P2IE uint8_t
-#define TYPE_P2IES uint8_t
-#define TYPE_P2IFG uint8_t
-#define TYPE_P2IN uint8_t
+
+#define TYPE_P2IN  uint8_t
 #define TYPE_P2OUT uint8_t
+#define TYPE_P2DIR uint8_t
+#define TYPE_P2IFG uint8_t
+#define TYPE_P2IES uint8_t
+#define TYPE_P2IE  uint8_t
 #define TYPE_P2SEL uint8_t
 #define TYPE_P2REN uint8_t
+
 #define TYPE_P3DIR uint8_t
 #define TYPE_P3IN uint8_t
 #define TYPE_P3OUT uint8_t
+#define TYPE_P3DIR uint8_t
 #define TYPE_P3SEL uint8_t
 #define TYPE_P3REN uint8_t
+
 #define TYPE_P4DIR uint8_t
 #define TYPE_P4IN uint8_t
 #define TYPE_P4OUT uint8_t
+#define TYPE_P4DIR uint8_t
 #define TYPE_P4SEL uint8_t
 #define TYPE_P4REN uint8_t
+
 #define TYPE_P5DIR uint8_t
 #define TYPE_P5IN uint8_t
 #define TYPE_P5OUT uint8_t
+#define TYPE_P5DIR uint8_t
 #define TYPE_P5SEL uint8_t
 #define TYPE_P5REN uint8_t
+
 #define TYPE_P6DIR uint8_t
 #define TYPE_P6IN uint8_t
 #define TYPE_P6OUT uint8_t
+#define TYPE_P6DIR uint8_t
 #define TYPE_P6SEL uint8_t
 #define TYPE_P6REN uint8_t
+
 #define TYPE_P7DIR uint8_t
 #define TYPE_P7IN uint8_t
 #define TYPE_P7OUT uint8_t
 #define TYPE_P7SEL uint8_t
+
 #define TYPE_P8DIR uint8_t
 #define TYPE_P8IN uint8_t
 #define TYPE_P8OUT uint8_t
 #define TYPE_P8SEL uint8_t
+
 #define TYPE_P9DIR uint8_t
 #define TYPE_P9IN uint8_t
 #define TYPE_P9OUT uint8_t
 #define TYPE_P9SEL uint8_t
 
-/* PAIN differs from 2618 MCU and there's no PBIN */
+#define TYPE_P10DIR uint8_t
+#define TYPE_P10IN uint8_t
+#define TYPE_P10OUT uint8_t
+#define TYPE_P10SEL uint8_t
+
 #ifdef notdef
+/*
+ * the z1 defined the following:
+ */
 #define TYPE_PAIN uint8_t
 #define TYPE_PBIN uint8_t
+
+/*
+ * but the 2618 defines PAIN as a sfrw at 38
+ * and there is no PBIN.
+ */
+#define TYPE_PAIN uint16_t
+paout
+padir
+pasel
+paren
+
 #endif
+
+#define TYPE_MPY uint16_t
+#define TYPE_MPYS uint16_t
+#define TYPE_OP2 uint16_t
 
 #define TYPE_RESHI uint16_t
 #define TYPE_RESLO uint16_t
+
+/*
+ * what are these RET things?
+ */
 #define TYPE_RET0 uint16_t
 #define TYPE_RET1 uint16_t
 #define TYPE_RET10 uint16_t
@@ -331,6 +418,7 @@
 #define TYPE_RET7 uint16_t
 #define TYPE_RET8 uint16_t
 #define TYPE_RET9 uint16_t
+
 #define TYPE_RTCCTL uint8_t
 #define TYPE_RTCDAY uint8_t
 #define TYPE_RTCDOW uint8_t
@@ -345,10 +433,11 @@
 #define TYPE_RTCTL uint8_t
 #define TYPE_RTCYEARH uint8_t
 #define TYPE_RTCYEARL uint8_t
+
 #define TYPE_RXBUF uint8_t
 #define TYPE_RXBUF0 uint8_t
-#define TYPE_RXBUF1 uint8_t
 #define TYPE_RXBUF_0 uint8_t
+#define TYPE_RXBUF1 uint8_t
 #define TYPE_RXBUF_1 uint8_t
 #define TYPE_SCFI0 uint8_t
 #define TYPE_SCFI1 uint8_t
@@ -388,6 +477,14 @@
 #define TYPE_SIFTPSMV uint16_t
 #define TYPE_SIFTSM0 uint16_t
 #define TYPE_SIFTSM1 uint16_t
+#define TYPE_SIFTSM2 uint16_t
+#define TYPE_SIFTSM3 uint16_t
+#define TYPE_SIFTSM4 uint16_t
+#define TYPE_SIFTSM5 uint16_t
+#define TYPE_SIFTSM6 uint16_t
+#define TYPE_SIFTSM7 uint16_t
+#define TYPE_SIFTSM8 uint16_t
+#define TYPE_SIFTSM9 uint16_t
 #define TYPE_SIFTSM10 uint16_t
 #define TYPE_SIFTSM11 uint16_t
 #define TYPE_SIFTSM12 uint16_t
@@ -398,18 +495,10 @@
 #define TYPE_SIFTSM17 uint16_t
 #define TYPE_SIFTSM18 uint16_t
 #define TYPE_SIFTSM19 uint16_t
-#define TYPE_SIFTSM2 uint16_t
 #define TYPE_SIFTSM20 uint16_t
 #define TYPE_SIFTSM21 uint16_t
 #define TYPE_SIFTSM22 uint16_t
 #define TYPE_SIFTSM23 uint16_t
-#define TYPE_SIFTSM3 uint16_t
-#define TYPE_SIFTSM4 uint16_t
-#define TYPE_SIFTSM5 uint16_t
-#define TYPE_SIFTSM6 uint16_t
-#define TYPE_SIFTSM7 uint16_t
-#define TYPE_SIFTSM8 uint16_t
-#define TYPE_SIFTSM9 uint16_t
 #define TYPE_SUMEXT uint16_t
 #define TYPE_SVSCTL uint8_t
 #define TYPE_SWCTL uint8_t
@@ -503,6 +592,7 @@
 #define TYPE_UBR11 uint8_t
 #define TYPE_UBR1_0 uint8_t
 #define TYPE_UBR1_1 uint8_t
+
 #define TYPE_UC0IE uint8_t
 #define TYPE_UC0IFG uint8_t
 #define TYPE_UC1IE uint8_t
@@ -566,6 +656,7 @@
 #define TYPE_URCTL_0 uint8_t
 #define TYPE_URCTL_1 uint8_t
 
+#define TYPE_USICCTL uint16_t
 #define TYPE_USICKCTL uint8_t
 #define TYPE_USICNT uint8_t
 #define TYPE_USICTL0 uint8_t
@@ -583,4 +674,3 @@
 #define TYPE_WDTCTL uint16_t
 
 #endif  //_H_msp430regtypes_h
-

@@ -8,11 +8,13 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -46,9 +48,21 @@
 #include <io.h>
 #include <signal.h>
 #endif /* __MSPGCC__ */
+
+#if defined(__msp430x261x) && !defined(__msp430x26x)
+/*
+ * The old 3.2.3 toolchain defined __msp430x261x when compiling for the
+ * 261x series of chips.   The new TI HEADER based toolchains however define
+ * __msp430x26x instead.
+ *
+ * We are migrating to using the newer toolchain and the newer __msp430x26x
+ * define.  For backward compatibility, create the new define too if needed.
+ */
+#define __msp430x26x
+#endif
+
 #include "msp430regtypes.h"
 #include "Msp430DcoSpec.h"
-
 
 #ifdef __MSP430_TI_HEADERS__
 
@@ -361,6 +375,8 @@ inline void TOSH_wait(void)
 }
 
 // #define TOSH_CYCLE_TIME_NS 250
+// This is very cpu dependent, for the msp430f1611 running at
+// 4MiHz this is close enough.
 // Our worst case is 250 ns = 1 cycle.
 
 inline void TOSH_wait_250ns(void)
@@ -380,7 +396,7 @@ void brief_pause(register unsigned int n)
 		:  "+r" (n));
 }
 
-#define TOSH_uwait(n)   brief_pause((((unsigned long long)n) * TARGET_DCO_KHZ * 1024 / 1000000 - 2) / 3)
+#define TOSH_uwait(n)   brief_pause((((unsigned long long)n) * TARGET_DCO_HZ / 1000000 - 2) / 3)
 
 #define SET_FLAG(port, flag) ((port) |= (flag))
 #define CLR_FLAG(port, flag) ((port) &= ~(flag))
@@ -480,5 +496,4 @@ enum {
   MSP430_PORT_RESISTOR_PULLUP,     /**< Pullup resistor enabled */
 };
 
-#endif//_H_msp430hardware_h
-
+#endif		//_H_msp430hardware_h

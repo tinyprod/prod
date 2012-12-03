@@ -73,13 +73,15 @@ module HplMsp430UsciB1P @safe() {
 
 implementation {
   MSP430REG_NORACE(UC1IE);
-  MSP430REG_NORACE(UC1IFG);
   MSP430REG_NORACE(UCB1CTL0);
   MSP430REG_NORACE(UCB1CTL1);
-  MSP430REG_NORACE(UCB1RXBUF);
-  MSP430REG_NORACE(UCB1TXBUF);
+  MSP430REG_NORACE(UCB1STAT);
   MSP430REG_NORACE(UCB1I2COA);
+  MSP430REG_NORACE(UCB1I2CSA);
   MSP430REG_NORACE(UCB1I2CIE);
+  MSP430REG_NORACE(UC1IFG);
+  MSP430REG_NORACE(UCB1TXBUF);
+  MSP430REG_NORACE(UCB1RXBUF);
 
   async event void UsciRawInterrupts.rxDone(uint8_t temp) {
     signal Interrupts.rxDone(temp);
@@ -106,6 +108,16 @@ implementation {
     return int2uctl1(UCB1CTL1);
   }
 
+  /*
+   * setUbr: change the Baud Rate divisor
+   *
+   * The BR registers are 2 bytes and accessed as two byte references.
+   * We want it to be atomic.   On the x2xxx part can UBR be referenced
+   * as a single atomic word?  NO.  (This is how it is done on the x5xxx).
+   * For now we do it atomically and using two byte references (because
+   * of the address space and according to TI documentation).
+   */
+
   async command void Usci.setUbr(uint16_t control) {
     atomic {
       UCB1BR0 = control & 0x00FF;
@@ -114,7 +126,9 @@ implementation {
   }
 
   async command uint16_t Usci.getUbr() {
-    return (UCB1BR1 << 8) + UCB1BR0;
+    atomic {
+      return (UCB1BR1 << 8) + UCB1BR0;
+    }
   }
 
   async command void Usci.setUstat(uint8_t control) {
@@ -125,12 +139,28 @@ implementation {
     return UCB1STAT;
   }
 
-  /* Operations */
+  /*
+   * Reset/unReset
+   *
+   * resetUsci(bool): (deprecated) TRUE puts device into reset, FALSE takes it out.  But this
+   *   requires pushing the parameter on the stack and all those extra instructions.
+   *
+   * {un,}resetUsci_n(): reset and unreset the device but result in single instruction that
+   *   sets or clears the appropriate bit in the h/w.
+   */
   async command void Usci.resetUsci(bool reset) {
     if (reset)
       SET_FLAG(UCB1CTL1, UCSWRST);
     else
       CLR_FLAG(UCB1CTL1, UCSWRST);
+  }
+
+  async command void Usci.resetUsci_n() {
+    SET_FLAG(UCB1CTL1, UCSWRST);
+  }
+
+  async command void Usci.unresetUsci_n() {
+    CLR_FLAG(UCB1CTL1, UCSWRST);
   }
 
   bool isSpi() {
@@ -140,15 +170,15 @@ implementation {
     return (tmp.ucsync && tmp.ucmode != 3);
   }
 
+  async command bool Usci.isSpi() {
+    return isSpi();
+  }
+
   bool isI2C() {
     msp430_uctl0_t tmp;
 
     tmp = int2uctl0(UCB1CTL0);
     return (tmp.ucsync && tmp.ucmode == 3);
-  }
-
-  async command bool Usci.isSpi() {
-    return isSpi();
   }
 
   async command msp430_uscimode_t Usci.getMode() {
@@ -175,45 +205,69 @@ implementation {
     }
   }
 
-  void configSpi(msp430_spi_union_config_t* config) {
+  void configSpi(const msp430_spi_union_config_t* config) {
     UCB1CTL1 = (config->spiRegisters.uctl1 | UCSWRST);
     UCB1CTL0 = (config->spiRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->spiRegisters.ubr);
+    /* MCTL (modulation register) is zero'd on module reset
+     * per TI MSP430x2xx User's Guide SLAUF, pg 16-16. */
   }
 
-  async command void Usci.setModeSpi(msp430_spi_union_config_t* config) {
+  /*
+   * setModeSpi: configure the usci for spi mode
+   *
+   * note: make sure all interrupts are clear when taking the port
+   * out of reset.  There is an assumption in the system that the
+   * tx path needs a first write to fire off the interrupt system.
+   *
+   * Also note that resetting the usci will clear any interrupt enables
+   * for the device.  Don't need to explicitly disableIntr.
+   */
+  async command void Usci.setModeSpi(const msp430_spi_union_config_t* config) {
     atomic {
-      call Usci.disableIntr();
-      call Usci.clrIntr();
-      call Usci.resetUsci(TRUE);
+      call Usci.resetUsci_n();
       call Usci.enableSpi();
       configSpi(config);
-      call Usci.resetUsci(FALSE);
-    }    
+      call Usci.unresetUsci_n();
+      call Usci.clrIntr();
+    }
   }
 
-  async command bool Usci.isTxIntrPending(){
-    if (UC1IFG & UCB1TXIFG)
-      return TRUE;
-    return FALSE;
+  async command bool Usci.isTxIntrPending() {
+    return (UC1IFG & UCB1TXIFG);
   }
 
   async command bool Usci.isRxIntrPending() {
-    if (UC1IFG & UCB1RXIFG)
-      return TRUE;
-    return FALSE;
+    return (UC1IFG & UCB1RXIFG);
   }
 
   async command void Usci.clrTxIntr(){
     UC1IFG &= ~UCB1TXIFG;
   }
 
+  /*
+   * clear any pending RxIntr.
+   *
+   * We want to clean out atomically any pending rx interrupt pending.
+   * This should also clean out any error bits that might have been set.
+   * The best way to do this is to simply read the RXBUF.  The TI hardware
+   * atomically cleans out any error indicators and the IFG.
+   */
   async command void Usci.clrRxIntr() {
-    UC1IFG &= ~UCB1RXIFG;
+    call Usci.rx();
   }
 
+  /*
+   * clrIntr: clear all rx and tx interrupts
+   *
+   * clear any pending interrupts.  Intended to be used when
+   * starting up a port and we want a pristine state.
+   */
   async command void Usci.clrIntr() {
-    UC1IFG &= ~(UCB1TXIFG | UCB1RXIFG);
+    atomic {
+      call Usci.rx();			/* clean rx side out */
+      UC1IFG &= ~UCB1TXIFG;		/* and turn off tx ifg */
+    }
   }
 
   async command void Usci.disableRxIntr() {
@@ -229,12 +283,23 @@ implementation {
   }
 
   async command void Usci.enableRxIntr() {
-    atomic {
-      UC1IFG &= ~UCB1RXIFG;
-      UC1IE  |=  UCB1RXIE;
-    }
+    UC1IE  |=  UCB1RXIE;
   }
 
+  /*
+   * enableTxIntr
+   *
+   * enable the usci tx h/w to interrupt.
+   *
+   * Note: The TI module when reset sets UCxxTXIFG so enabling the tx interrupt
+   * would cause an interrupt.  Many implementations use this to cause
+   * the output path to fire up.
+   *
+   * TinyOS however assumes that one needs to fire off the first byte and this
+   * will cause a TX interrupt later which will fire up the output path.  We
+   * clear out the pending tx interrupt.  The first byte must be forced out by
+   * hand and then interrupts will continue the process.
+   */
   async command void Usci.enableTxIntr() {
     atomic {
       UC1IFG &= ~UCB1TXIFG;
@@ -242,17 +307,35 @@ implementation {
     }
   }
 
+  /*
+   * enableIntr: enable rx and tx interrupts
+   * DEPRECATED.
+   *
+   * Doesn't make sense to do this.   RX and TX side get dealt with independently
+   * so why would this ever get called?    Deprecate.
+   *
+   * First clear out any pending tx interrupt flags then set interrupt enables.
+   * If there is a rx byte available then enabling the rx interrupt will kick.
+   */
   async command void Usci.enableIntr() {
     atomic {
-      UC1IFG &= ~(UCB1TXIFG | UCB1RXIFG);
-      UC1IE  |= (UCB1TXIE | UCB1RXIE);
+      UC1IFG &= ~UCB1TXIFG;		/* and tx side */
+      UC1IE  |= (UCB1TXIE | UCB1RXIE);	/* enable both tx and rx */
     }
+  }
+
+  async command bool Usci.isBusy() {
+    return (UCB1STAT & UCBUSY);
   }
 
   async command void Usci.tx(uint8_t data) {
     UCB1TXBUF = data;
   }
 
+  /*
+   * grab current Rx buf from the h/w.
+   * This will also clear any pending error status bits.
+   */
   async command uint8_t Usci.rx() {
     return UCB1RXBUF;
   }
@@ -285,7 +368,7 @@ implementation {
     }
   }
 
-  void configI2C(msp430_i2c_union_config_t* config) {
+  void configI2C(const msp430_i2c_union_config_t* config) {
     UCB1CTL1 = (config->i2cRegisters.uctl1 | UCSWRST);
     UCB1CTL0 = (config->i2cRegisters.uctl0 | UCSYNC);
     call Usci.setUbr(config->i2cRegisters.ubr);
@@ -294,32 +377,20 @@ implementation {
     UCB1I2CIE = 0;
   }
 
-  async command void Usci.setModeI2C( msp430_i2c_union_config_t* config ) {
+  async command void Usci.setModeI2C(const msp430_i2c_union_config_t* config) {
     atomic {
-      call Usci.disableIntr();
-      call Usci.clrIntr();
-      call Usci.resetUsci(TRUE);
+      call Usci.resetUsci_n();
       call Usci.enableI2C();
       configI2C(config);
-      call Usci.resetUsci(FALSE);
+      call Usci.unresetUsci_n();
+      call Usci.clrIntr();
     }
-  }
-
-  async command uint16_t Usci.getOwnAddress(){
-  	return UCB1I2COA & ~UCGCEN;
-  }
-  
-  async command void Usci.setOwnAddress( uint16_t addr ){
-	UCB1I2COA &= UCGCEN;
-	UCB1I2COA |= (addr & ~UCGCEN);
   }
 
   /*
    * commands subsummed into config structure.
    *
-   * setMasterMode,  setSlaveMode, getTransmitReceiveMode, setTransmitMode,
-   * setReceiveMode, getStopBit,   setStopBit,             getStartBit,
-   * setStartBit,    
+   * setMasterMode,  setSlaveMode
    *
    * the get commands can be replaced by .getUctl0 etc.
    *
@@ -331,10 +402,28 @@ implementation {
   async command void Usci.setTransmitMode() { UCB1CTL1 |=  UCTR; }
   async command void Usci.setReceiveMode()  { UCB1CTL1 &= ~UCTR; }
 
+  /* get stop bit in i2c mode */
+  async command bool Usci.getStopBit() { return (UCB1CTL1 & UCTXSTP); }
+  async command bool Usci.getTransmitReceiveMode() { return (UCB1CTL1 & UCTR); }
+
   /* transmit a NACK, Stop condition, or Start condition, automatically cleared */
   async command void Usci.setTXNACK()  { UCB1CTL1 |= UCTXNACK; }
   async command void Usci.setTXStop()  { UCB1CTL1 |= UCTXSTP;  }
   async command void Usci.setTXStart() { UCB1CTL1 |= UCTXSTT; }
+
+  /*
+   * get/set I2COA, Own Address register
+   */
+  async command uint16_t Usci.getOwnAddress() {
+    return (UCB1I2COA & ~UCGCEN);
+  }
+
+  async command void Usci.setOwnAddress( uint16_t addr ) {
+    atomic {
+      UCB1I2COA &= UCGCEN;
+      UCB1I2COA |= (addr & ~UCGCEN);
+    }
+  }
 
   /* set whether to respond to GeneralCall. */
   async command void Usci.clearGeneralCall() { UCB1I2COA &= ~UCGCEN; }
@@ -350,6 +439,7 @@ implementation {
   async command bool Usci.getTransmitReceiveMode() { return (UCB1CTL1 & UCTR); }
 
   /* get/set Slave Address, i2cSA */
+  /* do you really need the atomic? */
   async command uint16_t Usci.getSlaveAddress()            { atomic { return UCB1I2CSA; } }
   async command void Usci.setSlaveAddress( uint16_t addr ) { atomic { UCB1I2CSA = addr; } }
 

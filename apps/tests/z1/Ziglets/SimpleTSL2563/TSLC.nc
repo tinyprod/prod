@@ -52,7 +52,7 @@ implementation {
   components TSLP;
   Light = TSLP;
   
-  components new Msp430I2C1C() as I2C;
+  components new Msp430I2CB1C() as I2C;
   TSLP.Resource -> I2C;
   TSLP.ResourceRequested -> I2C;
   TSLP.I2CBasicAddr -> I2C; 

@@ -52,7 +52,7 @@ implementation {
   Pressure = BMP085P.Pressure;
   BMPSwitch = BMP085P.BMPSwitch;
  
-  components new Msp430I2C1C() as I2C;
+  components new Msp430I2CB1C() as I2C;
   BMP085P.Resource -> I2C;
   BMP085P.ResourceRequested -> I2C;
   BMP085P.I2CBasicAddr -> I2C; 

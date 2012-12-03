@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University of California.  
  * All rights reserved.
  *
@@ -8,11 +9,13 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -28,17 +31,15 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/**
+ *
  * @author Ben Greenstein <ben@cs.ucla.edu>
- * @version $Revision: 1.5 $ $Date: 2010-06-29 22:07:45 $
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include "Msp430Dma.h"
 
 interface Msp430DmaControl {
-  async command void init();
-  async command void setFlags( bool enable_nmi, bool round_robin, 
-			       bool on_fetch);
+  async command void     setOpControl(uint16_t op);
+  async command uint16_t getOpControl();
+  async command void     reset();
 }

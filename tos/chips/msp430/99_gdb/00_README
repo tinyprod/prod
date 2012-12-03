@@ -1,0 +1,62 @@
+This directory has files that makes using gdb easier with the msp430.
+
+So one is debugging the <blah> application located in apps/<blah>.
+
+For the purpose of this tutorial, let's build for the z1 platform.  The
+z1 uses a msp430f2617 processor which belongs to the x2 family.  This will
+be needed when deciding which cpu specific gdb support file to use.
+
+First one must build the application with debugging information.  This can
+be done using either "make debug z1" or "make debugopt z1".  The later is
+preferred because it optimizes as well as including debugging information.
+
+Debugging is done via a jtag port connected to a gdb server that implements
+the remote gdb protocol.  Older toolchains supplied msp430-jtag for
+manipulating the jtag port and msp430-gdbproxy for the gdb server.   The
+problem with these older tools is they only handle early TI processors
+and are not open source so can not be easily extended for the newer
+processors.   These two tools have been replaced by mspdebug which is
+open source.  Mspdebug works well for the x5 processors but is somewhat
+flakey for the x2.
+
+GDB can execute gdb run commands from the execution directory and your home
+directory.  These files are named .gdbinit.  The init file in the build
+directory is build/z1/.gdbinit.    But keep in mind that if one does a "make
+clean" it wipes out build and everything below it.  So the thing to do is
+place the .gdbinit file and friends in the apps/<blah> directory and link
+from build/z1.   See below.
+
+CPU dependent gdb command files are also available for the various flavors
+of msp430 cpus.   Sourcing one of these files will make available various
+commands for looking at different parts of the processor.  They need to be
+in apps/<blah> for the same reason as gdbinit.
+
+To set up the application directory, apps/<blah> do the following:
+	(assuming in the top level of the tinyos root)
+
+    cd apps/<blah>
+    cp ../../tos/chips/msp430/99_gdb/gdbinit ./.gdbinit
+    cp ../../tos/chips/msp430/99_gdb/gdb_x2  ./.gdb_x2
+    make debugopt z1 && mspdebug uif -qjd /dev/ttyUSB0 --force-reset \
+	    \"prog build/z1/main.exe\"
+
+The --force-reset make mspdebug behave better with x2 processors.   Your
+mileage may vary.
+
+now that the build directory exists, we can finish preping the gdb files.
+
+    cd build/z1
+    ln -s ../../gdbinit
+
+Fire up the gdb server.   Probably from another terminal window.
+
+    mspdebug uif -qjd /dev/ttyUSB0 "opt gdb_loop true" gdb
+
+And connect to the beasty using gdb.   From the apps/<blah> directory:
+
+    msp430-gdb build/z1/main.exe
+
+Emacs also has a nice interface to all of this including a source level
+debugging mechanism.  From within emacs use M-x gdb and then
+
+    Run gdb (like this): msp430-gdb --annotate=3 build/z1/main.exe

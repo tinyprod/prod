@@ -1,0 +1,242 @@
+
+Major Changes to the msp430 core software:
+(branch: gh:tp-freeforall/prod(msp430-int)
+
+Last Update: 2012-11-11, cire
+
+Msp430-Int (msp430 integration branch) is a major rework of the core tinyos
+msp430 files.  Originally, tinyos supported the first generation msp430 cpus.
+Later the MSP430X and MSP430XV2 processor chips were released by TI.  As newer
+cpu chips have been ported to TinyOS the architecture of the core msp430 s/w
+has needed to adapt.
+
+The evolution of the TI msp430 architecture doesn't evolve gracefully so there
+are major inconsistencies between the different major families.  The x5 family
+is the most reasonable and so is being used as the model.  In the future,
+we would like to migrate the x1 and x2 families to a common interface with the
+x5 so that drivers can be shared across the different cpu families.   It is
+unclear if that is worth the effort.
+
+Major areas of impact include: peripheral register access, clock modules, dma
+support, usart vs. usci support, and interrupt architecture.  In addition the
+s/w has been reorganized to support major differences between the cpus by
+grouping support into families (see below for what this means).
+
+This release has also had initial testing done on newer toolchains.  The msp430
+core has been modified to support toolchains listed below.  Test builds have been
+done using the following:
+
+  mspgcc3.2.3:		original tinyos 2.1.1 toolchain
+  mspgcc3.2.3-z1	z1 modified toolchain (supports some MSP430X architectural
+			changes, 26xx processors.   Does not properly support
+			x5 chips.
+
+  mspgcc4.5.3 (LTS 20110716) long term support of uniarch (pre-20bit).
+  mspgcc4.5.3 (20111008)     later version of LTS20110716 with patches through 1008.
+			Has problems.   Do not use.
+
+  mspgcc4.6.3 (LTS 20120406) long term support (pre-20bit), default
+			tinyos 2.1.2 toolchain for msp430.
+
+It is recommended that all verification work be done using the latest toolchain
+available.  The sooner we get that toolchain squared away the better.
+
+
+Families:
+
+A family is a group of similar msp430 processor chips that have been instantiated
+in TinyOS.  The overlap between cpus involves cpu features as well as
+clocks and peripherals.
+
+x1: 1st generation MSP430.   Supported: msp430f149, msp430f1611 (telosb)
+
+x2: 2nd generation MSP430X.  Modified cpu ISA, 20 bit addresses.
+    Supported: msp430f2{4,6}1{6,7,8,9}
+
+x5: 3rd generation MSP430X.  Modified instruction timings.  Peripheral modifications.
+    modified interrupt structure, modified peripheral access maps.
+    Supported: cc430f5137, msp430f5438, 5438a.
+
+
+Other notable changes:
+
+* Revise nesc_{en,dis}able_interrupt to generate better code.   Also force
+  these routines to be inline regardless of the optimization level.  Msp430
+  platform only currently.
+
+* Control inlining of nesc_{en,dis}able via a compile time define.  The
+  Platform designer can control how nesc_enable/disable is coded.  This
+  is for the msp430 platform only currently.  The platform designer can
+  control whether to minimize code space or to minimize execution (potentially
+  lower power).
+
+* Remove duplicate files between original x1 and Z1 (x2).  Msp430-int has
+  been fully integrated with the tinyos-main trunk as of 2012-11-11 which
+  includes an updated Z1 (x2) core.   All duplicated files between x1 and Z1
+  have been removed.
+
+* Correct various bugs that crept into the Z1 code when integrated into
+  tinyos main.
+
+* change low level usci port naming back to h/w centric.
+  ie. Msp430Uart0 -> Msp430UartA0.  Better matches the x5 code which
+  has lots of h/w ports.  This is a better naming scheme that
+  minimizes confusion about what h/w port is actually being talked
+  about and used by the platform.
+
+* The default main cpu clock for the 3 families is 4 MiHz.  This is done
+  for a number of reasons.  1) low power and 2) the 5438a starts off in low
+  power mode and doesn't support faster than 8 MHz (note decimal MHz not
+  binary, clocking the 5438 at 8MiHz is a definite no-no).
+
+* use common clock module for x1 and x2.  msp430/clock_bcs.  Handles
+  basic_clock and bc2.
+
+* add basic_clock configuration mechanism to allow easy configuration of
+  MCLK (cpu freq), SMCLK (peripheral clock), and 1 uis ticker (TimerA).  See
+  clock_bcs/Msp430ClockP.nc and Msp430DcoSpec.h (various locations).
+
+* gdb files to support different processor families,
+  tos/chips/msp430/99_gdb/gdb{x1,x2,x5}.  See tos/chips/msp430/99_gdb/gdbinit
+  for details on how to use these files.
+
+* add stack checking module.  This module allows one to monitor how much of the
+  stack is being use.  See tos/chips/msp430/Stack*.
+
+* Change DCO specifications from KHZ to HZ to eliminate confusion with decimal vs.
+  binary frequency specs.  Make Z1 use binary clocks.
+
+  WARNING: The whole issue of binary vs. decimal clocks needs to revisited.
+  Originally binary KHz (ie. KiHz) and binary MegaHz (MiHz) was being used
+  because the s/w DCO syncronizers worked better when coupled to the 32 KiHz
+  XTAL stable source (XT1/ACLK).  The DCO needs to be stablized because it
+  is used to generate all the other clocks in the system.   Some of these
+  clocks (ie. UART, SPI clocking) need to be particular frequencies so various
+  bits of h/w works properly.
+
+  Anyway, TinyOS wants binary clocks but TI states that upper limits for the
+  various processors is in decimal (ie. 8MHz).   It is generally dangerous
+  to overclock the TI parts and is asking for flakey behaviour.
+
+  In practice going to decimal clocks isn't a big deal.   The DCO syncronization
+  to the 32KiHz XTAL ticker works fine whether or not decimal or binary DCO
+  tickers are used.
+
+* Revised DCO calibrator that works with both 1611 and Z1 2617/1618.  Add DCO
+  calibrator that works for the 5438a.
+
+* Peripheral config block originally were placed in RAM as initialized data.
+  This is bad for two reasons.  1) its in RAM and RAM is scarce.  2) Initialized
+  data takes up ROM space and then is copied down into RAM.   Not very efficient.
+  The only reason for config blocks to be in RAM is if the block itself gets
+  tweaked.   But this is done rarely.
+  
+  Device configuration blocks by default moved to ROM.   This saves start up cpu
+  cycles and space in RAM.   Config blocks can still be placed in RAM and modified
+  if needed.
+
+* ADC12 mods:
+
+  o 16 input channels supported.  inch (input channel) in the control structure
+    expanded to 5 bits.  Additional channel place holders defined.
+  o ADC12 and ADC12_PLUS supported.  Newer chips provide the ADC12_PLUS module.
+  o PLATFORM_ADC support added for per platfrom configuration of timer and i/o pins.
+    Backward compatible with prior configuration mechanism.
+  o ADC12_PINS_AVAILABLE defined to denote how many pins are available for ADC use.
+  o headers include bitfield structures for use of new TI HEADERS.
+  o ADC pins in configurations now named An vs. previous PortMN.
+
+
+* DMA rework.
+
+  - Simplify Hpl and make more easily adaptable cross cpu (handles x1, x2, and x5).
+
+  - unified driver for x1, x2 and x5.
+
+  - Make module naming clearer.
+
+  - simplify interfaces for setTrigger.
+
+  - msp430 dma: nuke ABORT.   ABORT was used to determine the error return from
+    transferDone.  Only comes from NMI abort if ENNMI was on.   This doesn't really
+    buy anything, still need to use a timer for DMA hangs.   Further there are no
+    known users of the error return and it isn't checked.
+
+  - make DmaControl.reset do a full reset.   Simplifies code in Msp430DmaControlP.reset
+    and makes better sense then doing it piece meal.
+
+  - force src/dst addresses to be 16 bits (was void *).  Be blatant.  DMA currently
+    restricted to low memory (16 bits) which is where RAM always currently lives
+    on MSP430 processors.   This restricts DMA in X2 and X5 processors to RAM
+    rather than being able to handle DMAing from code space.
+
+    20 bit support adds the potential for using larger addresses but RAM still lives
+    in the low 64K and 20 bit support adds significant overhead.   The typical
+    case for DMA on a MSP430 is into and out of RAM.   We don't need the additional
+    overhead of > 16 bits.
+
+  - make interrupts be parameterized.  This routes dma interrupts to the appropriate
+    channel handler.
+
+
+* USCI I2C Driver.
+
+  - Started with John Hopkins multi-master I2C driver.  Completely rewritten
+    based on observations of correct I2C bus behaviour observed using
+    a logic analyzer.
+
+  - Created an optimized single master and multi-master I2C driver.  Mulitmaster
+    preserves the work done at John Hopkins for bidirectional async I2C
+    communications.
+
+  - Added I2CReg interface and implementation.  Single phase non-interrupt
+    optimized for register access which is the typical I2C device access.
+
+  - New I2C driver included in tos/chips/msp430/x5xxx/usci-v2.   These are
+    the recommended USCI drivers for the X5 cpus.   Needs to be back ported
+    to the X2.
+
+  - Nuked multiple copies of I2C.h.  Now use definitions in tos/types/I2C.h
+    for all I2C drivers.
+
+
+* X5 additions:
+
+  - X5 (T0A, T1A) Msp430Timers.   T0A 32KiHz, T1A 1MiHz timebase.
+  - X5 UCS clock driver.   tos/chips/x5xxx/timer/Msp430XV2Clock*.
+  - X5 add support for cc430f5137 and PeoplePower Co. Surf board.
+  - X5 pmm, rtc, crc16, flash, onewire, rf1a, wdt support
+
+
+* Other Additions
+
+  - KeyValueRecord code.  Used by Surf radio code.
+
+  - Better documentation on differences between x2 USCI and x5 USCI
+    tos/chips/msp430/02_Serial.
+
+  - Better documentation about what chips are supported.  00_Chip_Notes and 01_Dependencies.
+
+  - Using TI functional presence indicators (__MSP430_HAS_<stuff>) protect
+    modules from being included if the cpu being used doesn't have them.   This
+    makes figuring out what is happening much easier when adding new processors.
+
+  - PANIC infrastructure: Added foundations for PANIC infrastructure.
+    Used by x5xxx/usci code.
+
+  - PLATFORM raw time infrastructure: Added foundations for PLATFORM
+    infrastructure.  In particular, added hooks for obtaining raw 1usec
+    (either binary or decimal, you just have to know) timing from the
+    Platfrom layer.
+
+
+WARNING: tosthreads hasn't been modified for the new core msp430 structure.
+TosThreads duplicated files rather than modified in place.  This creates
+a lot more work and is not recommended.  Cloning for tosthreads creates a
+maintanence headache.
+
+TosThreads should be modified to place any necessary hooks into the actual device
+drivers themselves rather than duplicating the files and then shadowing.  Kevin
+Klues at one point evaluated using in place code and for some reason went the other
+way.   The reasoning wasn't documented.   Original implmentation is a major support
+headache.

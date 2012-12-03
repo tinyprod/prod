@@ -1,0 +1,13 @@
+
+This is a list of files in the Z1 tree that are removed because they
+are outdated and duplicates.
+
+* z1-0.16 had a tos/lib/net/blip/IPDispatch.h with lots of stuff in it that is removed in the
+  trunk.   Does this need to get checked?
+
+  The trunk version of IPDispatch.h is used in the msp430 (mm-z1) branch.
+
+* z1/tos/chips/msp430/adc12 removed.   No Z1 dependancies.  Moved forward on trunk.
+  removed DXNRG from interrupt handler (per Xavier).
+
+* z1/tos/chips/msp430/dma

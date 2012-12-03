@@ -66,8 +66,7 @@ implementation {
   uint8_t packet[2], readSize, * readDataBuffer;
   bool enabled;
 
-  msp430_i2c_union_config_t msp430_i2c_my_config = { 
-    {
+  const msp430_i2c_union_config_t msp430_i2c_my_config = { {
       rxdmaen : 0, 
       txdmaen : 0, 
       xa : 0, 

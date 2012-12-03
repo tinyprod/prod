@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University of California.  
  * All rights reserved.
  *
@@ -8,11 +9,13 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -28,68 +31,36 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/**
+ *
  * @author Ben Greenstein <ben@cs.ucla.edu>
  * @author Joe Polastre <info@moteiv.com>
- * @version $Revision: 1.5 $ $Date: 2010-06-29 22:07:45 $
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include "Msp430Dma.h"
 
 interface Msp430DmaChannel {
 
-  /**
-   * Setup a transfer using explicit argument (most robust and simple
-   * mechanism and recommended for novice users)
-   *
-   * See MSP430DMA.h for parameter options
-   */
-  async command error_t setupTransfer( dma_transfer_mode_t transfer_mode, 
-				       dma_trigger_t trigger, 
-				       dma_level_t level,
-				       void *src_addr, 
-				       void *dst_addr, 
-				       uint16_t size,
-				       dma_byte_t src_byte, 
-				       dma_byte_t dst_byte,
-				       dma_incr_t src_incr, 
-				       dma_incr_t dst_incr );
-  
-  /**
-   * Raw interface for setting up a DMA transfer.  This function is
-   * intended to provide as much raw performance as possible but
-   * sacrifices type checking in the process.  Recommended ONLY for
-   * advanced users that have very intricate knowledge of the MSP430
-   * DMA module described in the user's guide.
-   *
-   * @param state The control register value, as specified by 
-   *              dma_control_state_t in MSP430DMA.h
-   * @param trigger The trigger for the DMA transfer.  Should be one
-   *                of the options from dma_trigger_t in MSP430DMA.h
-   * @param src Pointer to the source address
-   * @param dest Pointer to the destination address
-   * @param size Size of the DMA transfer
-   *
-   * See MSP430DMA.h for parameter options
-   */
-  async command void setupTransferRaw( uint16_t state, uint16_t trigger,
-				       void* src, void* dest, int size );
+  async command error_t setupTransfer(uint16_t control,
+				      dma_trigger_t trigger, 
+				      uint16_t src_addr, 
+				      uint16_t dst_addr, 
+				      uint16_t size);
 
   /**
    * Enable the DMA module.  Equivalent to setting the DMA enable bit.
    * This function does not force a transfer.
    */
-  async command error_t startTransfer();
+  async command error_t enableDma();
 
   /**
    * Repeat a DMA transfer using previous settings but new pointers
-   * and transfer size.  Automatically starts the transfer (sets the
-   * enable bit).
+   * and transfer size.  Also sets the enable bit but doesn't
+   * necessarily start the transfer (depends on the dma settings.
    */
-  async command error_t repeatTransfer( void *src_addr, void *dst_addr, 
-					uint16_t size );
+  async command error_t repeatDma(uint16_t src_addr,
+				  uint16_t dst_addr,
+				  uint16_t size);
 
   /**
    * Trigger a DMA transfer using software
@@ -99,11 +70,13 @@ interface Msp430DmaChannel {
   /**
    * Stop a DMA transfer in progress
    */
-  async command error_t stopTransfer();
+  async command error_t stopDma();
 
   /**
    * Notification that the transfer has completed
+   *
+   * Used to have an error return but this could only fail
+   * because of an ABORT.  This has been nuked.
    */
-  async event void transferDone(error_t success);
-
+  async event void transferDone();
 }

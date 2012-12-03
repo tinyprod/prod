@@ -62,7 +62,9 @@ implementation {
   HplUsciP.SIMO -> GIO.UCB0SIMO;
   HplUsciP.SOMI -> GIO.UCB0SOMI;
   HplUsciP.UCLK -> GIO.UCB0CLK;
-  
+  HplUsciP.USDA -> GIO.UCB0SDA;
+  HplUsciP.USCL -> GIO.UCB0SCL;
+
   components HplMsp430UsciAB0RawInterruptsP as UsciRawInterrupts;
   HplUsciP.UsciRawInterrupts -> UsciRawInterrupts.UsciB;
 }

@@ -59,14 +59,14 @@ generic configuration Msp430SpiB0C() {
 implementation {
 
   enum {
-    CLIENT_ID = unique(MSP430_SPI0_BUS),
+    CLIENT_ID = unique(MSP430_SPIB0_BUS),
   };
 
 #ifdef ENABLE_SPIB0_DMA
-#warning "Enabling SPI DMA on USCIB0"
-  components Msp430SpiDmaB0P as SpiP;
+#warning "Enabling DMA for SPI (usciB0)"
+  components Msp430SpiB0DmaP as SpiP;
 #else
-  components Msp430SpiNoDmaB0P as SpiP;
+  components Msp430SpiB0NoDmaP as SpiP;
 #endif
 
   Resource = SpiP.Resource[CLIENT_ID];
@@ -74,7 +74,7 @@ implementation {
   SpiPacket = SpiP.SpiPacket[CLIENT_ID];
   Msp430SpiConfigure = SpiP.Msp430SpiConfigure[CLIENT_ID];
 
-  components new Msp430UsciB0C() as UsciC;
+  components new Msp430UsciArbB0C() as UsciC;
   ResourceRequested = UsciC;
   SpiP.ResourceConfigure[CLIENT_ID] <- UsciC.ResourceConfigure;
   SpiP.UsciResource[CLIENT_ID] -> UsciC.Resource;

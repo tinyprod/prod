@@ -1,0 +1,84 @@
+
+* fix copyrights (this should happen before the mm-z1-x5 merge is brought back into the
+  SVN t2 mainline).
+
+* apps/IPBaseStation: defines a reset in a particularily ugly way.   Needs to be
+  fixed and made part of the platform/cpu definition.
+
+  apps/IPBaseStation deleted.
+
+-- What is the purpose of msp430regtypes.h?  Is there a easier way to deal with this?
+  No.  This is how it is done.  Provides the linkage to msp430hardware.h and various
+  defines that are there, ie. MSP430_NORACE(xxxxx).   etc.
+
+* There are multiple copies of msp430hardware.h.   Is that reasonable?
+
+* i2c for msp430 isn't done yet.  needs to be cleaned up and made less ugly.  Interface
+  needs to be finished.
+
+  shimmer/span has a working i2c.  Investigate bringing that i2c implementation into the
+  main t2 usart and usci areas.
+
+* CC2420 modules use LocalIeeeEui64C to obtain an ipv6 link-local address.  Z1 needs to
+  provide.  If the ds2401 (serializer chip) isn't supported how is this done?
+
+* Currently config structs get put into ram via the data copy into ram mechanism.  This
+  means that it takes up room in RAM and ROM.  Suboptimal.
+
+  Some platforms (Epic?) actual modify parts of the config structure on the fly.  These
+  need to stay in ram.   Look at const stash on z1-rework.
+
+* Original mm_core port removed McuPowerOverride.  Why?
+
+* usart/msp430usart.h usci/msp430usci.h: define baud rates and configurations and h/w config
+  values are defined.  Originally for the msp430f1611.  How should this stuff get dealt with
+  for other chips and platforms.  Clocks and configuration values possible are quite variable
+  with new chips.  This should probably be a platform dependency.
+
+  This should be changed to get rid of the bit struct and replaced with something that uses
+  the stuff from the TI HEADERS.
+
+  Are the bit fields really used or can we nuke them.  Configuration uses a configuration struct
+  and functional stuff is code that uses the definitions in the TI HEADERS and other cpu headers.
+
+  bit fields are used by the basic definitions in the interface files.  To get rid of the bit fields
+  requires completly redefining the Hpl interfaces.
+
+* Need better approach to assigning ports.  Should be a platform thing.  this makes it so drivers
+  don't wire directly but instead wire to the platform ports.  Or conversely the platform provides
+  the wiring...   How to do this?
+
+* Do we want to put in TOSThreads support?  Best way if yes is to #ifdef needed code in
+  the interrupt handlers.  Old school mechanism clones the code.  Why did Kevin do that?
+
+-- (done) Z1 uses I2C but never defines SDA or SCL.  Rather it overlays the I2C pins on the SPI pins.
+  Works but isn't clean or straight forward.  Confusing for someone new picking up what is going
+  on.
+
+  (done) Z1 currently overloads the SPI pins.   Switch to using I2C pins so it is clean.
+
+-- should UcsiB add call for Usci.setUmctl(0)?   No.   not defined (it exists though) but is reset to 0.
+
+* clean up msp430_have_* checks.   old old toolchain.
+
+* tos/lib/tosboot/msp430 has various h/w dependencies.    Add support for other msp430 processors.
+
+  One way is to simply extend what is in tos/lib/tosboot.   That is keep the h/w dependancies in
+  tos/lib/tosboot/msp430.
+
+  A better way would be to figure out how to make tos/lib/tosboot processor independent and
+  move processor dependancies into tos/chips/msp430.    To start simply make the msp430 code
+  become processor independent and the pieces in tos/lib/tosboot/msp430 reference the
+  appropriate processor dependent code in tos/chips (pick via platform file).
+
+* dco_calib: needs to be evaluated for BC2 (RSEL 4 bits vs. 3 bits).  RSEL_MASK should take care
+  of it but needs to be checked.
+
+* dco_calib: currently busy wait runs two full ACLK_CALIB_PERIOD cycles.  This can be shortened to one ACLK
+  edge and then an ACLK_CALIB_PERIOD.  This may not be worth it because what we really want is an integrated
+  recalibration mechanism that runs off interrupts.   One pass with ACLK_CALIB_PERIOD is 8 * 1/32768 = 244uS.
+  But it is a binary search and the entire process takes about 9ms.   So we probably want to do this off
+  interrupts.  But what about things like interrupt latency etc.
+
+* dco_calib: termination condition checks for dco 7 because mod bits no longer take effect.  Verify for BC2
+  and BASIC_CLOCK.

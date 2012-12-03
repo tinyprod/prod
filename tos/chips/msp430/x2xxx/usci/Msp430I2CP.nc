@@ -87,7 +87,7 @@ implementation {
     return call UsciResource.request[ id ]();
   }
 
-  async command uint8_t Resource.isOwner[ uint8_t id ]() {
+  async command bool Resource.isOwner[ uint8_t id ]() {
     return call UsciResource.isOwner[ id ]();
   }
 
@@ -100,6 +100,7 @@ implementation {
   }
 
   async command void ResourceConfigure.unconfigure[ uint8_t id ]() {
+    call UsciB.resetUsci_n();
     call UsciB.disableI2C();
   }
 
@@ -107,13 +108,12 @@ implementation {
     signal Resource.granted[ id ]();
   }
 
-  default async command error_t UsciResource.request[ uint8_t id ]() { return FAIL; }
+  default async command error_t UsciResource.request[ uint8_t id ]()          { return FAIL; }
   default async command error_t UsciResource.immediateRequest[ uint8_t id ]() { return FAIL; }
-  default async command error_t UsciResource.release[ uint8_t id ]() {return FAIL;}
+  default async command error_t UsciResource.release[ uint8_t id ]()          { return FAIL; }
   default event void Resource.granted[ uint8_t id ]() {}
-
-  default async command msp430_i2c_union_config_t* Msp430I2CConfigure.getConfig[uint8_t id]() {
-    return (msp430_i2c_union_config_t *) &msp430_i2c_default_config;
+  default async command const msp430_i2c_union_config_t* Msp430I2CConfigure.getConfig[uint8_t id]() {
+    return &msp430_i2c_default_config;
   }
 
   async command error_t I2CBasicAddr.read( i2c_flags_t flags,
@@ -169,11 +169,11 @@ implementation {
       }
       i++;
     }
-    
+
     call UsciB.setTransmitMode();
     call UsciB.setSlaveAddress(addr);
     call UsciB.enableTxIntr(); 
-    
+
     if ( flags & I2C_START ) {
       while(call UsciB.getStopBit()){
         if(i>=TIMEOUT) {
@@ -200,7 +200,8 @@ implementation {
     uint16_t i=0;
 
     #ifdef USCI_X2XXX_DELAY
-     for(i=0xffff;i!=0;i--) asm("nop"); //software delay (aprox 25msec on z1)
+     /* this needs to be fixed.  software delay not so great */
+     for(i = 0xffff; i != 0; i--) asm("nop"); //software delay (aprox 25msec on z1)
     #endif
 
     m_buf[m_pos ++ ] = call UsciB.rx();
@@ -229,7 +230,8 @@ implementation {
     uint16_t i = 0;
 
     #ifdef USCI_X2XXX_DELAY
-      for(i=0xffff;i!=0;i--) asm("nop"); //software delay (aprox 25msec on z1)
+    /* this needs to get fixed. */
+    for(i = 0xffff; i != 0; i--) asm("nop"); //software delay (aprox 25msec on z1)
     #endif
 
     if ( ( m_pos == m_len) && ( m_flags & I2C_STOP ) ) {
@@ -275,6 +277,6 @@ implementation {
     else
       signal I2CBasicAddr.readDone(error, call UsciB.getSlaveAddress(), m_len, m_buf);
   }
-  default async command error_t UsciResource.isOwner[ uint8_t id ]() { return FAIL; }
 
+  default async command bool UsciResource.isOwner[uint8_t id]() { return FALSE; }
 }

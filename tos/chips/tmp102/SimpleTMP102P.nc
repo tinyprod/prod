@@ -48,9 +48,9 @@ module SimpleTMP102P {
    uses {
     interface Timer<TMilli> as TimerSensor;
     interface Timer<TMilli> as TimerFail;
-  	interface Resource;
-  	interface ResourceRequested;
-  	interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;        
+    interface Resource;
+    interface ResourceRequested;
+    interface I2CPacket<TI2CBasicAddr> as I2CBasicAddr;        
   }
 }
 

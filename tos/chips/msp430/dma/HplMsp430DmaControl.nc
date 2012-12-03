@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2011 Eric B. Decker
  * Copyright (c) 2000-2005 The Regents of the University of California.  
  * All rights reserved.
  *
@@ -8,11 +9,13 @@
  *
  * - Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
+ *
  * - Redistributions in binary form must reproduce the above copyright
  *   notice, this list of conditions and the following disclaimer in the
  *   documentation and/or other materials provided with the
  *   distribution.
- * - Neither the name of the copyright holder nor the names of
+ *
+ * - Neither the name of the copyright holders nor the names of
  *   its contributors may be used to endorse or promote products derived
  *   from this software without specific prior written permission.
  *
@@ -28,24 +31,30 @@
  * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
  * OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/**
+ *
  * @author Ben Greenstein <ben@cs.ucla.edu>
- * @version $Revision: 1.5 $ $Date: 2010-06-29 22:07:45 $
+ * @author Eric B. Decker <cire831@gmail.com>
  */
 
 #include "Msp430Dma.h"
 
 interface HplMsp430DmaControl {
+  /**
+   * setOpControl
+   * getOpControl
+   *
+   * set/get the DMA engine operational Control cell.   This controls
+   * such things as DMAONFETCH/DMARMWDIS, ROUNDROBIN, ENNMI which sets
+   * overall DMA engine operation.
+   */
+  async command void     setOpControl(uint16_t op);
+  async command uint16_t getOpControl();
 
-  async command void setOnFetch();
-  async command void clearOnFetch();
-  async command void setRoundRobin();
-  async command void clearRoundRobin();
-  async command void setENNMI();
-  async command void clearENNMI();
-  async command void setState(dma_state_t s);
-  async command dma_state_t getState();
-  async command void reset();
+  /**
+   * reset
+   *
+   * Fully reset the dma engines.   Clears out any operational Control
+   * cell as well as all DMA engines.
+   */
+  async command void     reset();
 }

@@ -1,0 +1,258 @@
+
+This directory contains interface files for the TI msp430 family of CPUs.
+The TI architecture is rather scattered and the cpu interface to major
+pieces reflects this.  The main problem areas include: peripheral registers,
+interrupts, and interrupt vectors.
+
+Care should be taken to minimize duplicates while maintaining the minimum implementation
+that reflects the cpus currently supported by TinyOS.    This should be done in a way
+that minimizes impact on existing implementations (be backward compatible).  See the
+file 01_Dependencies for what CPUs are supported and the cpu dependencies.
+
+Where reasonable, conflicting areas are kept in a flat file and differences are
+#ifdef'd.   When this becomes too cumbersome, different interface definitions and
+implementations are placed into cpu family directories (currently msp430/x1xxx, msp430/x2xxx,
+and msp430/x5xxx).  Dependent modules are duplicated and the correct module is selected
+from the family directory via the .platform directory.
+
+Most of the cpu definitions are obtained automatically via the toolchain, ie. the -mmcu
+specification automatically including the appropriate cpu header file.  ie. -mmcu=msp430x2618
+causes the msp430x26x.h (legacy) or msp430f2618.h include file to be utilized.  Which include is
+actually used depends on the toolchain.
+
+The TI MSP430 family has many variants.  There is a main cpu core and various integrated peripherals on
+chip.  What is provided by a given chip is indicated via functional defines in the chip definition include.
+This chip definition file is included automatically via the -mmcu mechanism.
+
+
+CPU Families:
+
+When it is too cumbersome to maintain a flat file that includes #ifdef'd difference for each of 
+the different variants, it is useful to seperate common interfaces into cpu family dependent family
+files that provide various TinyOS interfaces.
+
+It is also useful for the sake of discussion to be able to talk about chips that have roughly the
+same functionally.  TI talks about the MSP430, MSP430X, and MSP430X2 but it is more useful to
+denote families in a more practical sense.  The families being defined are denoted x1 (x1xxx) for
+1000 seris parts (typically first generation), x2 (x2xxx) for 2000 series parts (2nd generation),
+and x5 (x5xxx).  A given chip isn't given a family designation until it is actually understood and
+supported.
+
+The following families and their associated cpus are listed below.  When a new cpu is added to TinyOS,
+it can first be isolated and supported independently.   When commonalities are understood, any
+duplication can be removed and subsumed into a flat file via #ifdef's as appropriate.   Any remaining
+interfaces that are too cumbersome, can be supported by an existing cpu family interface or a new family
+can be defined as appropriate.  The intent is to provide a mechanism that allows evolutionary
+refactorization as new cpus are brought into the fold.
+
+The following families currently exist.   Included are what cpus have been verified.  Only add cpus that
+have actually been instantiated.
+
+x1xxx (x1): msp430f1611, msp430f149
+	    telos{a,b}, epic, eyesIFXv1, eyesIFXv2, shimmer{,2,2r}, span, tinynode
+
+x2xxx (x2): msp430f261{6,7,8,9}
+	    Z1 (2617), MM4 (mam-mark mote, 2618)
+
+x1x2:	    contains low level cpu interfaces shared between the x1 and x2 families.
+
+x5xxx (x5): cc430f5137, msp430f5438{,a}
+	    surf (cc430f5137), ev430-5137, ev430-5438, mm5 (mam-mark mote, msp430f5438a)
+
+
+
+TinyOS Interface:
+
+The tinyos interface is split into several sections:
+
+msp430hardware.h and msp430regtypes.h define various other attributes that interface the cpu
+to the tinyos environment.   These files coupled with the chip definition file define the cpu
+and other capabilities available.
+
+The original architecture, the MSP430, provided 16 bit addresses.   A subsequent revision denoted
+MSP430X modifies the cpu and addressing to provide 20 bit addresses.  Backward compatibilty to the
+MSP430 was considered.   A further modification is denoted the MSP430XV2 but it is unclear exactly
+what this modified.  The functional defines __MSP430_HAS_MSP430X_CPU__ and
+__MSP430_HAS_MSP430XV2_CPU__ indicate the potential for 20 bit addresses.   Switches to the
+toolchain will determine the instructions used and the size of pointers.
+
+MSP430 processors are highly integrated, combining a cpu with various peripherals.  The toolchain
+provides chip definition files (includes) for each processor.  These files are located in
+the directory <toolchain_base_dir>/msp430/include and look like <cpu>.h, ie. msp430f5438a.h.
+
+The header includes switches that describe what peripherals and other functions are present.
+These switches are of the form __MSP430_HAS_<stuff>__, where <stuff> indicates the function provided.
+See the end of this document for a list of current families, cpus, and what _HAS_ clauses are
+provided.
+
+Drivers for the different peripherals are provided in appropriately named subdirectories of the main
+msp430 directory.  Presence of the peripheral can be detected by checking appropriate values in the
+chip definition file.  Where reasonable, directories map to functional defines.  These directories are:
+
+adc12:	Most MSP430 chips include a 12 bit analog to digital converter.  Driver currently supports
+	the basic 1st gen ADC12 (derived for the x1 family).
+
+	__MSP430_HAS_ADC12__	   original 12 bit.  (x1, x2)
+	__MSP430_HAS_ADC12_PLUS__  on x5 processors, probably easy mod from ADC12.
+
+clock_bcs: low level interface to on board clocking.  BASIC CLOCK SYSTEM (x1, x2) 1st gen and 2nd
+	clock support.
+
+	__MSP430_HAS_BASIC_CLOCK__ indicates 1st rev of BASIC CLOCK.   (x1)
+	__MSP430_HAS_BC2__ indicates 2nd rev of BASIC CLOCK.  Same driver supports. (x2)
+
+clock_ucs: low level interface to x5 on board clocking.  Unified Clock System introduced with the
+	x5 processors.   Currently only the x5 family uses the UCS so its files currently reside
+	in the x5xxx/timer directory.   If another family makes use of the UCS then these files
+	should get moved to clock_ucs.
+
+	__MSP430_HAS_UCS__     differences are minor and can probably be supported by the same
+	__MSP430_HAS_UCS_RF__  driver.   Waiting for 5137 (surf) and mm5 (5438) integration.
+
+dma:	potential for 1 to 8 independent dma channels.  (We only use processors that define 3
+	channels, including the x5). MSP430X cpus can address 20 bits via the DMA engines.
+	20 bits increases the overhead significantly and should only be used if really needed.
+	ie.  Most cpus only provide RAM in the lower 64K so there really isn't much need for
+	20 bit addresses, unless one is DMAing out of high memory (ROM).   DMAing into ROM is
+	left as an exercise for the student (there really is an application for this).
+
+	Currently, only a 16 bit dma interface is provided.  In the future a dma32 interface could
+	be defined to provide access to the full 20 bits of addressing.   This should wait until
+	there is an explicit need to access memory above 64K (ie. DMA out of ROM).  It is possible
+	to still keep a singular driver by keying off the size of the address pointers passed into
+	the various routines.  Until then who cares.
+
+	__MSP430_HAS_DMA_3__   3 channel, 16 bit addresses (x1)
+	__MSP430_HAS_DMAX_3__  3 channel, 20 bit addresses (x2, x5).
+
+	x5 processors have the potential for significantly more triggers than x1 or x2 processors.
+	This is indicated by the presence of DMA0TSEL4 (a 5th TSEL bit, DMA0 is in the unshifted
+	lsb position).  The larger TSEL field changes the format for DMACTRLn and changes the
+	number of registers.   This also changes where the common control register  lives.  This
+	controls different things depending on the processor but includes RoundRobin and ENNMI.
+
+pins:	interface to digital I/O.  Different processors can have radically different amounts of
+	digitial I/O.   These pins are organized into ports.  x2 and x5 processors have enhanced
+	port electronics which adds pull up/down resistor control and drive strength.  Some
+	processors implement drive strength.  Drive Strength presence can be determined by testing
+	for the presence of the appropriate register define (ie. PADS_).  Currently drive strength
+	isn't supported.
+
+	x2 and x5 processors define 16 bit overlapping ports denoted using letters (ie. PA).
+
+	__MSP430_HAS_PORT1__	basic support for the given port (8 bits) (x1)
+	__MSP430_HAS_PORT2__
+
+	__MSP430_HAS_PORT7_R__	x2 processors have the 16 bit PA overlap on P7/P8.
+	__MSP430_HAS_PORT8_R__
+	__MSP430_HAS_PORTA_R__  16 bit
+
+	__MSP430_HAS_PORT1_R__	x5 processors define ports with resistor control and 16 bit
+	__MSP430_HAS_PORT2_R__	overlap makes more sense (PA 16 bit representation of P1/2).
+	__MSP430_HAS_PORTA_R__
+
+rf1a:	on chip cc1101 core.  access via memory mapped i/o registers.
+
+	__MSP430_HAS_CC1101__ indicates on board RF1A.  Not to be confused with the seperate CC1101
+	module which is accessable via a SPI interface.  The two interfaces behave significantly
+	different.
+
+sensors: interfaces to on chip internal temperature and voltage sensors.  Simple configuration
+	definitions for use with the ADC module.
+
+timer:	interface to on chip timing mechanisms.  Timers and Alarms.
+
+	__MSP430_HAS_TA3__  (x1, x2)
+	__MSP430_HAS_TB7__
+
+	__MSP430_HAS_T0A5__ (x5, 5137, 5438)
+	__MSP430_HAS_T1A3__ (x5, 5137, 5438)
+	__MSP430_HAS_T0B7__ (x5, 5438)
+
+usart:	interface to original UART/SPI/I2C on MSP430 parts.  Universal Syncronous Asyncronous
+	Receiver/Transmitter.  (1st generation).
+
+	__MSP430_HAS_UART0__	USART0 present.  Name sucks.
+	__MSP430_HAS_UART1__	USART1 present.
+	__MSP430_HAS_I2C__	defined if USART0 supports I2C.
+
+usci:	interface to USCI (Universal Serial Communications Interface) modules UART/SPI/I2C on
+	MSP430X and later parts.  A parts support UART and SPI.  B parts support SPI and I2C.
+
+	__MSP430_HAS_USCI__	x2.  Stupid interface.  Module registers scattered.  Maintains
+	__MSP430_HAS_USCI_AB0__	stupid SFR.  Different module shared interrupt vectors.  TI
+	__MSP430_HAS_USCI_AB1__	really screwed this one up.
+
+	__MSP430_HAS_USCI_A0__	x5.  excellent module base registers, reasonable independent
+	__MSP430_HAS_USCI_B0__	interrupt vectors.
+
+	Given the strange x2 cpu/usci interface (registers, byte vs. word, interrupt interface)
+	there are seperate x2/x5 usci drivers.  For the time being it is simpler that way.  The
+	x5 usci driver is implemented as a model that is used to generate drivers for each
+	individual port.   x5 processors can have many usci ports.
+
+When implementing new functionality a good approach is to base a driver off of one of the
+__MSP430_HAS switches with an appropriately named directory.
+
+
+
+Only the <stuff> clause is listed.  ie.  __MSP430_HAS_<stuff>__ is the actual switch defined.
+
+x1, msp430f149:
+    BASIC_CLOCK TA3 TB7
+    WDT MPY ADC12
+    PORT1 PORT2 PORT3 PORT4 PORT5 PORT6
+    UART0 UART1
+    FLASH COMPA
+
+x1, msp430f1611:
+    BASIC_CLOCK TA3 TB7
+    WDT MPY ADC12 DMA_3
+    PORT1 PORT2 PORT3 PORT4 PORT5 PORT6
+    UART0 UART1 I2C
+    SVS FLASH COMPA DAC12_2
+
+x2, msp430f2618 (msp430f261[6-9] similar):
+    MSP430X_CPU BC2 TA3 TB7
+    WDT MPY ADC12 DMAX_3
+    PORT1_R PORT2_R PORT3_R PORT4_R PORT5_R PORT6_R PORT7_R PORT8_R PORTA_R
+    USCI USCI_AB0 USCI_AB1
+    SVS FLASH2 CAPLUS DAC12_2
+
+x1?, msp430f2274 (currently unsupported)
+    BC2 TA3 TB3
+    WDT ADC10
+    PORT1_R PORT2_R PORT3_R PORT4_R
+    USCI
+    FLASH2 OA_2
+
+x1?, msp430f2370 (currently unsupported)
+    BC2 TA3 TB3
+    WDT MPY
+    PORT1_R PORT2_R PORT3_R PORT4_R
+    USCI
+    FLASH2 CAPLUS
+
+x5, cc430f5137
+    MSP430XV2_CPU UCS_RF T0A5 T1A3
+    WDT_A MPY32 ADC12_PLUS DMAX_3
+    PORT1_R PORT2_R PORTA_R PORT3_R PORT4_R PORTB_R PORT5_R PORTC_R
+    PORTJ_R PORT_MAPPING PORT1_MAPPING PORT2_MAPPING PORT3_MAPPING
+    USCI_A0 USCI_B0
+    CC1101
+    AES CRC COMPB FLASH
+    PMM RC REF RTC SYS SFR TLV
+
+x5, msp430f5438a
+    MSP430XV2_CPU UCS T0A5 T1A3 T0B7
+    WDT_A MPY32 ADC12_PLUS DMAX_3
+    PORT1_R PORT2_R PORTA_R PORT3_R PORT4_R  PORTB_R PORT5_R  PORT6_R PORTC_R
+    PORT7_R PORT8_R PORTD_R PORT9_R PORT10_R PORTE_R PORT11_R         PORTF_R
+    PORTJ_R
+    USCI_A0 USCI_B0 USCI_A1 USCI_B1 USCI_A2 USCI_B2 USCI_A3 USCI_B3
+    CRC FLASH
+    PMM RC REF RTC SYS SFR TLV
+
+
+
+
